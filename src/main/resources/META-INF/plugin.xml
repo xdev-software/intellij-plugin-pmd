@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<idea-plugin>
+	<vendor url="https://www.github.com/xdev-software">xdev-software</vendor>
+
+	<description><![CDATA[
+<p>TODO</p>
+<br/>
+<p>More information is available on <a href="https://github.com/xdev-software/intellij-plugin-pmd">GitHub</a>.</p>
+    ]]></description>
+
+	<change-notes><![CDATA[
+<a href="https://github.com/xdev-software/intellij-plugin-pmd/releases">https://github.com/xdev-software/intellij-plugin-pmd/releases</a>
+    ]]>
+	</change-notes>
+
+	<depends>com.intellij.modules.platform</depends>
+	<depends optional="true" config-file="plugin-java.xml">com.intellij.modules.java</depends>
+	<depends optional="true" config-file="plugin-kotlin.xml">org.jetbrains.kotlin</depends>
+
+	<extensions defaultExtensionNs="com.intellij">
+		<projectService serviceImplementation="software.xdev.pmd.analysis.PMDAnalyzer"/>
+		<projectService serviceImplementation="software.xdev.pmd.model.config.ConfigurationLocationFactory"/>
+		<projectService serviceImplementation="software.xdev.pmd.model.config.ConfigurationLocationScopeProjectProxy"/>
+		<projectService serviceImplementation="software.xdev.pmd.config.ConfigurationLocationSource"/>
+		<projectService serviceImplementation="software.xdev.pmd.config.PluginConfigurationManager"/>
+		<projectService serviceImplementation="software.xdev.pmd.config.ProjectConfigurationState"/>
+		<projectService serviceImplementation="software.xdev.pmd.util.io.ProjectPaths"/>
+		<projectService serviceImplementation="software.xdev.pmd.util.io.ProjectFilePaths"/>
+
+		<postStartupActivity implementation="software.xdev.pmd.startup.PMDStartupConfiguration"/>
+
+		<!-- TODO parentId="tools" -->
+		<projectConfigurable instance="software.xdev.pmd.ui.config.project.PMDConfigurable"
+							 displayName="PMD"/>
+
+		<moduleConfigurationEditorProvider
+				implementation="software.xdev.pmd.ui.config.module.PMDModuleConfigurationEditorProvider"/>
+
+		<moduleService serviceImplementation="software.xdev.pmd.config.ModuleConfigurationState"/>
+
+		<!--		<toolWindow id="PMD_X"-->
+		<!--					anchor="bottom"-->
+		<!--					canCloseContents="false"-->
+		<!--					factoryClass="software.xdev.pmd.toolwindow.PMDToolWindowFactory"-->
+		<!--					icon="/icons/pmd.svg"/>-->
+
+		<notificationGroup id="PMDBalloonGroup"
+						   displayType="BALLOON"/>
+		<notificationGroup id="PMDLogOnlyGroup"
+						   displayType="NONE"/>
+
+		<externalAnnotator
+				language="JAVA"
+				implementationClass="software.xdev.pmd.annotator.PMDExternalLanguageAnnotator"/>
+		<externalAnnotator
+				language="kotlin"
+				implementationClass="software.xdev.pmd.annotator.PMDExternalLanguageAnnotator"/>
+
+		<applicationService serviceImplementation="software.xdev.pmd.langversion.LanguageVersionResolverService"/>
+	</extensions>
+
+	<!-- Not detected when inside plugin-kotlin.xml -->
+	<extensions defaultExtensionNs="org.jetbrains.kotlin">
+		<supportsKotlinPluginMode supportsK2="true"/>
+	</extensions>
+	<extensionPoints>
+		<extensionPoint
+				name="languageResolver"
+				interface="software.xdev.pmd.langversion.LanguageResolver"
+				dynamic="true"/>
+		<extensionPoint
+				name="languageVersionResolver"
+				interface="software.xdev.pmd.langversion.LanguageVersionResolver"
+				dynamic="true"/>
+	</extensionPoints>
+</idea-plugin>

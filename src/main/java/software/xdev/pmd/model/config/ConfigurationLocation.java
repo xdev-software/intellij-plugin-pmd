@@ -1,0 +1,255 @@
+package software.xdev.pmd.model.config;
+
+import java.io.File;
+import java.util.Comparator;
+import java.util.Optional;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.project.Project;
+import com.intellij.packageDependencies.DependencyValidationManager;
+import com.intellij.psi.search.scope.packageSet.NamedScope;
+import com.intellij.psi.search.scope.packageSet.NamedScopeManager;
+
+import software.xdev.pmd.model.config.bundled.BundledConfigurationLocation;
+import software.xdev.pmd.model.scope.NamedScopeHelper;
+
+
+/**
+ * Bean encapsulating a configuration source.
+ * <p>Note on identity: Configuration locations are considered equal if their descriptor matches. The descriptor
+ * consists of type, location, and description text. Properties are not considered.</p>
+ * <p>Note on order: Configuration locations are ordered by description text, followed by location and type, except
+ * that the bundled configurations always go first.</p>
+ */
+public abstract class ConfigurationLocation implements Cloneable, Comparable<ConfigurationLocation>
+{
+	private final String id;
+	private final ConfigurationType type;
+	private final Project project;
+	private String location;
+	private String description;
+	private NamedScope namedScope;
+	
+	protected ConfigurationLocation(
+		@NotNull final String id,
+		@NotNull final ConfigurationType type,
+		@NotNull final Project project)
+	{
+		this.id = id;
+		this.type = type;
+		this.project = project;
+		this.namedScope = NamedScopeHelper.getDefaultScope(project);
+		this.initializeFutureScopeChangeHandling();
+	}
+	
+	/**
+	 * Refreshes the named scope if the scopes have been changed.
+	 */
+	private void initializeFutureScopeChangeHandling()
+	{
+		final Disposable parent = this.project.getService(ConfigurationLocationScopeProjectProxy.class);
+		NamedScopeManager.getInstance(this.project).addScopeListener(this::scopeChanged, parent);
+		DependencyValidationManager.getInstance(this.project).addScopeListener(this::scopeChanged, parent);
+	}
+	
+	private void scopeChanged()
+	{
+		this.getNamedScope().ifPresent(scope ->
+			this.setNamedScope(NamedScopeHelper.getScopeByIdWithDefaultFallback(this.project, scope.getScopeId())));
+	}
+	
+	public boolean canBeResolvedInDefaultProject()
+	{
+		return true;
+	}
+	
+	protected final Project getProject()
+	{
+		return this.project;
+	}
+	
+	/**
+	 * Get the base directory for this checkstyle file. If null then the project directory is assumed.
+	 *
+	 * @return the base directory for the file, or null if not applicable to the location type.
+	 */
+	public File getBaseDir()
+	{
+		return null;
+	}
+	
+	@NotNull
+	public String getId()
+	{
+		return this.id;
+	}
+	
+	public ConfigurationType getType()
+	{
+		return this.type;
+	}
+	
+	public synchronized String getLocation()
+	{
+		return this.location;
+	}
+	
+	public final synchronized String getRawLocation()
+	{
+		return this.location;
+	}
+	
+	public synchronized Optional<NamedScope> getNamedScope()
+	{
+		return Optional.ofNullable(this.namedScope);
+	}
+	
+	public synchronized void setLocation(final String location)
+	{
+		if(location == null || location.isBlank())
+		{
+			throw new IllegalArgumentException("A non-blank location is required");
+		}
+		
+		this.location = location;
+		if(this.description == null)
+		{
+			this.description = location;
+		}
+	}
+	
+	public synchronized String getDescription()
+	{
+		return this.description;
+	}
+	
+	public synchronized void setDescription(@Nullable final String description)
+	{
+		this.description = description == null ? this.location : description;
+	}
+	
+	public synchronized void setNamedScope(final NamedScope namedScope)
+	{
+		this.namedScope = namedScope;
+	}
+	
+	public synchronized boolean isRemovable()
+	{
+		return true;
+	}
+	
+	public final synchronized boolean hasChangedFrom(final ConfigurationLocation configurationLocation)
+	{
+		return !this.equals(configurationLocation);
+	}
+	
+	public abstract void validate() throws Exception;
+	
+	@Override
+	public abstract Object clone();
+	
+	protected ConfigurationLocation cloneCommonPropertiesTo(final ConfigurationLocation cloned)
+	{
+		cloned.setDescription(this.getDescription());
+		cloned.setLocation(this.getLocation());
+		cloned.setNamedScope(this.getNamedScope().orElse(NamedScopeHelper.getDefaultScope(this.project)));
+		return cloned;
+	}
+	
+	@Override
+	public final boolean equals(final Object other)
+	{
+		if(this == other)
+		{
+			return true;
+		}
+		if(!(other instanceof final ConfigurationLocation that))
+		{
+			return false;
+		}
+		return this.compareTo(that) == 0;
+	}
+	
+	@Override
+	public final int hashCode()
+	{
+		int result = java.util.Objects.hash(this.getDescription(), this.getLocation(), this.getType());
+		if(this instanceof final BundledConfigurationLocation bundledConfigurationLocation)
+		{
+			result = java.util.Objects.hash(result, bundledConfigurationLocation.getBundledConfig());
+		}
+		return result;
+	}
+	
+	@Override
+	public String toString()
+	{
+		assert this.description != null;
+		return this.description;
+	}
+	
+	@Override
+	public final int compareTo(@NotNull final ConfigurationLocation other)
+	{
+		int result;
+		// bundled configs go first, ordered by their position in the BundledConfig enum
+		if(other instanceof final BundledConfigurationLocation otherBundledConfigurationLocation)
+		{
+			if(this instanceof final BundledConfigurationLocation thisBundledConfigurationLocation)
+			{
+				final int o1 = thisBundledConfigurationLocation.getBundledConfig().getSortOrder();
+				final int o2 = otherBundledConfigurationLocation.getBundledConfig().getSortOrder();
+				result = Integer.compare(o1, o2);
+			}
+			else
+			{
+				result = 1;
+			}
+		}
+		else
+		{
+			if(this instanceof BundledConfigurationLocation)
+			{
+				result = -1;
+			}
+			else
+			{
+				result = this.compareStrings(this.getDescription(), other.getDescription());
+				if(result == 0)
+				{
+					result = this.compareStrings(this.getLocation(), other.getLocation());
+					if(result == 0)
+					{
+						result = Comparator.nullsFirst(ConfigurationType::compareTo)
+							.compare(this.getType(), other.getType());
+					}
+				}
+			}
+		}
+		return result;
+	}
+	
+	private int compareStrings(@Nullable final String pStr1, @Nullable final String pStr2)
+	{
+		int result = 0;
+		if(pStr1 != null)
+		{
+			if(pStr2 != null)
+			{
+				result = pStr1.compareTo(pStr2);
+			}
+			else
+			{
+				result = -1;
+			}
+		}
+		else if(pStr2 != null)
+		{
+			result = 1;
+		}
+		return result;
+	}
+}
