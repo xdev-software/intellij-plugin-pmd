@@ -2,6 +2,7 @@ package software.xdev.pmd.model.config;
 
 import java.io.File;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
@@ -198,28 +199,20 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 	}
 	
 	@Override
-	public final boolean equals(final Object other)
+	public boolean equals(final Object o)
 	{
-		if(this == other)
-		{
-			return true;
-		}
-		if(!(other instanceof final ConfigurationLocation that))
+		if(!(o instanceof final ConfigurationLocation that))
 		{
 			return false;
 		}
-		return this.compareTo(that) == 0;
+		return this.getType() == that.getType() && Objects.equals(this.getLocation(), that.getLocation())
+			&& Objects.equals(this.getDescription(), that.getDescription());
 	}
 	
 	@Override
-	public final int hashCode()
+	public int hashCode()
 	{
-		int result = java.util.Objects.hash(this.getDescription(), this.getLocation(), this.getType());
-		if(this instanceof final BundledConfigurationLocation bundledConfigurationLocation)
-		{
-			result = java.util.Objects.hash(result, bundledConfigurationLocation.getBundledConfig());
-		}
-		return result;
+		return Objects.hash(this.getType(), this.getLocation(), this.getDescription());
 	}
 	
 	@Override

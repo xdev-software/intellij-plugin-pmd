@@ -1,5 +1,7 @@
 package software.xdev.pmd.model.config.bundled;
 
+import java.util.Objects;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,5 +76,25 @@ public class BundledConfigurationLocation extends ConfigurationLocation
 	public BundledConfigurationLocation clone()
 	{
 		return new BundledConfigurationLocation(this.bundledConfig, this.getProject());
+	}
+	
+	@Override
+	public boolean equals(final Object o)
+	{
+		if(!(o instanceof final BundledConfigurationLocation that))
+		{
+			return false;
+		}
+		if(!super.equals(o))
+		{
+			return false;
+		}
+		return Objects.equals(this.getBundledConfig(), that.getBundledConfig());
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(super.hashCode(), this.getBundledConfig());
 	}
 }
