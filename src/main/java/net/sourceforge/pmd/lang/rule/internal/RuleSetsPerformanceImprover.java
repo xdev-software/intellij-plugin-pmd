@@ -28,7 +28,6 @@ public class RuleSetsPerformanceImprover
 		final Rule unwrappedRule = this.unwrapRule(rule);
 		if(!(unwrappedRule instanceof final XPathRule xPathRule))
 		{
-			System.out.println("NO - " + rule.getName() + ": No XPathRule");
 			return false;
 		}
 		
@@ -36,7 +35,6 @@ public class RuleSetsPerformanceImprover
 			this.getFromField(XPathRule.class, "xpathRuleQuery", xPathRule, SaxonXPathRuleQuery.class);
 		if(xPathRuleQuery == null)
 		{
-			System.out.println("NO - " + rule.getName() + ": xpathRuleQuery null");
 			return false;
 		}
 		
@@ -44,21 +42,11 @@ public class RuleSetsPerformanceImprover
 			this.getFromField(SaxonXPathRuleQuery.class, "xPathHandler", xPathRuleQuery, XPathHandler.class);
 		if(previousXPathHandler == null)
 		{
-			System.out.println("NO - " + rule.getName() + ": xPathHandler null");
 			return false;
 		}
 		
 		// If the xPathHandler is identical to the already initialized one, initialization can be skipped
-		final boolean handlerEquals = previousXPathHandler.equals(lp.services().getXPathHandler());
-		if(!handlerEquals)
-		{
-			System.out.println("NO - " + rule.getName() + ": handler not equal");
-		}
-		else
-		{
-			System.out.println("YES - " + rule.getName());
-		}
-		return handlerEquals;
+		return previousXPathHandler.equals(lp.services().getXPathHandler());
 	}
 	
 	private Rule unwrapRule(final Rule rule)
