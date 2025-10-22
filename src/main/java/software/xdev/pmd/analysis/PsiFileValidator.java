@@ -17,7 +17,7 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 
-import software.xdev.pmd.config.PluginConfigurationManager;
+import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.langversion.LanguageVersionResolverService;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.scope.NamedScopeHelper;
@@ -33,7 +33,7 @@ final class PsiFileValidator
 	public static boolean isScannable(
 		@Nullable final PsiFile psiFile,
 		@NotNull final Optional<Module> optModule,
-		@NotNull final PluginConfigurationManager pluginConfig)
+		@NotNull final PluginConfiguration pluginConfig)
 	{
 		return psiFile != null
 			&& psiFile.isValid()
@@ -53,9 +53,9 @@ final class PsiFileValidator
 	
 	private static boolean isValidFileType(
 		final PsiFile psiFile,
-		final PluginConfigurationManager pluginConfig)
+		final PluginConfiguration pluginConfig)
 	{
-		return !pluginConfig.getCurrent().getScanScope().includeOnlySupportedSources()
+		return !pluginConfig.getScanScope().includeOnlySupportedSources()
 			|| ApplicationManager.getApplication()
 			.getService(LanguageVersionResolverService.class)
 			.isFileSupportedByAnyResolve(psiFile);
@@ -63,9 +63,9 @@ final class PsiFileValidator
 	
 	private static boolean isScannableIfTest(
 		final PsiFile psiFile,
-		final PluginConfigurationManager pluginConfig)
+		final PluginConfiguration pluginConfig)
 	{
-		return pluginConfig.getCurrent().getScanScope().includeTestClasses()
+		return pluginConfig.getScanScope().includeTestClasses()
 			|| !isTestClass(psiFile);
 	}
 	
@@ -76,14 +76,14 @@ final class PsiFileValidator
 	
 	private static boolean isInSource(
 		@NotNull final PsiFile psiFile,
-		@NotNull final PluginConfigurationManager pluginConfig)
+		@NotNull final PluginConfiguration pluginConfig)
 	{
-		final boolean shouldBeScanned = pluginConfig.getCurrent().getScanScope() == ScanScope.EVERYTHING
+		final boolean shouldBeScanned = pluginConfig.getScanScope() == ScanScope.EVERYTHING
 			|| psiFile.getVirtualFile() != null
 			&& ProjectFileIndex.getInstance(psiFile.getProject()).isInSourceContent(psiFile.getVirtualFile());
 		return shouldBeScanned && isInNamedScopeIfPresent(
 			psiFile,
-			pluginConfig.getCurrent().getActiveLocations());
+			pluginConfig.getActiveLocations());
 	}
 	
 	/**

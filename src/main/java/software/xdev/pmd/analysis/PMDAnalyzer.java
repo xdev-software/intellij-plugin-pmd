@@ -6,10 +6,16 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -32,9 +38,11 @@ import net.sourceforge.pmd.PmdAnalysis;
 import net.sourceforge.pmd.lang.Language;
 import net.sourceforge.pmd.lang.LanguageVersion;
 import net.sourceforge.pmd.lang.document.TextFile;
+import net.sourceforge.pmd.lang.rule.RuleSet;
 import net.sourceforge.pmd.reporting.FileAnalysisListener;
 import net.sourceforge.pmd.reporting.GlobalAnalysisListener;
 import net.sourceforge.pmd.reporting.Report;
+import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
 import software.xdev.pmd.langversion.ManagedLanguageVersionResolver;
 import software.xdev.pmd.model.config.ConfigurationLocation;
@@ -44,31 +52,35 @@ public class PMDAnalyzer implements Disposable
 {
 	private static final Logger LOG = Logger.getInstance(PMDAnalyzer.class);
 	
+	private static final ExecutorService RULESET_LOADER_SERVICE = Executors.newThreadPerTaskExecutor(Thread.ofVirtual()
+		.name("RuleSetLoader", 0)
+		.factory());
+	
 	private final Project project;
 	
-	private Path cacheFilePath;
-	private String cacheFile;
+	private final Map<Optional<Module>, CacheFile> cacheFiles = Collections.synchronizedMap(new HashMap<>());
 	
 	public PMDAnalyzer(final Project project)
 	{
 		this.project = project;
 	}
 	
-	private String cacheFile()
+	private String cacheFile(final Optional<Module> optModule)
 	{
-		if(this.cacheFile == null)
-		{
-			try
-			{
-				this.cacheFilePath = Files.createTempFile("pmd-intellij-cache", ".cache");
-				this.cacheFile = this.cacheFilePath.toAbsolutePath().toString();
-			}
-			catch(final IOException ioex)
-			{
-				throw new UncheckedIOException(ioex);
-			}
-		}
-		return this.cacheFile;
+		return this.cacheFiles.computeIfAbsent(
+				optModule,
+				ignored -> {
+					try
+					{
+						final Path path = Files.createTempFile("pmd-intellij-cache", ".cache");
+						return new CacheFile(path, path.toAbsolutePath().toString());
+					}
+					catch(final IOException e)
+					{
+						throw new UncheckedIOException(e);
+					}
+				})
+			.absolutePath();
 	}
 	
 	public PMDAnalysisResult analyze(
@@ -83,6 +95,15 @@ public class PMDAnalyzer implements Disposable
 		}
 		
 		final long startMs = System.currentTimeMillis();
+		
+		// Load ruleset - if required - async in background
+		final CompletableFuture<List<RuleSet>> cfLoadRuleSetsAsync =
+			CompletableFuture.supplyAsync(
+				() -> configurationLocations.stream()
+					.map(ConfigurationLocation::getOrRefreshCachedRuleSet)
+					.filter(Objects::nonNull)
+					.toList(),
+				RULESET_LOADER_SERVICE);
 		
 		final List<PsiFile> applicableFiles = this.determineApplicableFiles(optModule, filesToScan, progressIndicator);
 		
@@ -101,11 +122,8 @@ public class PMDAnalyzer implements Disposable
 		pmdConfig.prependAuxClasspath(this.getFullClassPathFor(optModule
 			.map(List::of) // TODO Maybe resolve "dependency" modules
 			.orElseGet(() -> List.of(ModuleManager.getInstance(this.project).getModules()))));
-		pmdConfig.setRuleSets(configurationLocations.stream()
-			.map(ConfigurationLocation::getLocation)
-			.toList());
 		// TODO config
-		pmdConfig.setAnalysisCacheLocation(this.cacheFile());
+		pmdConfig.setAnalysisCacheLocation(this.cacheFile(optModule));
 		// TODO Thread config
 		// TODO Suppressed
 		
@@ -119,6 +137,9 @@ public class PMDAnalyzer implements Disposable
 		final Report report;
 		try(final PmdAnalysis pmd = PmdAnalysis.create(pmdConfig))
 		{
+			// Prevent ruleset parsing
+			pmd.addRuleSets(cfLoadRuleSetsAsync.join());
+			
 			ideFiles.forEach(pmd.files()::addFile);
 			
 			progressIndicator.checkCanceled();
@@ -189,6 +210,9 @@ public class PMDAnalyzer implements Disposable
 		final int totalFiles = filesToScan.size();
 		final AtomicInteger counter = new AtomicInteger(0);
 		
+		final PluginConfiguration pluginConfiguration =
+			this.project.getService(PluginConfigurationManager.class).getCurrent();
+		
 		final List<PsiFile> files = ReadAction.compute(() -> filesToScan.stream()
 			.filter(file -> {
 				progressIndicator.setFraction((double)counter.incrementAndGet() / totalFiles);
@@ -197,7 +221,7 @@ public class PMDAnalyzer implements Disposable
 				return PsiFileValidator.isScannable(
 					file,
 					optModule,
-					this.project.getService(PluginConfigurationManager.class));
+					pluginConfiguration);
 			})
 			.toList());
 		
@@ -254,18 +278,25 @@ public class PMDAnalyzer implements Disposable
 	@Override
 	public void dispose()
 	{
-		if(this.cacheFilePath != null)
-		{
-			try
-			{
-				Files.deleteIfExists(this.cacheFilePath);
-			}
-			catch(final IOException ioe)
-			{
-				LOG.warn("Failed to delete cache file", ioe);
-			}
-			this.cacheFilePath = null;
-		}
-		this.cacheFile = null;
+		this.cacheFiles.values()
+			.stream()
+			.map(CacheFile::path)
+			.forEach(f -> {
+				try
+				{
+					Files.deleteIfExists(f);
+				}
+				catch(final IOException ioe)
+				{
+					LOG.warn("Failed to delete cache file", ioe);
+				}
+			});
+		this.cacheFiles.clear();
+	}
+	
+	record CacheFile(
+		Path path,
+		String absolutePath)
+	{
 	}
 }

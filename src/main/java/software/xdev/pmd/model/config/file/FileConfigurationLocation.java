@@ -3,15 +3,19 @@ package software.xdev.pmd.model.config.file;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.project.Project;
 
+import net.sourceforge.pmd.lang.rule.RuleSet;
+import net.sourceforge.pmd.lang.rule.RuleSetLoader;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.config.ConfigurationType;
-import software.xdev.pmd.model.config.PMDRuleSetValidator;
 import software.xdev.pmd.util.io.ProjectFilePaths;
 
 
@@ -20,11 +24,9 @@ import software.xdev.pmd.util.io.ProjectFilePaths;
  */
 public class FileConfigurationLocation extends ConfigurationLocation
 {
-	/**
-	 * Create a new file configuration.
-	 *
-	 * @param project the project.
-	 */
+	private long lastLoadedRuleSetMs;
+	private Instant lastModifiedFileTime;
+	
 	public FileConfigurationLocation(
 		@NotNull final Project project,
 		@NotNull final String id)
@@ -73,10 +75,43 @@ public class FileConfigurationLocation extends ConfigurationLocation
 		super.setLocation(this.projectFilePaths().tokenise(location));
 	}
 	
-	@Override
-	public void validate() throws IOException
+	protected Path getLocationPath()
 	{
-		PMDRuleSetValidator.validateOrThrow(new String(Files.readAllBytes(Paths.get(this.getLocation()))));
+		return Paths.get(this.getLocation());
+	}
+	
+	@Nullable
+	protected Instant lastModifiedTimeFromLocation()
+	{
+		try
+		{
+			return Files.getLastModifiedTime(this.getLocationPath()).toInstant();
+		}
+		catch(final IOException e)
+		{
+			return null;
+		}
+	}
+	
+	@Override
+	protected synchronized RuleSet loadRuleSet() throws IOException
+	{
+		final RuleSet ruleSet = new RuleSetLoader().loadFromString(
+			this.getLocation(),
+			new String(Files.readAllBytes(this.getLocationPath())));
+		this.lastLoadedRuleSetMs = System.currentTimeMillis();
+		this.lastModifiedFileTime = this.lastModifiedTimeFromLocation();
+		return ruleSet;
+	}
+	
+	@Override
+	protected boolean shouldReloadRuleSet()
+	{
+		// Check if recently checked
+		return System.currentTimeMillis() - this.lastLoadedRuleSetMs >= 10 * 1000
+			// Check if file was modified
+			&& (this.lastModifiedFileTime == null
+			|| !this.lastModifiedFileTime.equals(this.lastModifiedTimeFromLocation()));
 	}
 	
 	@NotNull

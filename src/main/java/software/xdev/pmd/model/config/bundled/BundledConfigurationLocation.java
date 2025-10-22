@@ -5,6 +5,8 @@ import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.project.Project;
 
+import net.sourceforge.pmd.lang.rule.RuleSet;
+import net.sourceforge.pmd.lang.rule.RuleSetLoader;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.config.ConfigurationType;
 
@@ -47,6 +49,18 @@ public class BundledConfigurationLocation extends ConfigurationLocation
 	public void validate()
 	{
 		// always valid
+	}
+	
+	@Override
+	protected synchronized RuleSet loadRuleSet()
+	{
+		return new RuleSetLoader().loadFromResource(this.getLocation());
+	}
+	
+	@Override
+	protected boolean shouldReloadRuleSet()
+	{
+		return false;
 	}
 	
 	@Override

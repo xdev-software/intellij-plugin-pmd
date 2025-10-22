@@ -8,11 +8,13 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.packageDependencies.DependencyValidationManager;
 import com.intellij.psi.search.scope.packageSet.NamedScope;
 import com.intellij.psi.search.scope.packageSet.NamedScopeManager;
 
+import net.sourceforge.pmd.lang.rule.RuleSet;
 import software.xdev.pmd.model.config.bundled.BundledConfigurationLocation;
 import software.xdev.pmd.model.scope.NamedScopeHelper;
 
@@ -26,12 +28,16 @@ import software.xdev.pmd.model.scope.NamedScopeHelper;
  */
 public abstract class ConfigurationLocation implements Cloneable, Comparable<ConfigurationLocation>
 {
+	protected final Logger logger;
+	
 	private final String id;
 	private final ConfigurationType type;
 	private final Project project;
 	private String location;
 	private String description;
 	private NamedScope namedScope;
+	
+	protected RuleSet cachedRuleSet;
 	
 	protected ConfigurationLocation(
 		@NotNull final String id,
@@ -43,6 +49,8 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 		this.project = project;
 		this.namedScope = NamedScopeHelper.getDefaultScope(project);
 		this.initializeFutureScopeChangeHandling();
+		
+		this.logger = Logger.getInstance(this.getClass());
 	}
 	
 	/**
@@ -92,12 +100,12 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 		return this.type;
 	}
 	
-	public synchronized String getLocation()
+	public String getLocation()
 	{
 		return this.location;
 	}
 	
-	public final synchronized String getRawLocation()
+	public String getRawLocation()
 	{
 		return this.location;
 	}
@@ -146,7 +154,37 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 		return !this.equals(configurationLocation);
 	}
 	
-	public abstract void validate() throws Exception;
+	public void validate() throws Exception
+	{
+		final RuleSet ruleSet = this.loadRuleSet();
+		if(ruleSet.getRules().isEmpty())
+		{
+			throw new IllegalStateException("No rules detected");
+		}
+		this.cachedRuleSet = ruleSet;
+	}
+	
+	protected abstract RuleSet loadRuleSet() throws Exception;
+	
+	protected abstract boolean shouldReloadRuleSet();
+	
+	@Nullable
+	public synchronized RuleSet getOrRefreshCachedRuleSet()
+	{
+		if(this.cachedRuleSet == null || this.shouldReloadRuleSet())
+		{
+			try
+			{
+				this.cachedRuleSet = this.loadRuleSet();
+			}
+			catch(final Exception ex)
+			{
+				this.logger.error("Failed to get RuleSet", ex);
+				this.cachedRuleSet = null;
+			}
+		}
+		return this.cachedRuleSet;
+	}
 	
 	@Override
 	public abstract Object clone();
