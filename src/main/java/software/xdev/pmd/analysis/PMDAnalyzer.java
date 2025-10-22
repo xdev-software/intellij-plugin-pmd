@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,6 +60,8 @@ public class PMDAnalyzer implements Disposable
 	private final Project project;
 	
 	private final Map<Optional<Module>, CacheFile> cacheFiles = Collections.synchronizedMap(new HashMap<>());
+	// Reuse classloader when path is the same
+	private final Map<String, ClassLoader> cachedAuxClassPathLoader = Collections.synchronizedMap(new WeakHashMap<>());
 	
 	public PMDAnalyzer(final Project project)
 	{
@@ -119,9 +122,17 @@ public class PMDAnalyzer implements Disposable
 		
 		final PMDConfiguration pmdConfig = new PMDConfiguration();
 		pmdConfig.setDefaultLanguageVersions(highestLanguageVersionAndFiles.keySet().stream().toList());
-		pmdConfig.prependAuxClasspath(this.getFullClassPathFor(optModule
+		
+		final String fullClassPathFor = this.getFullClassPathFor(optModule
 			.map(List::of) // TODO Maybe resolve "dependency" modules
-			.orElseGet(() -> List.of(ModuleManager.getInstance(this.project).getModules()))));
+			.orElseGet(() -> List.of(ModuleManager.getInstance(this.project).getModules())));
+		pmdConfig.setClassLoader(this.cachedAuxClassPathLoader.computeIfAbsent(
+			fullClassPathFor, classPath -> {
+				pmdConfig.prependAuxClasspath(classPath);
+				return pmdConfig.getClassLoader();
+			}));
+		
+		pmdConfig.prependAuxClasspath(fullClassPathFor);
 		// TODO config
 		pmdConfig.setAnalysisCacheLocation(this.cacheFile(optModule));
 		// TODO Thread config
