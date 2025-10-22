@@ -16,7 +16,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import software.xdev.pmd.langversion.LanguageVersionResolverService;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.config.ConfigurationType;
-import software.xdev.pmd.model.config.PMDBuiltInRulesFinder;
 
 
 public final class BundledConfig

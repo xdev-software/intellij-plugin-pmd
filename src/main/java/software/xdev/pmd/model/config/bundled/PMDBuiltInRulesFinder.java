@@ -1,4 +1,4 @@
-package software.xdev.pmd.model.config;
+package software.xdev.pmd.model.config.bundled;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
