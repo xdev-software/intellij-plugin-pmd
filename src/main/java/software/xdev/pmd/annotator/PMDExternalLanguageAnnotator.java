@@ -1,6 +1,8 @@
 package software.xdev.pmd.annotator;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -22,7 +24,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.project.DefaultProjectFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
@@ -33,6 +34,7 @@ import net.sourceforge.pmd.reporting.RuleViolation;
 import software.xdev.pmd.analysis.PMDAnalysisResult;
 import software.xdev.pmd.analysis.PMDAnalyzer;
 import software.xdev.pmd.config.ConfigurationLocationSource;
+import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
 import software.xdev.pmd.util.Notifications;
 
 
@@ -40,6 +42,9 @@ public class PMDExternalLanguageAnnotator
 	extends ExternalAnnotator<PMDExternalLanguageAnnotator.FileInfo, PMDExternalLanguageAnnotator.PMDAnnotations>
 {
 	private static final Logger LOG = Logger.getInstance(PMDExternalLanguageAnnotator.class);
+	
+	private static final Map<MarkdownCacheKey, String> MARKDOWN_CACHE =
+		Collections.synchronizedMap(new SoftHashMap<>());
 	
 	@Nullable
 	@Override
@@ -110,6 +115,7 @@ public class PMDExternalLanguageAnnotator
 		final InspectionManager inspectionManager = InspectionManager.getInstance(psiFile.getProject());
 		
 		final Document document = annotationResult.document();
+		
 		for(final RuleViolation violation : violations)
 		{
 			final int startLineOffset = document.getLineStartOffset(violation.getBeginLine() - 1);
@@ -137,9 +143,9 @@ public class PMDExternalLanguageAnnotator
 							+ violation.getDescription()
 							+ "</p>"
 							+ "<p>"
-							+ DocMarkdownToHtmlConverter.convert(
-							DefaultProjectFactory.getInstance().getDefaultProject(),
-							rule.getDescription())
+							+ MARKDOWN_CACHE.computeIfAbsent(
+							new MarkdownCacheKey(psiFile.getProject(), rule.getDescription()),
+							key -> DocMarkdownToHtmlConverter.convert(key.project(), key.markdown()))
 							+ "</p>")
 					.range(range)
 					.needsUpdateOnTyping(true);
@@ -200,6 +206,11 @@ public class PMDExternalLanguageAnnotator
 	
 	
 	public record PMDAnnotations(PMDAnalysisResult analysisResult, Document document)
+	{
+	}
+	
+	
+	record MarkdownCacheKey(Project project, String markdown)
 	{
 	}
 }

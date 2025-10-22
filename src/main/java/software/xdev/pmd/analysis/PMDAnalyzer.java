@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -45,6 +44,7 @@ import net.sourceforge.pmd.reporting.GlobalAnalysisListener;
 import net.sourceforge.pmd.reporting.Report;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
+import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
 import software.xdev.pmd.langversion.ManagedLanguageVersionResolver;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 
@@ -61,7 +61,8 @@ public class PMDAnalyzer implements Disposable
 	
 	private final Map<Optional<Module>, CacheFile> cacheFiles = Collections.synchronizedMap(new HashMap<>());
 	// Reuse classloader when path is the same
-	private final Map<String, ClassLoader> cachedAuxClassPathLoader = Collections.synchronizedMap(new WeakHashMap<>());
+	private final Map<String, ClassLoader> cachedAuxClassPathLoader =
+		Collections.synchronizedMap(new SoftHashMap<>());
 	
 	public PMDAnalyzer(final Project project)
 	{
@@ -124,7 +125,7 @@ public class PMDAnalyzer implements Disposable
 		pmdConfig.setDefaultLanguageVersions(highestLanguageVersionAndFiles.keySet().stream().toList());
 		
 		final String fullClassPathFor = this.getFullClassPathFor(optModule
-			.map(List::of) // TODO Maybe resolve "dependency" modules
+			.map(List::of)
 			.orElseGet(() -> List.of(ModuleManager.getInstance(this.project).getModules())));
 		pmdConfig.setClassLoader(this.cachedAuxClassPathLoader.computeIfAbsent(
 			fullClassPathFor, classPath -> {
