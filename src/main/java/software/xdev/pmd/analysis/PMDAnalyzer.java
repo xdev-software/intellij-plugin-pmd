@@ -132,8 +132,6 @@ public class PMDAnalyzer implements Disposable
 				pmdConfig.prependAuxClasspath(classPath);
 				return pmdConfig.getClassLoader();
 			}));
-		
-		pmdConfig.prependAuxClasspath(fullClassPathFor);
 		// TODO config
 		pmdConfig.setAnalysisCacheLocation(this.cacheFile(optModule));
 		// TODO Thread config
