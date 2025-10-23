@@ -107,7 +107,7 @@ public class ZipFileFingerprinter implements ClasspathEntryFingerprinter
 				
 				// IMPROVEMENT: DO NOT UPDATE CHECKSUM FOR EACH SINGLE FILE
 				// AGGREGATE FILES AND UPDATE IT ONE TIME ONLY
-				final ByteBuffer buffer = ByteBuffer.allocate(4 * meaningfulEntries.size()); // Size of an int
+				final ByteBuffer buffer = ByteBuffer.allocate(4 * meaningfulEntries.size());
 				int counter = 0;
 				for(final ZipEntry zipEntry : meaningfulEntries)
 				{
