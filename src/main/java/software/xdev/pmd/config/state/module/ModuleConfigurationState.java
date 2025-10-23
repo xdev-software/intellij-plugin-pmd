@@ -1,4 +1,4 @@
-package software.xdev.pmd.config;
+package software.xdev.pmd.config.state.module;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +20,7 @@ import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.Tag;
 import com.intellij.util.xmlb.annotations.XCollection;
 
+import software.xdev.pmd.config.PluginConfigurationManager;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 
 
@@ -78,7 +79,7 @@ public final class ModuleConfigurationState
 	
 	private List<ConfigurationLocation> configurationLocations()
 	{
-		return new ArrayList<>(this.configurationManager().getCurrent().getLocations());
+		return new ArrayList<>(this.configurationManager().getCurrent().locations());
 	}
 	
 	@Override

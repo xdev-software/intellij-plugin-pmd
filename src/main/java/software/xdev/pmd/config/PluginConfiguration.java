@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
 
-import net.jcip.annotations.Immutable;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.scope.ScanScope;
 
@@ -19,19 +18,18 @@ import software.xdev.pmd.model.scope.ScanScope;
  * Represents the entire persistent plugin configuration on project level as an immutable object. This is intended to be
  * a simple DTO without any business logic.
  */
-@Immutable
-public class PluginConfiguration
+public record PluginConfiguration(
+	ScanScope scanScope,
+	boolean scrollToSource, // TODO
+	SortedSet<ConfigurationLocation> locations,
+	SortedSet<String> activeLocationIds
+)
 {
-	private final ScanScope scanScope;
-	private final boolean scrollToSource;
-	private final SortedSet<ConfigurationLocation> locations;
-	private final SortedSet<String> activeLocationIds;
-	
-	PluginConfiguration(
-		@NotNull final ScanScope scanScope,
+	public PluginConfiguration(
+		final ScanScope scanScope,
 		final boolean scrollToSource,
-		@NotNull final SortedSet<ConfigurationLocation> locations,
-		@NotNull final SortedSet<String> activeLocationIds)
+		final SortedSet<ConfigurationLocation> locations,
+		final SortedSet<String> activeLocationIds)
 	{
 		this.scanScope = scanScope;
 		this.scrollToSource = scrollToSource;
@@ -42,23 +40,6 @@ public class PluginConfiguration
 	}
 	
 	@NotNull
-	public ScanScope getScanScope()
-	{
-		return this.scanScope;
-	}
-	
-	public boolean isScrollToSource()
-	{
-		return this.scrollToSource;
-	}
-	
-	@NotNull
-	public SortedSet<ConfigurationLocation> getLocations()
-	{
-		return this.locations;
-	}
-	
-	@NotNull
 	public Optional<ConfigurationLocation> getLocationById(@NotNull final String locationId)
 	{
 		return this.locations.stream()
@@ -66,15 +47,10 @@ public class PluginConfiguration
 			.findFirst();
 	}
 	
-	public SortedSet<String> getActiveLocationIds()
-	{
-		return this.activeLocationIds;
-	}
-	
 	@NotNull
 	public SortedSet<ConfigurationLocation> getActiveLocations()
 	{
-		return this.getActiveLocationIds().stream()
+		return this.activeLocationIds().stream()
 			.map(idToFind -> this.locations.stream()
 				.filter(candidate -> candidate.getId().equals(idToFind))
 				.findFirst())
@@ -102,33 +78,5 @@ public class PluginConfiguration
 		}
 		
 		return this.locations.size() == other.locations.size();
-	}
-	
-	@Override
-	public boolean equals(final Object other)
-	{
-		if(this == other)
-		{
-			return true;
-		}
-		if(other == null || this.getClass() != other.getClass())
-		{
-			return false;
-		}
-		final PluginConfiguration otherDto = (PluginConfiguration)other;
-		return Objects.equals(this.scanScope, otherDto.scanScope)
-			&& Objects.equals(this.scrollToSource, otherDto.scrollToSource)
-			&& Objects.equals(this.locations, otherDto.locations)
-			&& Objects.equals(this.activeLocationIds, otherDto.activeLocationIds);
-	}
-	
-	@Override
-	public int hashCode()
-	{
-		return Objects.hash(
-			this.scanScope,
-			this.scrollToSource,
-			this.locations,
-			this.activeLocationIds);
 	}
 }

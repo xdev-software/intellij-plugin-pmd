@@ -14,9 +14,9 @@ import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleConfigurationEditor;
 
-import software.xdev.pmd.config.ModuleConfigurationState;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
+import software.xdev.pmd.config.state.module.ModuleConfigurationState;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 
 
@@ -105,7 +105,7 @@ public class PMDModuleConfigurationEditor implements ModuleConfigurationEditor
 		final ModuleConfigurationState moduleConfiguration = this.moduleConfigurationState();
 		final PluginConfiguration pluginConfiguration = this.pluginConfigurationManager().getCurrent();
 		
-		this.configPanel.setConfigurationLocations(new ArrayList<>(pluginConfiguration.getLocations()));
+		this.configPanel.setConfigurationLocations(new ArrayList<>(pluginConfiguration.locations()));
 		
 		if(moduleConfiguration.isExcluded())
 		{

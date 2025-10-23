@@ -55,7 +55,7 @@ final class PsiFileValidator
 		final PsiFile psiFile,
 		final PluginConfiguration pluginConfig)
 	{
-		return !pluginConfig.getScanScope().includeOnlySupportedSources()
+		return !pluginConfig.scanScope().includeOnlySupportedSources()
 			|| ApplicationManager.getApplication()
 			.getService(LanguageVersionResolverService.class)
 			.isFileSupportedByAnyResolve(psiFile);
@@ -65,7 +65,7 @@ final class PsiFileValidator
 		final PsiFile psiFile,
 		final PluginConfiguration pluginConfig)
 	{
-		return pluginConfig.getScanScope().includeTestClasses()
+		return pluginConfig.scanScope().includeTestClasses()
 			|| !isTestClass(psiFile);
 	}
 	
@@ -78,7 +78,7 @@ final class PsiFileValidator
 		@NotNull final PsiFile psiFile,
 		@NotNull final PluginConfiguration pluginConfig)
 	{
-		final boolean shouldBeScanned = pluginConfig.getScanScope() == ScanScope.EVERYTHING
+		final boolean shouldBeScanned = pluginConfig.scanScope() == ScanScope.EVERYTHING
 			|| psiFile.getVirtualFile() != null
 			&& ProjectFileIndex.getInstance(psiFile.getProject()).isInSourceContent(psiFile.getVirtualFile());
 		return shouldBeScanned && isInNamedScopeIfPresent(

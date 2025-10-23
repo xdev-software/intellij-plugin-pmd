@@ -142,8 +142,8 @@ public class PMDConfigPanel extends JPanel
 	
 	public void showPluginConfiguration(@NotNull final PluginConfiguration pluginConfig)
 	{
-		this.scopeDropdown.setSelectedItem(pluginConfig.getScanScope());
-		this.locationModel.setLocations(new ArrayList<>(pluginConfig.getLocations()));
+		this.scopeDropdown.setSelectedItem(pluginConfig.scanScope());
+		this.locationModel.setLocations(new ArrayList<>(pluginConfig.locations()));
 		this.locationModel.setActiveLocations(pluginConfig.getActiveLocations());
 	}
 	

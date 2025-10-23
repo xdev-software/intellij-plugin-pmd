@@ -24,7 +24,7 @@
 		<projectService serviceImplementation="software.xdev.pmd.model.config.ConfigurationLocationScopeProjectProxy"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.ConfigurationLocationSource"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.PluginConfigurationManager"/>
-		<projectService serviceImplementation="software.xdev.pmd.config.ProjectConfigurationState"/>
+		<projectService serviceImplementation="software.xdev.pmd.config.state.project.ProjectConfigurationState"/>
 		<projectService serviceImplementation="software.xdev.pmd.util.io.ProjectPaths"/>
 		<projectService serviceImplementation="software.xdev.pmd.util.io.ProjectFilePaths"/>
 
@@ -37,7 +37,7 @@
 		<moduleConfigurationEditorProvider
 				implementation="software.xdev.pmd.ui.config.module.PMDModuleConfigurationEditorProvider"/>
 
-		<moduleService serviceImplementation="software.xdev.pmd.config.ModuleConfigurationState"/>
+		<moduleService serviceImplementation="software.xdev.pmd.config.state.module.ModuleConfigurationState"/>
 
 		<!--		<toolWindow id="PMD_X"-->
 		<!--					anchor="bottom"-->

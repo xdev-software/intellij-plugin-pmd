@@ -91,6 +91,7 @@ public class PMDExternalLanguageAnnotator
 			Optional.ofNullable(module),
 			Set.of(file),
 			project.getService(ConfigurationLocationSource.class).getConfigurationLocations(module),
+			false,
 			progress
 		);
 	}

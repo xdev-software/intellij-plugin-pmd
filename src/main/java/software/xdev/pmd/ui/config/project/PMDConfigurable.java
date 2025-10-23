@@ -58,12 +58,7 @@ public class PMDConfigurable implements Configurable
 			.from(this.configPanel.getPluginConfiguration())
 			.build();
 		
-		final boolean result = !oldConfig.hasChangedFrom(newConfig);
-		if(LOG.isDebugEnabled())
-		{
-			LOG.debug("Has config changed? " + result);
-		}
-		return result;
+		return !oldConfig.hasChangedFrom(newConfig);
 	}
 	
 	@Override
@@ -72,7 +67,7 @@ public class PMDConfigurable implements Configurable
 		final PluginConfiguration newConfig = PluginConfigurationBuilder
 			.from(this.configPanel.getPluginConfiguration())
 			.build();
-		this.pluginConfigurationManager.setCurrent(newConfig, true);
+		this.pluginConfigurationManager.setCurrent(newConfig);
 	}
 	
 	@Override

@@ -53,10 +53,10 @@ public final class PluginConfigurationBuilder
 	public static PluginConfigurationBuilder from(@NotNull final PluginConfiguration source)
 	{
 		return new PluginConfigurationBuilder(
-			source.getScanScope(),
-			source.isScrollToSource(),
-			source.getLocations(),
-			source.getActiveLocationIds());
+			source.scanScope(),
+			source.scrollToSource(),
+			source.locations(),
+			source.activeLocationIds());
 	}
 	
 	public PluginConfigurationBuilder withActiveLocationIds(@NotNull final SortedSet<String> newActiveLocationIds)

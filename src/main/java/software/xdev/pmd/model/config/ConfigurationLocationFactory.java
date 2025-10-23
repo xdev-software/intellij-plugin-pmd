@@ -16,9 +16,6 @@ import software.xdev.pmd.model.config.file.FileConfigurationLocation;
 import software.xdev.pmd.model.config.file.RelativeFileConfigurationLocation;
 
 
-/**
- * Factory for configuration location objects.
- */
 public class ConfigurationLocationFactory
 {
 	private final Map<CreateCacheKey, ConfigurationLocation> createCache =

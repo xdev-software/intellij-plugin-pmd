@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 
+import software.xdev.pmd.config.state.module.ModuleConfigurationState;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 
 

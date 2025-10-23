@@ -91,6 +91,7 @@ public class PMDAnalyzer implements Disposable
 		final Optional<Module> optModule,
 		final Set<PsiFile> filesToScan,
 		final Collection<ConfigurationLocation> configurationLocations,
+		final boolean withSuppressedViolations,
 		final ProgressIndicator progressIndicator)
 	{
 		if(filesToScan.isEmpty())
@@ -135,7 +136,7 @@ public class PMDAnalyzer implements Disposable
 		// TODO config
 		pmdConfig.setAnalysisCacheLocation(this.cacheFile(optModule));
 		// TODO Thread config
-		// TODO Suppressed
+		pmdConfig.setShowSuppressedViolations(withSuppressedViolations);
 		
 		progressIndicator.setText("Preparing files for scan");
 		
