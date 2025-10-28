@@ -1,0 +1,33 @@
+package software.xdev.pmd.ui.toolwindow;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowFactory;
+import com.intellij.openapi.wm.ToolWindowType;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
+
+
+public class PMDToolWindowFactory implements ToolWindowFactory
+{
+	@Override
+	public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow)
+	{
+		// Run on UI Thread
+		ApplicationManager.getApplication().invokeLater(() -> {
+			final ContentManager contentManager = toolWindow.getContentManager();
+			
+			final Content currentFileContent = contentManager.getFactory().createContent(
+				new CurrentFilePanel(project),
+				"Current File",
+				false);
+			currentFileContent.setCloseable(false);
+			contentManager.addContent(currentFileContent);
+			
+			toolWindow.setType(ToolWindowType.DOCKED, null);
+		});
+	}
+}

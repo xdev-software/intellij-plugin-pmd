@@ -87,16 +87,16 @@ public class PMDAnalyzer implements Disposable
 			.absolutePath();
 	}
 	
+	// TODO Lock?
 	public PMDAnalysisResult analyze(
 		final Optional<Module> optModule,
 		final Set<PsiFile> filesToScan,
 		final Collection<ConfigurationLocation> configurationLocations,
-		final boolean withSuppressedViolations,
 		final ProgressIndicator progressIndicator)
 	{
 		if(filesToScan.isEmpty())
 		{
-			throw new IllegalArgumentException("No files to scan");
+			return PMDAnalysisResult.empty();
 		}
 		
 		final long startMs = System.currentTimeMillis();
@@ -111,6 +111,11 @@ public class PMDAnalyzer implements Disposable
 				RULESET_LOADER_SERVICE);
 		
 		final List<PsiFile> applicableFiles = this.determineApplicableFiles(optModule, filesToScan, progressIndicator);
+		if(applicableFiles.isEmpty())
+		{
+			cfLoadRuleSetsAsync.cancel(false);
+			return PMDAnalysisResult.empty();
+		}
 		
 		progressIndicator.checkCanceled();
 		progressIndicator.setText("Calculating languages and version");
@@ -136,7 +141,7 @@ public class PMDAnalyzer implements Disposable
 		// TODO config
 		pmdConfig.setAnalysisCacheLocation(this.cacheFile(optModule));
 		// TODO Thread config
-		pmdConfig.setShowSuppressedViolations(withSuppressedViolations);
+		pmdConfig.setShowSuppressedViolations(true);
 		
 		progressIndicator.setText("Preparing files for scan");
 		

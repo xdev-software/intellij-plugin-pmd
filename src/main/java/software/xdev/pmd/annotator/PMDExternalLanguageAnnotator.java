@@ -34,6 +34,7 @@ import net.sourceforge.pmd.reporting.RuleViolation;
 import software.xdev.pmd.analysis.PMDAnalysisResult;
 import software.xdev.pmd.analysis.PMDAnalyzer;
 import software.xdev.pmd.config.ConfigurationLocationSource;
+import software.xdev.pmd.currentfile.CurrentFileAnalysisManager;
 import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
 import software.xdev.pmd.util.Notifications;
 
@@ -64,11 +65,16 @@ public class PMDExternalLanguageAnnotator
 		final Project project = file.getProject();
 		try
 		{
+			final PMDAnalysisResult analysisResult = this.analyze(
+				file,
+				project,
+				ProgressManager.getInstance().getProgressIndicator());
+			
+			project.getService(CurrentFileAnalysisManager.class)
+				.reportAnalysisResult(file, this, analysisResult);
+			
 			return new PMDAnnotations(
-				this.analyze(
-					file,
-					project,
-					ProgressManager.getInstance().getProgressIndicator()),
+				analysisResult,
 				info.document());
 		}
 		catch(final Exception ex)
@@ -91,7 +97,6 @@ public class PMDExternalLanguageAnnotator
 			Optional.ofNullable(module),
 			Set.of(file),
 			project.getService(ConfigurationLocationSource.class).getConfigurationLocations(module),
-			false,
 			progress
 		);
 	}
