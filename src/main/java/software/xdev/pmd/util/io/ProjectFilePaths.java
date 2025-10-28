@@ -10,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 
 
@@ -20,27 +21,23 @@ public class ProjectFilePaths
 	private static final String IDEA_PROJECT_DIR = "$PROJECT_DIR$";
 	private static final String LEGACY_PROJECT_DIR = "$PRJ_DIR$";
 	
-	private final ProjectPaths projectPaths;
 	private final Project project;
 	private final char separatorChar;
 	private final Function<File, String> absolutePathOf;
 	
 	public ProjectFilePaths(@NotNull final Project project)
 	{
-		this(project, File.separatorChar, File::getAbsolutePath, project.getService(ProjectPaths.class));
+		this(project, File.separatorChar, File::getAbsolutePath);
 	}
 	
 	private ProjectFilePaths(
 		@NotNull final Project project,
 		final char separatorChar,
-		@NotNull final Function<File, String> absolutePathOf,
-		@NotNull final ProjectPaths projectPaths)
+		@NotNull final Function<File, String> absolutePathOf)
 	{
 		this.project = project;
 		this.separatorChar = separatorChar;
 		this.absolutePathOf = absolutePathOf;
-		
-		this.projectPaths = projectPaths;
 	}
 	
 	@Nullable
@@ -169,7 +166,7 @@ public class ProjectFilePaths
 	{
 		try
 		{
-			final VirtualFile baseDir = this.projectPaths.projectPath(this.project);
+			final VirtualFile baseDir = ProjectUtil.guessProjectDir(this.project);
 			if(baseDir == null)
 			{
 				return null;
