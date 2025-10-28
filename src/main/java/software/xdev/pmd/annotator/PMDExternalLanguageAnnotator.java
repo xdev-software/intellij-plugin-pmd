@@ -30,6 +30,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 
 import net.sourceforge.pmd.lang.rule.Rule;
+import net.sourceforge.pmd.reporting.Report;
 import net.sourceforge.pmd.reporting.RuleViolation;
 import software.xdev.pmd.analysis.PMDAnalysisResult;
 import software.xdev.pmd.analysis.PMDAnalyzer;
@@ -61,6 +62,15 @@ public class PMDExternalLanguageAnnotator
 	@Override
 	public PMDAnnotations doAnnotate(final FileInfo info)
 	{
+		if(this.workaround != null)
+		{
+			final PMDAnnotations workaroundReturn = this.workaround.check(info);
+			if(workaroundReturn != null)
+			{
+				return workaroundReturn;
+			}
+		}
+		
 		final PsiFile file = info.file();
 		final Project project = file.getProject();
 		try
@@ -73,9 +83,14 @@ public class PMDExternalLanguageAnnotator
 			project.getService(CurrentFileAnalysisManager.class)
 				.reportAnalysisResult(file, this, analysisResult);
 			
-			return new PMDAnnotations(
+			final PMDAnnotations annotations = new PMDAnnotations(
 				analysisResult,
 				info.document());
+			if(this.workaround != null)
+			{
+				this.workaround.store(info, annotations);
+			}
+			return annotations;
 		}
 		catch(final Exception ex)
 		{
@@ -112,7 +127,13 @@ public class PMDExternalLanguageAnnotator
 			return;
 		}
 		
-		final List<RuleViolation> violations = annotationResult.analysisResult().report().getViolations();
+		final Report report = annotationResult.analysisResult().report();
+		if(report == null)
+		{
+			return;
+		}
+		
+		final List<RuleViolation> violations = report.getViolations();
 		if(violations.isEmpty())
 		{
 			return;
@@ -216,7 +237,59 @@ public class PMDExternalLanguageAnnotator
 	}
 	
 	
+	// region Workaround
 	record MarkdownCacheKey(Project project, String markdown)
 	{
 	}
+	
+	
+	private FirstAnnotateRunFaultyDuplicationWorkaround workaround =
+		new FirstAnnotateRunFaultyDuplicationWorkaround(this::unbindWorkaround);
+	
+	private void unbindWorkaround()
+	{
+		this.workaround = null;
+	}
+	
+	// Due to some reason the initial analysis is sometimes executed twice
+	// The second analysis is faulty (PMD Problem?) and results in a suppressed violation not being detected properly
+	static class FirstAnnotateRunFaultyDuplicationWorkaround
+	{
+		private final Runnable unbind;
+		private FileInfo initialAnalysisFileInfo;
+		private PMDAnnotations firstRunResult;
+		
+		public FirstAnnotateRunFaultyDuplicationWorkaround(final Runnable unbind)
+		{
+			this.unbind = unbind;
+		}
+		
+		public PMDAnnotations check(final FileInfo info)
+		{
+			if(this.initialAnalysisFileInfo == null)
+			{
+				this.initialAnalysisFileInfo = info;
+			}
+			else if(this.initialAnalysisFileInfo.equals(info))
+			{
+				this.unbind.run();
+				// DETECTED DUPLICATE INITIAL FILE ANNOTATION -> ABORT IT
+				return this.firstRunResult;
+			}
+			else
+			{
+				this.unbind.run();
+			}
+			return null;
+		}
+		
+		public void store(final FileInfo fileInfo, final PMDAnnotations analysisResult)
+		{
+			if(fileInfo == this.initialAnalysisFileInfo)
+			{
+				this.firstRunResult = analysisResult;
+			}
+		}
+	}
+	// endregion
 }
