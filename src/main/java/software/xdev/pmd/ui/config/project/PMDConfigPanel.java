@@ -49,6 +49,7 @@ public class PMDConfigPanel extends JPanel
 	private static final int ACTIVE_COL_MAX_WIDTH = 55;
 	private static final int DESC_COL_MIN_WIDTH = 100;
 	private static final int DESC_COL_MAX_WIDTH = 200;
+	private static final int SCOPE_COL_MIN_WIDTH = 70;
 	private static final Dimension DECORATOR_DIMENSIONS = new Dimension(300, 50);
 	
 	private final JLabel scopeDropdownLabel = new JLabel("Scan Scope:");
@@ -101,6 +102,7 @@ public class PMDConfigPanel extends JPanel
 	{
 		this.setColumnWith(this.locationTable, 0, ACTIVE_COL_MIN_WIDTH, ACTIVE_COL_MAX_WIDTH, ACTIVE_COL_MAX_WIDTH);
 		this.setColumnWith(this.locationTable, 1, DESC_COL_MIN_WIDTH, DESC_COL_MAX_WIDTH, DESC_COL_MAX_WIDTH);
+		this.setColumnWith(this.locationTable, 3, SCOPE_COL_MIN_WIDTH, SCOPE_COL_MIN_WIDTH, null);
 		this.locationTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		this.locationTable.setStriped(true);
 		this.locationTable.getTableHeader().setReorderingAllowed(false);
