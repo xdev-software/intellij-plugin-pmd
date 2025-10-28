@@ -17,6 +17,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
@@ -59,6 +60,7 @@ public class PMDAnalyzer implements Disposable
 	
 	private final Project project;
 	
+	private final Map<Optional<Module>, ReentrantLock> locks = Collections.synchronizedMap(new HashMap<>());
 	private final Map<Optional<Module>, CacheFile> cacheFiles = Collections.synchronizedMap(new HashMap<>());
 	// Reuse classloader when path is the same
 	private final Map<String, ClassLoader> cachedAuxClassPathLoader =
@@ -87,7 +89,6 @@ public class PMDAnalyzer implements Disposable
 			.absolutePath();
 	}
 	
-	// TODO Lock?
 	public PMDAnalysisResult analyze(
 		final Optional<Module> optModule,
 		final Set<PsiFile> filesToScan,
@@ -99,6 +100,25 @@ public class PMDAnalyzer implements Disposable
 			return PMDAnalysisResult.empty();
 		}
 		
+		final ReentrantLock lock = this.locks.computeIfAbsent(optModule, ignored -> new ReentrantLock());
+		lock.lock();
+		
+		try
+		{
+			return this.analyzeInternal(optModule, filesToScan, configurationLocations, progressIndicator);
+		}
+		finally
+		{
+			lock.unlock();
+		}
+	}
+	
+	private PMDAnalysisResult analyzeInternal(
+		final Optional<Module> optModule,
+		final Set<PsiFile> filesToScan,
+		final Collection<ConfigurationLocation> configurationLocations,
+		final ProgressIndicator progressIndicator)
+	{
 		final long startMs = System.currentTimeMillis();
 		
 		// Load ruleset - if required - async in background
