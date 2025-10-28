@@ -1,13 +1,14 @@
 package software.xdev.pmd.currentfile;
 
-import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 import com.intellij.psi.PsiFile;
-
-import software.xdev.pmd.analysis.PMDAnalysisResult;
 
 
 public interface CurrentFileAnalysisListener
 {
-	void onAnalyzed(PsiFile psiFile, List<PMDAnalysisResult> results);
+	/**
+	 * Invoked when the current file was changed or analyzed
+	 */
+	void onChange(@Nullable PsiFile psiFile, CombinedPMDAnalysisResult results);
 }

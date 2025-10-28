@@ -159,15 +159,14 @@ public class CurrentFileAnalysisManager implements FileEditorManagerListener, Di
 	{
 		final ListenerPayload payload = this.getListenerPayload();
 		
-		ApplicationManager.getApplication().invokeLater(() ->
-			this.listeners.forEach(l -> l.onAnalyzed(payload.file(), payload.analysisResults())));
+		this.listeners.forEach(l -> l.onChange(payload.file(), payload.analysisResults()));
 	}
 	
 	public void explicitlyNotifyListener(@NotNull final CurrentFileAnalysisListener listener)
 	{
 		final ListenerPayload payload = this.getListenerPayload();
 		
-		listener.onAnalyzed(payload.file(), payload.analysisResults());
+		listener.onChange(payload.file(), payload.analysisResults());
 	}
 	
 	@NotNull
@@ -180,10 +179,10 @@ public class CurrentFileAnalysisManager implements FileEditorManagerListener, Di
 			// Create immutable list
 			.map(results -> results.values().stream().toList())
 			.orElseGet(List::of);
-		return new ListenerPayload(file, analysisResults);
+		return new ListenerPayload(file, CombinedPMDAnalysisResult.combine(analysisResults));
 	}
 	
-	private record ListenerPayload(PsiFile file, List<PMDAnalysisResult> analysisResults)
+	private record ListenerPayload(PsiFile file, CombinedPMDAnalysisResult analysisResults)
 	{
 	}
 	
