@@ -1,6 +1,5 @@
 package software.xdev.pmd.model.config.file;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -40,22 +39,6 @@ public class FileConfigurationLocation extends ConfigurationLocation
 		@NotNull final ConfigurationType configurationType)
 	{
 		super(id, configurationType, project);
-	}
-	
-	@Override
-	public File getBaseDir()
-	{
-		final String location = this.getLocation();
-		if(location != null)
-		{
-			final File locationFile = new File(location);
-			if(locationFile.exists())
-			{
-				return locationFile.getParentFile();
-			}
-		}
-		
-		return null;
 	}
 	
 	@Override

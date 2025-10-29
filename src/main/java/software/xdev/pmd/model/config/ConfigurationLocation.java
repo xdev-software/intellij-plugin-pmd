@@ -1,6 +1,5 @@
 package software.xdev.pmd.model.config;
 
-import java.io.File;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.Optional;
@@ -80,16 +79,6 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 		return this.project;
 	}
 	
-	/**
-	 * Get the base directory for this checkstyle file. If null then the project directory is assumed.
-	 *
-	 * @return the base directory for the file, or null if not applicable to the location type.
-	 */
-	public File getBaseDir()
-	{
-		return null;
-	}
-	
 	@NotNull
 	public String getId()
 	{
@@ -111,12 +100,12 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 		return this.location;
 	}
 	
-	public synchronized Optional<NamedScope> getNamedScope()
+	public Optional<NamedScope> getNamedScope()
 	{
 		return Optional.ofNullable(this.namedScope);
 	}
 	
-	public synchronized void setLocation(final String location)
+	public void setLocation(final String location)
 	{
 		if(location == null || location.isBlank())
 		{
@@ -130,27 +119,27 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 		}
 	}
 	
-	public synchronized String getDescription()
+	public String getDescription()
 	{
 		return this.description;
 	}
 	
-	public synchronized void setDescription(@Nullable final String description)
+	public void setDescription(@Nullable final String description)
 	{
 		this.description = description == null ? this.location : description;
 	}
 	
-	public synchronized void setNamedScope(final NamedScope namedScope)
+	public void setNamedScope(final NamedScope namedScope)
 	{
 		this.namedScope = namedScope;
 	}
 	
-	public synchronized boolean isRemovable()
+	public boolean isRemovable()
 	{
 		return true;
 	}
 	
-	public final synchronized boolean hasChangedFrom(final ConfigurationLocation configurationLocation)
+	public final boolean hasChangedFrom(final ConfigurationLocation configurationLocation)
 	{
 		return !this.equals(configurationLocation);
 	}
@@ -170,9 +159,18 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 	protected abstract boolean shouldReloadRuleSet();
 	
 	@Nullable
-	public synchronized RuleSet getOrRefreshCachedRuleSet()
+	public RuleSet getOrRefreshCachedRuleSet()
 	{
 		if(this.cachedRuleSet == null || this.shouldReloadRuleSet())
+		{
+			this.loadRuleSetSyncIfStillRequired(this.cachedRuleSet);
+		}
+		return this.cachedRuleSet;
+	}
+	
+	protected synchronized void loadRuleSetSyncIfStillRequired(final RuleSet expectedRuleSetWhenLoadingStarts)
+	{
+		if(this.cachedRuleSet == null || this.cachedRuleSet == expectedRuleSetWhenLoadingStarts)
 		{
 			try
 			{
@@ -184,7 +182,6 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 				this.cachedRuleSet = null;
 			}
 		}
-		return this.cachedRuleSet;
 	}
 	
 	@Override
@@ -223,7 +220,7 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 	}
 	
 	@Override
-	public final int compareTo(@NotNull final ConfigurationLocation other)
+	public int compareTo(@NotNull final ConfigurationLocation other)
 	{
 		int result;
 		// bundled configs go first, ordered by their position in the BundledConfig enum

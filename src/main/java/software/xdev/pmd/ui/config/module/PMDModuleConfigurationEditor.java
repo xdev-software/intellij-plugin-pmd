@@ -1,11 +1,10 @@
 package software.xdev.pmd.ui.config.module;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import javax.swing.JComponent;
 
@@ -114,13 +113,13 @@ public class PMDModuleConfigurationEditor implements ModuleConfigurationEditor
 		else if(moduleConfiguration.isUsingModuleConfiguration())
 		{
 			this.configPanel.setActiveLocations(moduleConfiguration.getActiveLocationIds().stream()
-				.map(id -> pluginConfiguration.getLocationById(id).orElse(null))
+				.map(pluginConfiguration::getLocationById)
 				.filter(Objects::nonNull)
-				.collect(Collectors.toList()));
+				.toList());
 		}
 		else
 		{
-			this.configPanel.setActiveLocations(Collections.emptyList());
+			this.configPanel.setActiveLocations(List.of());
 		}
 	}
 	

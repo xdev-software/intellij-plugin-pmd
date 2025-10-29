@@ -252,7 +252,7 @@ public class PMDExternalLanguageAnnotator
 	}
 	
 	// Due to some reason the initial analysis is sometimes executed twice
-	// The second analysis is faulty (PMD Problem?) and results in a suppressed violation not being detected properly
+	// The second analysis is faulty (PMD Problem?) and results in the suppressed violations not being reported
 	static class FirstAnnotateRunFaultyDuplicationWorkaround
 	{
 		private final Runnable unbind;

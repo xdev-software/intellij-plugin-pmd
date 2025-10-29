@@ -43,7 +43,7 @@ public class PMDModuleConfigPanel extends JPanel
 	private final JLabel configurationFilesLabel = new JLabel();
 	
 	private List<ConfigurationLocation> configurationLocations = new ArrayList<>();
-	private List<ConfigurationLocation> activeLocations = new ArrayList<>();
+	private List<ConfigurationLocation> activeLocations = List.of();
 	private boolean excluded;
 	
 	/**
@@ -165,11 +165,11 @@ public class PMDModuleConfigPanel extends JPanel
 	 */
 	public void setActiveLocations(final List<ConfigurationLocation> activeLocations)
 	{
-		this.activeLocations = Objects.requireNonNullElseGet(activeLocations, ArrayList::new);
+		this.activeLocations = Objects.requireNonNullElseGet(activeLocations, List::of);
 		
 		if(!activeLocations.isEmpty())
 		{
-			this.configurationFilesCombo.setSelectedItem(activeLocations.get(0));
+			this.configurationFilesCombo.setSelectedItem(activeLocations.getFirst());
 		}
 		else if(this.configurationFilesModel.getSize() > 0)
 		{

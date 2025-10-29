@@ -38,7 +38,7 @@ public class ConfigurationLocationSource
 			final PluginConfiguration configuration = this.configurationManager().getCurrent();
 			final TreeSet<ConfigurationLocation> moduleActiveConfigurations =
 				moduleConfiguration.getActiveLocationIds().stream()
-					.map(id -> configuration.getLocationById(id).orElse(null))
+					.map(configuration::getLocationById)
 					.filter(Objects::nonNull)
 					.collect(Collectors.toCollection(TreeSet::new));
 			if(!moduleActiveConfigurations.isEmpty())
