@@ -8,8 +8,8 @@ import com.google.common.base.Suppliers;
 import com.intellij.psi.PsiFile;
 
 import net.sourceforge.pmd.reporting.RuleViolation;
-import software.xdev.pmd.ui.toolwindow.FilePosition;
 import software.xdev.pmd.ui.toolwindow.node.has.HasPositionInFile;
+import software.xdev.pmd.ui.toolwindow.node.other.FilePosition;
 import software.xdev.pmd.ui.toolwindow.node.render.NodeCellRenderer;
 
 

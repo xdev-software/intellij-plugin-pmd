@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.toolwindow.node.error;
+package software.xdev.pmd.ui.toolwindow.node.other;
 
 import java.util.function.Supplier;
 

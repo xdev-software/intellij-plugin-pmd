@@ -4,9 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 import com.intellij.icons.AllIcons;
 
-import software.xdev.pmd.ui.toolwindow.node.error.NodeErrorAdapter;
 import software.xdev.pmd.ui.toolwindow.node.has.HasErrorAdapter;
 import software.xdev.pmd.ui.toolwindow.node.has.HasErrorCount;
+import software.xdev.pmd.ui.toolwindow.node.other.NodeErrorAdapter;
 import software.xdev.pmd.ui.toolwindow.node.render.NodeCellRenderer;
 
 

@@ -8,14 +8,17 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ReadAction;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
@@ -26,11 +29,16 @@ import software.xdev.pmd.currentfile.CurrentFileAnalysisListener;
 import software.xdev.pmd.currentfile.CurrentFileAnalysisManager;
 import software.xdev.pmd.ui.toolwindow.node.BaseNode;
 import software.xdev.pmd.ui.toolwindow.node.RootNode;
+import software.xdev.pmd.ui.toolwindow.node.has.HasPositionInFile;
+import software.xdev.pmd.ui.toolwindow.node.other.FilePosition;
 import software.xdev.pmd.ui.toolwindow.node.render.NodeCellRenderer;
 
 
 public class CurrentFilePanel extends SimpleToolWindowPanel implements CurrentFileAnalysisListener, Disposable
 {
+	private final Project project;
+	private final FileEditorManager fileEditorManager;
+	
 	private final CurrentFileAnalysisManager.ListenerDisposeAction fileAnalysisDisposeAction;
 	
 	private final Tree tree = new Tree();
@@ -43,9 +51,16 @@ public class CurrentFilePanel extends SimpleToolWindowPanel implements CurrentFi
 	{
 		super(false);
 		
+		this.project = project;
+		this.fileEditorManager = FileEditorManager.getInstance(project);
+		
 		this.tree.setCellRenderer(new NodeCellRenderer());
 		this.tree.setModel(this.treeModel);
 		this.tree.setRootVisible(false);
+		// https://docs.oracle.com/javase/tutorial/uiswing/events/treeselectionlistener.html
+		this.tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		this.tree.addTreeSelectionListener(ev ->
+			this.onTreeNodeSelected(this.tree.getLastSelectedPathComponent()));
 		
 		final JBScrollPane scrollPane = new JBScrollPane(this.tree);
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -68,7 +83,7 @@ public class CurrentFilePanel extends SimpleToolWindowPanel implements CurrentFi
 	@Override
 	public void onChange(@Nullable final PsiFile psiFile, final CombinedPMDAnalysisResult result)
 	{
-		ReadAction.run(() ->
+		ApplicationManager.getApplication().executeOnPooledThread(() ->
 		{
 			this.onChangeLock.lock();
 			try
@@ -98,6 +113,26 @@ public class CurrentFilePanel extends SimpleToolWindowPanel implements CurrentFi
 				this.onChangeLock.unlock();
 			}
 		});
+	}
+	
+	private void onTreeNodeSelected(final Object node)
+	{
+		if(node instanceof final HasPositionInFile hasPositionInFile)
+		{
+			final FilePosition filePosition = hasPositionInFile.filePositionSupplier().get();
+			final VirtualFile virtualFile = filePosition.psiFile().getVirtualFile();
+			if(virtualFile != null)
+			{
+				this.fileEditorManager.openTextEditor(
+					new OpenFileDescriptor(
+						this.project,
+						virtualFile,
+						filePosition.beginLineIndex(),
+						filePosition.beginColumnIndex()
+					),
+					true);
+			}
+		}
 	}
 	
 	private static void expandTreeNode(

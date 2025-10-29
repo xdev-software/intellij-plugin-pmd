@@ -5,9 +5,9 @@ import java.util.function.Supplier;
 import com.google.common.base.Suppliers;
 import com.intellij.psi.PsiFile;
 
-import software.xdev.pmd.ui.toolwindow.FilePosition;
-import software.xdev.pmd.ui.toolwindow.node.error.NodeErrorAdapter;
 import software.xdev.pmd.ui.toolwindow.node.has.HasPositionInFile;
+import software.xdev.pmd.ui.toolwindow.node.other.FilePosition;
+import software.xdev.pmd.ui.toolwindow.node.other.NodeErrorAdapter;
 
 
 public class ErrorInFileNode extends ErrorNode implements HasPositionInFile

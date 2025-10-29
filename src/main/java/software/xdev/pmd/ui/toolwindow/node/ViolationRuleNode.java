@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.sourceforge.pmd.lang.rule.Rule;
 import software.xdev.pmd.ui.toolwindow.node.has.HasViolationCount;
-import software.xdev.pmd.ui.toolwindow.node.icon.RulePriorityIcons;
+import software.xdev.pmd.ui.toolwindow.node.other.RulePriorityIcons;
 import software.xdev.pmd.ui.toolwindow.node.render.NodeCellRenderer;
 
 

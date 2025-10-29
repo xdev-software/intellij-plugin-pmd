@@ -9,12 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.intellij.psi.PsiFile;
 
 import net.sourceforge.pmd.lang.document.FileId;
 import net.sourceforge.pmd.lang.rule.Rule;
+import net.sourceforge.pmd.reporting.Report;
 import net.sourceforge.pmd.reporting.RuleViolation;
 import software.xdev.pmd.currentfile.CombinedPMDAnalysisResult;
 import software.xdev.pmd.ui.toolwindow.node.BaseNode;
@@ -27,7 +30,7 @@ import software.xdev.pmd.ui.toolwindow.node.SuppressedViolationNode;
 import software.xdev.pmd.ui.toolwindow.node.SuppressedViolationRuleNode;
 import software.xdev.pmd.ui.toolwindow.node.ViolationNode;
 import software.xdev.pmd.ui.toolwindow.node.ViolationRuleNode;
-import software.xdev.pmd.ui.toolwindow.node.error.NodeErrorAdapter;
+import software.xdev.pmd.ui.toolwindow.node.other.NodeErrorAdapter;
 
 
 public class TreeNodeHierarchyBuilder
@@ -82,57 +85,56 @@ public class TreeNodeHierarchyBuilder
 	
 	private void computeViolations()
 	{
-		final Map<PsiFile, Map<Rule, Set<ViolationNode>>> violations = new HashMap<>();
-		this.result.violations().forEach(ruleViolation -> {
-			final PsiFile psiFile = this.fileIdPsiFiles.get(ruleViolation.getFileId());
-			if(psiFile == null)
-			{
-				return;
-			}
-			
-			final ViolationNode violationNode = new ViolationNode(ruleViolation, psiFile);
-			violations.computeIfAbsent(psiFile, ignored -> new LinkedHashMap<>())
-				.computeIfAbsent(ruleViolation.getRule(), ignored -> new LinkedHashSet<>())
-				.add(violationNode);
-		});
-		
-		violations.forEach((file, ruleViolations) -> {
-			this.fileViolations.put(
-				this.fileOverViewNode(file), ruleViolations.entrySet()
-					.stream()
-					.sorted(Comparator.comparing(e -> e.getKey().getName()))
-					.collect(Collectors.toMap(
-						e -> new ViolationRuleNode(e.getKey()),
-						Map.Entry::getValue,
-						(l, r) -> r,
-						LinkedHashMap::new)));
-		});
+		this.abstractComputeViolations(
+			this.result.violations(),
+			Function.identity(),
+			ViolationNode::new,
+			ViolationRuleNode::new,
+			this.fileViolations);
 	}
 	
 	private void computeSuppressedViolations()
 	{
-		final Map<PsiFile, Map<Rule, Set<SuppressedViolationNode>>> violations = new HashMap<>();
-		this.result.suppressedRuleViolations().forEach(suppressedViolation -> {
-			final RuleViolation ruleViolation = suppressedViolation.getRuleViolation();
+		this.abstractComputeViolations(
+			this.result.suppressedRuleViolations(),
+			Report.SuppressedViolation::getRuleViolation,
+			SuppressedViolationNode::new,
+			SuppressedViolationRuleNode::new,
+			this.fileSuppressedViolations);
+	}
+	
+	private <V, RVN, VN> void abstractComputeViolations(
+		final List<V> resultViolations,
+		final Function<V, RuleViolation> extractRuleViolation,
+		final BiFunction<RuleViolation, PsiFile, VN> createViolationNode,
+		final Function<Rule, RVN> createRuleViolationNode,
+		final Map<FileOverviewNode, Map<RVN, Set<VN>>> outputMap)
+	{
+		final Map<PsiFile, Map<Rule, Set<VN>>> violations = new HashMap<>();
+		resultViolations.forEach(violation -> {
+			final RuleViolation ruleViolation = extractRuleViolation.apply(violation);
 			final PsiFile psiFile = this.fileIdPsiFiles.get(ruleViolation.getFileId());
 			if(psiFile == null)
 			{
 				return;
 			}
 			
-			final SuppressedViolationNode violationNode = new SuppressedViolationNode(ruleViolation, psiFile);
+			final VN violationNode = createViolationNode.apply(ruleViolation, psiFile);
 			violations.computeIfAbsent(psiFile, ignored -> new LinkedHashMap<>())
 				.computeIfAbsent(ruleViolation.getRule(), ignored -> new LinkedHashSet<>())
 				.add(violationNode);
 		});
 		
+		final Comparator<Map.Entry<Rule, Set<VN>>> comparator =
+			Comparator.<Map.Entry<Rule, Set<VN>>>comparingInt(e -> e.getKey().getPriority().getPriority())
+				.thenComparing(e -> e.getKey().getName());
 		violations.forEach((file, ruleViolations) -> {
-			this.fileSuppressedViolations.put(
+			outputMap.put(
 				this.fileOverViewNode(file), ruleViolations.entrySet()
 					.stream()
-					.sorted(Comparator.comparing(e -> e.getKey().getName()))
+					.sorted(comparator)
 					.collect(Collectors.toMap(
-						e -> new SuppressedViolationRuleNode(e.getKey()),
+						e -> createRuleViolationNode.apply(e.getKey()),
 						Map.Entry::getValue,
 						(l, r) -> r,
 						LinkedHashMap::new)));

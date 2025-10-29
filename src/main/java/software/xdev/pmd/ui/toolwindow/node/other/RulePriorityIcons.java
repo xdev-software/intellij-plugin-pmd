@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.toolwindow.node.icon;
+package software.xdev.pmd.ui.toolwindow.node.other;
 
 import java.util.EnumMap;
 import java.util.Map;

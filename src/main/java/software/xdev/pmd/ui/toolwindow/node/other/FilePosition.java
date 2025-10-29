@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.toolwindow;
+package software.xdev.pmd.ui.toolwindow.node.other;
 
 import com.intellij.psi.PsiFile;
 
@@ -20,7 +20,7 @@ public record FilePosition(
 	{
 		this(
 			psiFile,
-			Math.max(location.getStartLine() - 1, 0),
-			Math.max(location.getStartColumn() - 1, 0));
+			location.getStartLine() - 1,
+			location.getStartColumn() - 1);
 	}
 }

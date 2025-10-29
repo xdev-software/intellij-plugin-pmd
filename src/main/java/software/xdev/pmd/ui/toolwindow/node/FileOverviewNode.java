@@ -10,13 +10,14 @@ import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
 
 import com.google.common.base.Suppliers;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.psi.PsiFile;
 
-import software.xdev.pmd.ui.toolwindow.FilePosition;
 import software.xdev.pmd.ui.toolwindow.node.has.HasErrorCount;
 import software.xdev.pmd.ui.toolwindow.node.has.HasPositionInFile;
 import software.xdev.pmd.ui.toolwindow.node.has.HasSuppressedViolationCount;
 import software.xdev.pmd.ui.toolwindow.node.has.HasViolationCount;
+import software.xdev.pmd.ui.toolwindow.node.other.FilePosition;
 import software.xdev.pmd.ui.toolwindow.node.render.NodeCellRenderer;
 
 
@@ -35,7 +36,7 @@ public class FileOverviewNode extends BaseNode
 	{
 		this.psiFile = psiFile;
 		// Icon requires read access so let's get it here
-		this.icon = psiFile.getIcon(0);
+		this.icon = ReadAction.compute(() -> psiFile.getIcon(0));
 		
 		this.filePositionSupplier = Suppliers.memoize(() -> new FilePosition(psiFile));
 	}
