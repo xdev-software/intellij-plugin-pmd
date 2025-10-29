@@ -26,7 +26,9 @@
 		<projectService serviceImplementation="software.xdev.pmd.config.PluginConfigurationManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.currentfile.CurrentFileAnalysisManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.state.project.ProjectConfigurationState"/>
+		<projectService serviceImplementation="software.xdev.pmd.markdown.RuleDescriptionDocMarkdownToHtmlService"/>
 		<projectService serviceImplementation="software.xdev.pmd.util.io.ProjectFilePaths"/>
+		<projectService serviceImplementation="software.xdev.pmd.util.pmd.PMDLanguageFileTypeMapper"/>
 
 		<postStartupActivity implementation="software.xdev.pmd.startup.PMDStartupConfiguration"/>
 

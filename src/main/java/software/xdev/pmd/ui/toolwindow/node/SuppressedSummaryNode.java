@@ -4,11 +4,12 @@ import org.jetbrains.annotations.NotNull;
 
 import com.intellij.icons.AllIcons;
 
+import software.xdev.pmd.ui.toolwindow.node.has.HasDoNotExpandByDefault;
 import software.xdev.pmd.ui.toolwindow.node.has.HasSuppressedViolationCount;
 import software.xdev.pmd.ui.toolwindow.node.render.NodeCellRenderer;
 
 
-public class SuppressedSummaryNode extends BaseNode implements HasSuppressedViolationCount
+public class SuppressedSummaryNode extends BaseNode implements HasSuppressedViolationCount, HasDoNotExpandByDefault
 {
 	private int suppressedCount;
 	

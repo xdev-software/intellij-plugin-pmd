@@ -26,12 +26,12 @@ public interface NodeErrorAdapter
 	class ThrowableNodeErrorAdapter implements NodeErrorAdapter
 	{
 		private final String message;
-		private final Supplier<String> stackTraceSupplier;
+		private final Supplier<String> allDetails;
 		
 		public ThrowableNodeErrorAdapter(final Throwable throwable)
 		{
 			this.message = throwable.getClass().getName() + ": " + throwable.getMessage();
-			this.stackTraceSupplier = Suppliers.memoize(() -> ExceptionUtils.getStackTrace(throwable));
+			this.allDetails = Suppliers.memoize(() -> ExceptionUtils.getStackTrace(throwable));
 		}
 		
 		@Override
@@ -43,7 +43,7 @@ public interface NodeErrorAdapter
 		@Override
 		public String allDetails()
 		{
-			return this.message + "\n" + this.stackTraceSupplier.get();
+			return this.allDetails.get();
 		}
 	}
 	

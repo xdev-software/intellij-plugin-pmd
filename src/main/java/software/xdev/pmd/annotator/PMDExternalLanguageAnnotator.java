@@ -16,7 +16,6 @@ import com.intellij.lang.annotation.AnnotationBuilder;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.lang.annotation.HighlightSeverity;
-import com.intellij.markdown.utils.doc.DocMarkdownToHtmlConverter;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -37,6 +36,7 @@ import software.xdev.pmd.analysis.PMDAnalyzer;
 import software.xdev.pmd.config.ConfigurationLocationSource;
 import software.xdev.pmd.currentfile.CurrentFileAnalysisManager;
 import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
+import software.xdev.pmd.markdown.RuleDescriptionDocMarkdownToHtmlService;
 import software.xdev.pmd.util.Notifications;
 
 
@@ -139,7 +139,11 @@ public class PMDExternalLanguageAnnotator
 			return;
 		}
 		
-		final InspectionManager inspectionManager = InspectionManager.getInstance(psiFile.getProject());
+		final Project project = psiFile.getProject();
+		final InspectionManager inspectionManager = InspectionManager.getInstance(project);
+		final RuleDescriptionDocMarkdownToHtmlService
+			ruleDescriptionDocMarkdownToHtmlService =
+			project.getService(RuleDescriptionDocMarkdownToHtmlService.class);
 		
 		final Document document = annotationResult.document();
 		
@@ -170,9 +174,7 @@ public class PMDExternalLanguageAnnotator
 							+ violation.getDescription()
 							+ "</p>"
 							+ "<p>"
-							+ MARKDOWN_CACHE.computeIfAbsent(
-							new MarkdownCacheKey(psiFile.getProject(), rule.getDescription()),
-							key -> DocMarkdownToHtmlConverter.convert(key.project(), key.markdown()))
+							+ ruleDescriptionDocMarkdownToHtmlService.mdToHtml(rule.getDescription())
 							+ "</p>")
 					.range(range)
 					.needsUpdateOnTyping(true);

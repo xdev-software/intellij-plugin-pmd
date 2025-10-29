@@ -7,13 +7,15 @@ import org.jetbrains.annotations.NotNull;
 import com.google.common.base.Suppliers;
 import com.intellij.psi.PsiFile;
 
+import net.sourceforge.pmd.lang.rule.Rule;
 import net.sourceforge.pmd.reporting.RuleViolation;
 import software.xdev.pmd.ui.toolwindow.node.has.HasPositionInFile;
+import software.xdev.pmd.ui.toolwindow.node.has.HasRule;
 import software.xdev.pmd.ui.toolwindow.node.other.FilePosition;
 import software.xdev.pmd.ui.toolwindow.node.render.NodeCellRenderer;
 
 
-public abstract class BaseViolationNode extends BaseNode implements HasPositionInFile
+public abstract class BaseViolationNode extends BaseNode implements HasPositionInFile, HasRule
 {
 	protected final RuleViolation violation;
 	protected final Supplier<FilePosition> filePositionSupplier;
@@ -38,5 +40,11 @@ public abstract class BaseViolationNode extends BaseNode implements HasPositionI
 	public Supplier<FilePosition> filePositionSupplier()
 	{
 		return this.filePositionSupplier;
+	}
+	
+	@Override
+	public Rule getRule()
+	{
+		return this.violation.getRule();
 	}
 }

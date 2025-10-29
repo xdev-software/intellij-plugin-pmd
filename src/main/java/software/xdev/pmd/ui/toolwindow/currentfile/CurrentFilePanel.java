@@ -1,8 +1,8 @@
-package software.xdev.pmd.ui.toolwindow;
+package software.xdev.pmd.ui.toolwindow.currentfile;
 
+import java.awt.Component;
 import java.util.concurrent.locks.ReentrantLock;
 
-import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.tree.DefaultTreeModel;
@@ -22,14 +22,19 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.components.JBTextArea;
 import com.intellij.ui.treeStructure.Tree;
 
 import software.xdev.pmd.currentfile.CombinedPMDAnalysisResult;
 import software.xdev.pmd.currentfile.CurrentFileAnalysisListener;
 import software.xdev.pmd.currentfile.CurrentFileAnalysisManager;
+import software.xdev.pmd.ui.toolwindow.TreeNodeHierarchyBuilder;
 import software.xdev.pmd.ui.toolwindow.node.BaseNode;
 import software.xdev.pmd.ui.toolwindow.node.RootNode;
+import software.xdev.pmd.ui.toolwindow.node.has.HasDoNotExpandByDefault;
+import software.xdev.pmd.ui.toolwindow.node.has.HasErrorAdapter;
 import software.xdev.pmd.ui.toolwindow.node.has.HasPositionInFile;
+import software.xdev.pmd.ui.toolwindow.node.has.HasRule;
 import software.xdev.pmd.ui.toolwindow.node.other.FilePosition;
 import software.xdev.pmd.ui.toolwindow.node.render.NodeCellRenderer;
 
@@ -43,6 +48,7 @@ public class CurrentFilePanel extends SimpleToolWindowPanel implements CurrentFi
 	
 	private final Tree tree = new Tree();
 	private final DefaultTreeModel treeModel = new DefaultTreeModel(new RootNode());
+	private final OnePixelSplitter mainSplit = new OnePixelSplitter(false);
 	
 	private final ReentrantLock onChangeLock = new ReentrantLock();
 	
@@ -63,14 +69,10 @@ public class CurrentFilePanel extends SimpleToolWindowPanel implements CurrentFi
 			this.onTreeNodeSelected(this.tree.getLastSelectedPathComponent()));
 		
 		final JBScrollPane scrollPane = new JBScrollPane(this.tree);
-		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
 		
-		final OnePixelSplitter mainSplit = new OnePixelSplitter(false); // horizontal
-		mainSplit.setFirstComponent(scrollPane);
-		mainSplit.setSecondComponent(new JLabel("Hier könnte ihre RuleDescription oder Fehlermeldung stehen!"));
-		mainSplit.setProportion(0.7f);
-		this.add(mainSplit);
+		this.mainSplit.setFirstComponent(scrollPane);
+		this.mainSplit.setProportion(0.65f);
+		this.add(this.mainSplit);
 		
 		// Register listeners
 		final CurrentFileAnalysisManager service = project.getService(CurrentFileAnalysisManager.class);
@@ -101,7 +103,7 @@ public class CurrentFilePanel extends SimpleToolWindowPanel implements CurrentFi
 				ApplicationManager.getApplication().invokeLater(() ->
 				{
 					this.treeModel.setRoot(rootNode);
-					expandTreeNode(
+					defaultExpandTreeNode(
 						this.tree,
 						rootNode,
 						new TreePath(this.treeModel.getPathToRoot(rootNode)),
@@ -117,6 +119,7 @@ public class CurrentFilePanel extends SimpleToolWindowPanel implements CurrentFi
 	
 	private void onTreeNodeSelected(final Object node)
 	{
+		this.mainSplit.setSecondComponent(null);
 		if(node instanceof final HasPositionInFile hasPositionInFile)
 		{
 			final FilePosition filePosition = hasPositionInFile.filePositionSupplier().get();
@@ -133,9 +136,34 @@ public class CurrentFilePanel extends SimpleToolWindowPanel implements CurrentFi
 					true);
 			}
 		}
+		
+		final Component detailComponent = this.getDetailComponent(node);
+		this.mainSplit.setSecondComponent(detailComponent != null
+			? new JBScrollPane(
+			detailComponent,
+			ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+			ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
+			: null);
 	}
 	
-	private static void expandTreeNode(
+	private Component getDetailComponent(final Object node)
+	{
+		if(node instanceof final HasErrorAdapter hasErrorAdapter)
+		{
+			final String msg = hasErrorAdapter.errorAdapter().allDetails();
+			final JBTextArea textArea = new JBTextArea(msg);
+			textArea.setEditable(false);
+			
+			return textArea;
+		}
+		else if(node instanceof final HasRule hasRule)
+		{
+			return new RuleDetailPanel(this.project, hasRule.getRule());
+		}
+		return null;
+	}
+	
+	private static void defaultExpandTreeNode(
 		final JTree tree,
 		final TreeNode node,
 		final TreePath path,
@@ -151,7 +179,10 @@ public class CurrentFilePanel extends SimpleToolWindowPanel implements CurrentFi
 		for(int i = 0; i < node.getChildCount(); ++i)
 		{
 			final TreeNode childNode = node.getChildAt(i);
-			expandTreeNode(tree, childNode, path.pathByAddingChild(childNode), level - 1);
+			if(!(childNode instanceof HasDoNotExpandByDefault))
+			{
+				defaultExpandTreeNode(tree, childNode, path.pathByAddingChild(childNode), level - 1);
+			}
 		}
 	}
 	
