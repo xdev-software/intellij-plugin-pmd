@@ -20,19 +20,16 @@ import software.xdev.pmd.model.scope.ScanScope;
  */
 public record PluginConfiguration(
 	ScanScope scanScope,
-	boolean scrollToSource, // TODO
 	SortedSet<ConfigurationLocation> locations,
 	SortedSet<String> activeLocationIds
 )
 {
 	public PluginConfiguration(
 		final ScanScope scanScope,
-		final boolean scrollToSource,
 		final SortedSet<ConfigurationLocation> locations,
 		final SortedSet<String> activeLocationIds)
 	{
 		this.scanScope = scanScope;
-		this.scrollToSource = scrollToSource;
 		this.locations = Collections.unmodifiableSortedSet(locations);
 		this.activeLocationIds = activeLocationIds.stream()
 			.filter(Objects::nonNull)

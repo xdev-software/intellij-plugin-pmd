@@ -42,8 +42,6 @@ public class ProjectSettingsState
 	// Batch process modules?
 	@Tag
 	String scanScope;
-	@Tag
-	boolean scrollToSource;
 	@XCollection
 	List<String> activeLocationIds;
 	@MapAnnotation
@@ -56,7 +54,6 @@ public class ProjectSettingsState
 		projectSettings.serialisationVersion = "1";
 		
 		projectSettings.scanScope = currentPluginConfig.scanScope().name();
-		projectSettings.scrollToSource = currentPluginConfig.scrollToSource();
 		
 		projectSettings.activeLocationIds = new ArrayList<>(currentPluginConfig.activeLocationIds());
 		
@@ -85,7 +82,6 @@ public class ProjectSettingsState
 	{
 		return builder
 			.withScanScope(this.lookupScanScope())
-			.withScrollToSource(this.scrollToSource)
 			.withLocations(this.deserializeLocations(project))
 			.withActiveLocationIds(new TreeSet<>(requireNonNullElseGet(
 				this.activeLocationIds,
