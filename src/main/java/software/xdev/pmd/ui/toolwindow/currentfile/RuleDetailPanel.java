@@ -1,14 +1,19 @@
 package software.xdev.pmd.ui.toolwindow.currentfile;
 
-import java.awt.BorderLayout;
+import java.awt.Component;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultCaret;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.EditorSettings;
@@ -19,17 +24,24 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.ui.BrowserHyperlinkListener;
 import com.intellij.ui.HyperlinkLabel;
+import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBTabbedPane;
+import com.intellij.ui.components.panels.HorizontalLayout;
+import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.HTMLEditorKitBuilder;
 import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.SwingHelper;
 import com.intellij.util.ui.UIUtil;
 
+import net.sourceforge.pmd.lang.LanguageVersion;
 import net.sourceforge.pmd.lang.rule.Rule;
+import net.sourceforge.pmd.lang.rule.RulePriority;
+import net.sourceforge.pmd.lang.rule.RuleTargetSelector;
 import software.xdev.pmd.markdown.RuleDescriptionDocMarkdownToHtmlService;
+import software.xdev.pmd.ui.toolwindow.node.other.RulePriorityIcons;
 import software.xdev.pmd.util.pmd.PMDLanguageFileTypeMapper;
 
 
@@ -46,29 +58,10 @@ class RuleDetailPanel extends JBPanel<RuleDetailPanel>
 		this.project = project;
 		this.mdToHtmlService = project.getService(RuleDescriptionDocMarkdownToHtmlService.class);
 		
-		final JBPanel topPanel = new JBPanel(new BorderLayout());
-		this.add(topPanel);
-		
-		final JBLabel lblName = this.createLabel(rule.getName());
-		lblName.setFont(JBFont.h4().asBold());
-		
-		Optional.ofNullable(rule.getExternalInfoUrl())
-			.ifPresent(url -> {
-				final HyperlinkLabel externalInfo = new HyperlinkLabel("External Info");
-				externalInfo.setHyperlinkTarget(url);
-				topPanel.add(externalInfo, BorderLayout.LINE_END);
-			});
-		
-		topPanel.add(lblName, BorderLayout.LINE_START);
+		this.add(this.createTopPanel(rule));
 		
 		final JBLabel lblMessage = this.createLabel(rule.getMessage());
 		this.add(lblMessage);
-		
-		rule.getRuleSetName();
-		rule.getMinimumLanguageVersion();
-		rule.getMaximumLanguageVersion();
-		rule.getPriority();
-		rule.getExternalInfoUrl();
 		
 		final JBTabbedPane tabs = new JBTabbedPane();
 		Optional.ofNullable(rule.getDescription())
@@ -92,7 +85,42 @@ class RuleDetailPanel extends JBPanel<RuleDetailPanel>
 					this.createCodePanel(fileType, example)));
 		}
 		
+		tabs.addTab("Definition", this.createDefinitionTabContent(rule));
+		
 		this.add(tabs);
+	}
+	
+	private JBPanel<?> createTopPanel(final Rule rule)
+	{
+		final JBPanel<?> topPanel = new JBPanel<>(new HorizontalLayout(JBUI.scale(5)));
+		
+		final RulePriority priority = rule.getPriority();
+		
+		final JBLabel lblPriority = new JBLabel();
+		lblPriority.setToolTipText(priority.getName() + " (" + priority.getPriority() + ")");
+		lblPriority.setIcon(RulePriorityIcons.get(priority));
+		topPanel.add(lblPriority, HorizontalLayout.LEFT);
+		
+		final JBLabel lblName = this.createLabel(rule.getName());
+		lblName.setFont(JBFont.h4().asBold());
+		topPanel.add(lblName, HorizontalLayout.LEFT);
+		
+		if(rule.isDeprecated())
+		{
+			final JBLabel lblDeprecated = new JBLabel();
+			lblDeprecated.setToolTipText("Deprecated");
+			lblDeprecated.setIcon(AllIcons.Nodes.ErrorIntroduction);
+			topPanel.add(lblDeprecated, HorizontalLayout.LEFT);
+		}
+		
+		Optional.ofNullable(rule.getExternalInfoUrl())
+			.ifPresent(url -> {
+				final HyperlinkLabel externalInfo = new HyperlinkLabel("External info");
+				externalInfo.setHyperlinkTarget(url);
+				topPanel.add(externalInfo, HorizontalLayout.RIGHT);
+			});
+		
+		return topPanel;
 	}
 	
 	private JEditorPane createMarkdownPanel(final String markdown)
@@ -148,6 +176,59 @@ class RuleDetailPanel extends JBPanel<RuleDetailPanel>
 		));
 		
 		return viewer.getComponent();
+	}
+	
+	@SuppressWarnings("checkstyle:MagicNumber")
+	private Component createDefinitionTabContent(final Rule rule)
+	{
+		final DefaultTableModel defaultTableModel = new DefaultTableModel();
+		final JBTable table = new JBTable(defaultTableModel);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+		table.setStriped(true);
+		
+		defaultTableModel.addColumn("Attribute");
+		defaultTableModel.addColumn("Value");
+		
+		record MetaInfoTableEntry<T>(
+			String name,
+			Function<Rule, T> extractFromRule,
+			Function<T, String> format)
+		{
+			public static MetaInfoTableEntry<String> createForString(
+				final String name,
+				final Function<Rule, String> extractFromRule)
+			{
+				return new MetaInfoTableEntry<>(name, extractFromRule, Function.identity());
+			}
+			
+			public String formattedValue(final Rule rule)
+			{
+				final T value = this.extractFromRule().apply(rule);
+				if(value == null)
+				{
+					return "";
+				}
+				return this.format.apply(value);
+			}
+		}
+		
+		final Function<LanguageVersion, String> formatLangVersion =
+			languageVersion -> languageVersion.getLanguage().getName() + " " + languageVersion.getVersion();
+		Stream.of(
+			new MetaInfoTableEntry<>("Min. language version", Rule::getMinimumLanguageVersion, formatLangVersion),
+			new MetaInfoTableEntry<>("Max. language version", Rule::getMaximumLanguageVersion, formatLangVersion),
+			MetaInfoTableEntry.createForString("RuleSet", Rule::getRuleSetName),
+			MetaInfoTableEntry.createForString("Rule Class", Rule::getRuleClass),
+			new MetaInfoTableEntry<>("Target Selector", Rule::getTargetSelector, RuleTargetSelector::toString),
+			MetaInfoTableEntry.createForString("since", Rule::getSince)
+		).forEach(entry ->
+			defaultTableModel.addRow(new Object[]{entry.name(), entry.formattedValue(rule)}));
+		
+		table.getColumnModel().getColumn(0).setPreferredWidth(75);
+		table.getColumnModel().getColumn(1).setPreferredWidth(300);
+		
+		// ToolbarDecorator is required for correct table initialization?
+		return ToolbarDecorator.createDecorator(table).createPanel();
 	}
 	
 	private JBLabel createLabel(final String text)

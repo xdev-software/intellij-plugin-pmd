@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 
 import net.sourceforge.pmd.lang.rule.Rule;
 import software.xdev.pmd.ui.toolwindow.node.has.HasRule;
+import software.xdev.pmd.ui.toolwindow.node.other.RulePriorityIcons;
 import software.xdev.pmd.ui.toolwindow.node.render.NodeCellRenderer;
 
 
@@ -28,6 +29,7 @@ public abstract class BaseRuleNode extends BaseNode implements HasRule
 	@Override
 	public void render(@NotNull final NodeCellRenderer renderer)
 	{
+		renderer.setIcon(RulePriorityIcons.get(this.rule.getPriority()));
 		renderer.append(this.rule.getName() + " (" + this.count + "x)");
 	}
 	

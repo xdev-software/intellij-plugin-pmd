@@ -71,7 +71,7 @@ public class CurrentFilePanel extends SimpleToolWindowPanel implements CurrentFi
 		final JBScrollPane scrollPane = new JBScrollPane(this.tree);
 		
 		this.mainSplit.setFirstComponent(scrollPane);
-		this.mainSplit.setProportion(0.65f);
+		this.mainSplit.setProportion(0.6f);
 		this.add(this.mainSplit);
 		
 		// Register listeners
