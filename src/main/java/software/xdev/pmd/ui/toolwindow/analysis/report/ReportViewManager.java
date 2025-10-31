@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.toolwindow.report;
+package software.xdev.pmd.ui.toolwindow.analysis.report;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

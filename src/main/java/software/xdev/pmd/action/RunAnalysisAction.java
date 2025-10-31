@@ -36,7 +36,7 @@ import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
 import software.xdev.pmd.currentfile.CombinedPMDAnalysisResult;
 import software.xdev.pmd.model.scope.ScanScope;
-import software.xdev.pmd.ui.toolwindow.report.ReportViewManager;
+import software.xdev.pmd.ui.toolwindow.analysis.report.ReportViewManager;
 
 
 public class RunAnalysisAction extends AbstractAnAction

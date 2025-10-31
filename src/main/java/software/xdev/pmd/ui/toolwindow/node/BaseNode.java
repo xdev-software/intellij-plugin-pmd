@@ -9,10 +9,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.jetbrains.annotations.NotNull;
 
 import one.util.streamex.StreamEx;
+import software.xdev.pmd.ui.toolwindow.node.has.HasNavigatable;
 import software.xdev.pmd.ui.toolwindow.node.render.NodeCellRenderer;
 
 
-public abstract class BaseNode extends DefaultMutableTreeNode
+public abstract class BaseNode extends DefaultMutableTreeNode implements HasNavigatable
 {
 	public abstract void render(@NotNull NodeCellRenderer renderer);
 	

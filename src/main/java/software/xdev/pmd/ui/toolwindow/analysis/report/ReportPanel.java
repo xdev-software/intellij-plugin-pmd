@@ -1,9 +1,9 @@
-package software.xdev.pmd.ui.toolwindow.report;
+package software.xdev.pmd.ui.toolwindow.analysis.report;
 
 import com.intellij.openapi.project.Project;
 
 import software.xdev.pmd.currentfile.CombinedPMDAnalysisResult;
-import software.xdev.pmd.ui.toolwindow.AnalysisPanel;
+import software.xdev.pmd.ui.toolwindow.analysis.AnalysisPanel;
 
 
 public class ReportPanel extends AnalysisPanel

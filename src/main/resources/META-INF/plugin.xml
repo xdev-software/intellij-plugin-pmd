@@ -26,7 +26,7 @@
 		<projectService serviceImplementation="software.xdev.pmd.currentfile.CurrentFileAnalysisManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.state.project.ProjectConfigurationState"/>
 		<projectService serviceImplementation="software.xdev.pmd.markdown.RuleDescriptionDocMarkdownToHtmlService"/>
-		<projectService serviceImplementation="software.xdev.pmd.ui.toolwindow.report.ReportViewManager"/>
+		<projectService serviceImplementation="software.xdev.pmd.ui.toolwindow.analysis.report.ReportViewManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.util.io.ProjectFilePaths"/>
 		<projectService serviceImplementation="software.xdev.pmd.util.pmd.PMDLanguageFileTypeMapper"/>
 

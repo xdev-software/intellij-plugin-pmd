@@ -10,7 +10,7 @@ import com.intellij.openapi.wm.ToolWindowType;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 
-import software.xdev.pmd.ui.toolwindow.currentfile.CurrentFilePanel;
+import software.xdev.pmd.ui.toolwindow.analysis.currentfile.CurrentFilePanel;
 
 
 public class PMDToolWindowFactory implements ToolWindowFactory

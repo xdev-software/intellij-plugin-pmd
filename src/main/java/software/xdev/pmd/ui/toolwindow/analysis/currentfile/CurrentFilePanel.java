@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.toolwindow.currentfile;
+package software.xdev.pmd.ui.toolwindow.analysis.currentfile;
 
 import javax.swing.tree.TreePath;
 
@@ -11,7 +11,7 @@ import com.intellij.psi.PsiFile;
 import software.xdev.pmd.currentfile.CombinedPMDAnalysisResult;
 import software.xdev.pmd.currentfile.CurrentFileAnalysisListener;
 import software.xdev.pmd.currentfile.CurrentFileAnalysisManager;
-import software.xdev.pmd.ui.toolwindow.AnalysisPanel;
+import software.xdev.pmd.ui.toolwindow.analysis.AnalysisPanel;
 import software.xdev.pmd.ui.toolwindow.node.RootNode;
 
 
