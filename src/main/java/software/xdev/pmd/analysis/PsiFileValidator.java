@@ -1,6 +1,5 @@
 package software.xdev.pmd.analysis;
 
-import java.util.Collection;
 import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
@@ -19,12 +18,9 @@ import com.intellij.psi.PsiFile;
 
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.langversion.LanguageVersionResolverService;
-import software.xdev.pmd.model.config.ConfigurationLocation;
-import software.xdev.pmd.model.scope.NamedScopeHelper;
-import software.xdev.pmd.model.scope.ScanScope;
 
 
-final class PsiFileValidator
+public final class PsiFileValidator
 {
 	private PsiFileValidator()
 	{
@@ -38,8 +34,8 @@ final class PsiFileValidator
 		return psiFile != null
 			&& psiFile.isValid()
 			&& psiFile.isPhysical()
+			&& isInSource(psiFile)
 			&& hasDocument(psiFile)
-			&& isInSource(psiFile, pluginConfig)
 			&& isValidFileType(psiFile, pluginConfig)
 			&& isScannableIfTest(psiFile, pluginConfig)
 			&& modulesMatch(psiFile, optModule)
@@ -66,7 +62,7 @@ final class PsiFileValidator
 		final PluginConfiguration pluginConfig)
 	{
 		return pluginConfig.scanScope().includeTestClasses()
-			|| !isTestClass(psiFile);
+			|| !isInTestSource(psiFile);
 	}
 	
 	private static boolean isGenerated(final PsiFile psiFile)
@@ -74,34 +70,13 @@ final class PsiFileValidator
 		return JavaProjectRootsUtil.isInGeneratedCode(psiFile.getVirtualFile(), psiFile.getProject());
 	}
 	
-	private static boolean isInSource(
-		@NotNull final PsiFile psiFile,
-		@NotNull final PluginConfiguration pluginConfig)
+	private static boolean isInSource(@NotNull final PsiFile psiFile)
 	{
-		final boolean shouldBeScanned = pluginConfig.scanScope() == ScanScope.EVERYTHING
-			|| psiFile.getVirtualFile() != null
+		return psiFile.getVirtualFile() != null
 			&& ProjectFileIndex.getInstance(psiFile.getProject()).isInSourceContent(psiFile.getVirtualFile());
-		return shouldBeScanned && isInNamedScopeIfPresent(
-			psiFile,
-			pluginConfig.getActiveLocations());
 	}
 	
-	/**
-	 * Returns true, if the given psiFile is contained in any named scope of the given pluginConfig. If no
-	 * NamedScope is
-	 * provided, true will be returned.
-	 */
-	private static boolean isInNamedScopeIfPresent(
-		@NotNull final PsiFile psiFile,
-		final Collection<ConfigurationLocation> activeLocations)
-	{
-		return activeLocations.stream()
-			.map(ConfigurationLocation::getNamedScope)
-			.flatMap(Optional::stream)
-			.anyMatch(scope -> NamedScopeHelper.isFileInScope(psiFile, scope));
-	}
-	
-	private static boolean isTestClass(final PsiElement element)
+	private static boolean isInTestSource(final PsiElement element)
 	{
 		final VirtualFile elementFile = element.getContainingFile().getVirtualFile();
 		if(elementFile == null)

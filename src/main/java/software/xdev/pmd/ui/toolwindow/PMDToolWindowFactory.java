@@ -15,6 +15,8 @@ import software.xdev.pmd.ui.toolwindow.currentfile.CurrentFilePanel;
 
 public class PMDToolWindowFactory implements ToolWindowFactory
 {
+	public static final String TOOL_WINDOW_ID = "PMD";
+	
 	@Override
 	public void createToolWindowContent(@NotNull final Project project, @NotNull final ToolWindow toolWindow)
 	{

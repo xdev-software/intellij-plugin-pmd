@@ -26,12 +26,7 @@ public enum ScanScope // TODO: Check if this even makes sense
 	/**
 	 * Scan all files which reside in source folders (main <i>and</i> test)
 	 */
-	ALL_SOURCES_WITH_TESTS("All sources (including tests)", false, true),
-	
-	/**
-	 * Scan <i>all</i> files in the project, regardless of their location
-	 */
-	EVERYTHING("All files in project", false, true);
+	ALL_SOURCES_WITH_TESTS("All sources (including tests)", false, true);
 	
 	private final String displayName;
 	private final boolean supportedSourcesOnly;

@@ -2,6 +2,7 @@ package software.xdev.pmd.config;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -23,6 +24,11 @@ public class ConfigurationLocationSource
 	public ConfigurationLocationSource(@NotNull final Project project)
 	{
 		this.project = project;
+	}
+	
+	public SortedSet<ConfigurationLocation> getConfigurationLocations(final Optional<Module> optModule)
+	{
+		return this.getConfigurationLocations(optModule.orElse(null));
 	}
 	
 	public SortedSet<ConfigurationLocation> getConfigurationLocations(@Nullable final Module module)

@@ -11,8 +11,6 @@ public class ConfigurationLocationState
 	@Attribute
 	String type;
 	@Attribute
-	String scope;
-	@Attribute
 	String description;
 	@Text
 	String location;
@@ -27,12 +25,10 @@ public class ConfigurationLocationState
 		final String id,
 		final String type,
 		final String location,
-		final String description,
-		final String scope)
+		final String description)
 	{
 		this.id = id;
 		this.type = type;
-		this.scope = scope;
 		this.description = description;
 		this.location = location;
 	}
@@ -43,7 +39,6 @@ public class ConfigurationLocationState
 		return "ConfigurationLocation{"
 			+ "id='" + this.id + '\''
 			+ ", type='" + this.type + '\''
-			+ ", scope='" + this.scope + '\''
 			+ ", description='" + this.description + '\''
 			+ ", location='" + this.location + '\''
 			+ '}';

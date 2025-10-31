@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.toolwindow.currentfile;
+package software.xdev.pmd.ui.toolwindow;
 
 import java.awt.Component;
 import java.util.Objects;
@@ -45,7 +45,7 @@ import software.xdev.pmd.ui.toolwindow.node.other.RulePriorityIcons;
 import software.xdev.pmd.util.pmd.PMDLanguageFileTypeMapper;
 
 
-class RuleDetailPanel extends JBPanel<RuleDetailPanel>
+public class RuleDetailPanel extends JBPanel<RuleDetailPanel>
 {
 	private final Project project;
 	private final RuleDescriptionDocMarkdownToHtmlService mdToHtmlService;

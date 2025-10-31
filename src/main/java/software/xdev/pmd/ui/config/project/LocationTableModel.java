@@ -13,8 +13,6 @@ import javax.swing.table.AbstractTableModel;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.intellij.psi.search.scope.packageSet.NamedScope;
-
 import software.xdev.pmd.model.config.ConfigurationLocation;
 
 
@@ -26,7 +24,6 @@ public class LocationTableModel extends AbstractTableModel
 	private static final int COLUMN_ACTIVE = 0;
 	private static final int COLUMN_DESCRIPTION = 1;
 	private static final int COLUMN_FILE = 2;
-	private static final int COLUMN_SCOPE = 3;
 	private static final int NUMBER_OF_COLUMNS = 4;
 	
 	private final List<ConfigurationLocation> locations = new ArrayList<>();
@@ -174,7 +171,6 @@ public class LocationTableModel extends AbstractTableModel
 			case COLUMN_ACTIVE -> "Active";
 			case COLUMN_DESCRIPTION -> "Description";
 			case COLUMN_FILE -> "File";
-			case COLUMN_SCOPE -> "Scope";
 			default -> "???";
 		};
 	}
@@ -211,9 +207,6 @@ public class LocationTableModel extends AbstractTableModel
 			case COLUMN_ACTIVE -> this.activeLocations.contains(this.locations.get(rowIndex));
 			case COLUMN_DESCRIPTION -> this.locations.get(rowIndex).getDescription();
 			case COLUMN_FILE -> this.locations.get(rowIndex).getLocation();
-			case COLUMN_SCOPE -> this.locations.get(rowIndex).getNamedScope()
-				.map(NamedScope::getPresentableName)
-				.orElse("");
 			default -> throw new IllegalArgumentException("Invalid column: " + columnIndex);
 		};
 	}

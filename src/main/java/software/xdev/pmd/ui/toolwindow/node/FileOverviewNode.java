@@ -1,9 +1,6 @@
 package software.xdev.pmd.ui.toolwindow.node;
 
-import java.util.Map;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.swing.Icon;
 
@@ -21,16 +18,12 @@ import software.xdev.pmd.ui.toolwindow.node.other.FilePosition;
 import software.xdev.pmd.ui.toolwindow.node.render.NodeCellRenderer;
 
 
-public class FileOverviewNode extends BaseNode
+public class FileOverviewNode extends BaseHasViolationSuppressedErrorNode
 	implements HasPositionInFile, HasViolationCount, HasSuppressedViolationCount, HasErrorCount
 {
 	private final PsiFile psiFile;
 	private final Supplier<FilePosition> filePositionSupplier;
 	private final Icon icon;
-	
-	private int violationCount;
-	private int suppressedCount;
-	private int errorCount;
 	
 	public FileOverviewNode(final PsiFile psiFile)
 	{
@@ -42,28 +35,11 @@ public class FileOverviewNode extends BaseNode
 	}
 	
 	@Override
-	public void update()
-	{
-		this.violationCount = this.childrenSum(HasViolationCount.class, HasViolationCount::violationCount);
-		this.suppressedCount =
-			this.childrenSum(HasSuppressedViolationCount.class, HasSuppressedViolationCount::suppressedCount);
-		this.errorCount = this.childrenSum(HasErrorCount.class, HasErrorCount::errorCount);
-	}
-	
-	@Override
 	public void render(@NotNull final NodeCellRenderer renderer)
 	{
 		renderer.setIcon(this.icon);
 		renderer.append(this.psiFile.getName()
-			+ " ("
-			+ Stream.of(
-				Map.entry("violations", this.violationCount),
-				Map.entry("suppressed", this.suppressedCount),
-				Map.entry("errors", this.errorCount))
-			.filter(e -> e.getValue() > 0)
-			.map(e -> e.getValue() + "x " + e.getKey())
-			.collect(Collectors.joining(", "))
-			+ ")");
+			+ " (" + this.violationsSuppressedErrorToString() + ")");
 	}
 	
 	@Override

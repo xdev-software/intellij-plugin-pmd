@@ -7,7 +7,6 @@ import java.util.WeakHashMap;
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.search.scope.packageSet.NamedScope;
 
 import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
 import software.xdev.pmd.model.config.bundled.BundledConfig;
@@ -26,8 +25,7 @@ public class ConfigurationLocationFactory
 		String id,
 		ConfigurationType type,
 		String location,
-		String description,
-		NamedScope namedScope)
+		String description)
 	{
 	}
 	
@@ -46,7 +44,6 @@ public class ConfigurationLocationFactory
 	 * @param type        the type.
 	 * @param location    the location.
 	 * @param description the optional description.
-	 * @param namedScope  the {@link NamedScope} for this ConfigurationLocation
 	 * @return the location.
 	 */
 	public @NotNull ConfigurationLocation create(
@@ -54,8 +51,7 @@ public class ConfigurationLocationFactory
 		final String id,
 		final ConfigurationType type,
 		final String location,
-		final String description,
-		final NamedScope namedScope)
+		final String description)
 	{
 		if(type == null)
 		{
@@ -63,7 +59,7 @@ public class ConfigurationLocationFactory
 		}
 		
 		return this.createCache.computeIfAbsent(
-			new CreateCacheKey(id, type, location, description, namedScope),
+			new CreateCacheKey(id, type, location, description),
 			ignored -> {
 				final ConfigurationLocation configurationLocation = switch(type)
 				{
@@ -74,7 +70,6 @@ public class ConfigurationLocationFactory
 				
 				configurationLocation.setLocation(location);
 				configurationLocation.setDescription(description);
-				configurationLocation.setNamedScope(namedScope);
 				
 				final ConfigurationLocation cachedLocation =
 					this.instanceDeduplicationCache.get(configurationLocation);

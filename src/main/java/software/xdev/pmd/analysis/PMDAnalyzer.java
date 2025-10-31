@@ -92,6 +92,7 @@ public class PMDAnalyzer implements Disposable
 	public PMDAnalysisResult analyze(
 		final Optional<Module> optModule,
 		final Set<PsiFile> filesToScan,
+		final boolean determineIfFilesApplicable,
 		final Collection<ConfigurationLocation> configurationLocations,
 		final ProgressIndicator progressIndicator)
 	{
@@ -105,7 +106,12 @@ public class PMDAnalyzer implements Disposable
 		
 		try
 		{
-			return this.analyzeInternal(optModule, filesToScan, configurationLocations, progressIndicator);
+			return this.analyzeInternal(
+				optModule,
+				filesToScan,
+				determineIfFilesApplicable,
+				configurationLocations,
+				progressIndicator);
 		}
 		finally
 		{
@@ -116,6 +122,7 @@ public class PMDAnalyzer implements Disposable
 	private PMDAnalysisResult analyzeInternal(
 		final Optional<Module> optModule,
 		final Set<PsiFile> filesToScan,
+		final boolean determineIfFilesApplicable,
 		final Collection<ConfigurationLocation> configurationLocations,
 		final ProgressIndicator progressIndicator)
 	{
@@ -130,7 +137,9 @@ public class PMDAnalyzer implements Disposable
 					.toList(),
 				RULESET_LOADER_SERVICE);
 		
-		final List<PsiFile> applicableFiles = this.determineApplicableFiles(optModule, filesToScan, progressIndicator);
+		final Collection<PsiFile> applicableFiles = determineIfFilesApplicable
+			? this.determineApplicableFiles(optModule, filesToScan, progressIndicator)
+			: filesToScan;
 		if(applicableFiles.isEmpty())
 		{
 			cfLoadRuleSetsAsync.cancel(false);
@@ -267,7 +276,7 @@ public class PMDAnalyzer implements Disposable
 	}
 	
 	private Map<Language, Map<LanguageVersion, List<PsiFile>>> groupPsiFilesBySupportedLanguageAndVersion(
-		final List<PsiFile> files)
+		final Collection<PsiFile> files)
 	{
 		final ManagedLanguageVersionResolver resolver = new ManagedLanguageVersionResolver();
 		

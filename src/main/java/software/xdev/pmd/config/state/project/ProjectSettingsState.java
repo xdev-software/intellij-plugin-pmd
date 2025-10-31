@@ -14,7 +14,6 @@ import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.diagnostic.ControlFlowException;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.search.scope.packageSet.NamedScope;
 import com.intellij.util.xmlb.annotations.Attribute;
 import com.intellij.util.xmlb.annotations.MapAnnotation;
 import com.intellij.util.xmlb.annotations.Tag;
@@ -26,7 +25,6 @@ import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.config.ConfigurationLocationFactory;
 import software.xdev.pmd.model.config.ConfigurationType;
 import software.xdev.pmd.model.config.bundled.BundledConfig;
-import software.xdev.pmd.model.scope.NamedScopeHelper;
 import software.xdev.pmd.model.scope.ScanScope;
 
 
@@ -62,8 +60,7 @@ public class ProjectSettingsState
 				location.getId(),
 				location.getType().name(),
 				location.getRawLocation(),
-				location.getDescription(),
-				location.getNamedScope().map(NamedScope::getScopeId).orElse("")
+				location.getDescription()
 			))
 			.collect(Collectors.toList());
 		
@@ -147,8 +144,7 @@ public class ProjectSettingsState
 				location.id,
 				ConfigurationType.parse(location.type),
 				Objects.requireNonNullElse(location.location, "").trim(),
-				location.description,
-				NamedScopeHelper.getScopeByIdWithDefaultFallback(project, location.scope));
+				location.description);
 		}
 		catch(final Exception e)
 		{

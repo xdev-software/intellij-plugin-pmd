@@ -21,19 +21,19 @@
 	<extensions defaultExtensionNs="com.intellij">
 		<projectService serviceImplementation="software.xdev.pmd.analysis.PMDAnalyzer"/>
 		<projectService serviceImplementation="software.xdev.pmd.model.config.ConfigurationLocationFactory"/>
-		<projectService serviceImplementation="software.xdev.pmd.model.config.ConfigurationLocationScopeProjectProxy"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.ConfigurationLocationSource"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.PluginConfigurationManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.currentfile.CurrentFileAnalysisManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.state.project.ProjectConfigurationState"/>
 		<projectService serviceImplementation="software.xdev.pmd.markdown.RuleDescriptionDocMarkdownToHtmlService"/>
+		<projectService serviceImplementation="software.xdev.pmd.ui.toolwindow.report.ReportViewManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.util.io.ProjectFilePaths"/>
 		<projectService serviceImplementation="software.xdev.pmd.util.pmd.PMDLanguageFileTypeMapper"/>
 
 		<postStartupActivity implementation="software.xdev.pmd.startup.PMDStartupConfiguration"/>
 
-		<!-- TODO parentId="tools" -->
 		<projectConfigurable instance="software.xdev.pmd.ui.config.project.PMDConfigurable"
+							 parentId="tools"
 							 displayName="PMD"/>
 
 		<moduleConfigurationEditorProvider
@@ -61,6 +61,19 @@
 
 		<applicationService serviceImplementation="software.xdev.pmd.langversion.LanguageVersionResolverService"/>
 	</extensions>
+
+	<actions>
+		<group id="PMDProjectViewGroup"
+			   text="PMD"
+			   popup="true"
+			   icon="/icons/pmd.svg">
+			<add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+
+			<action class="software.xdev.pmd.action.RunAnalysisAction"
+					text="Run Analysis"
+					icon="AllIcons.Actions.Find"/>
+		</group>
+	</actions>
 
 	<!-- Not detected when inside plugin-kotlin.xml -->
 	<extensions defaultExtensionNs="org.jetbrains.kotlin">

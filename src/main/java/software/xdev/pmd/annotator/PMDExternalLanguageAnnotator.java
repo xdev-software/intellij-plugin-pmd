@@ -111,6 +111,7 @@ public class PMDExternalLanguageAnnotator
 		return analyzer.analyze(
 			Optional.ofNullable(module),
 			Set.of(file),
+			true,
 			project.getService(ConfigurationLocationSource.class).getConfigurationLocations(module),
 			progress
 		);

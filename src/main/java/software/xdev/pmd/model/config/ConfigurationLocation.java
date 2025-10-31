@@ -2,21 +2,15 @@ package software.xdev.pmd.model.config;
 
 import java.util.Comparator;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.packageDependencies.DependencyValidationManager;
-import com.intellij.psi.search.scope.packageSet.NamedScope;
-import com.intellij.psi.search.scope.packageSet.NamedScopeManager;
 
 import net.sourceforge.pmd.lang.rule.RuleSet;
 import software.xdev.pmd.model.config.bundled.BundledConfigurationLocation;
-import software.xdev.pmd.model.scope.NamedScopeHelper;
 
 
 /**
@@ -35,7 +29,6 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 	private final Project project;
 	private String location;
 	private String description;
-	private NamedScope namedScope;
 	
 	protected RuleSet cachedRuleSet;
 	
@@ -47,26 +40,8 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 		this.id = id;
 		this.type = type;
 		this.project = project;
-		this.namedScope = NamedScopeHelper.getDefaultScope(project);
-		this.initializeFutureScopeChangeHandling();
 		
 		this.logger = Logger.getInstance(this.getClass());
-	}
-	
-	/**
-	 * Refreshes the named scope if the scopes have been changed.
-	 */
-	private void initializeFutureScopeChangeHandling()
-	{
-		final Disposable parent = this.project.getService(ConfigurationLocationScopeProjectProxy.class);
-		NamedScopeManager.getInstance(this.project).addScopeListener(this::scopeChanged, parent);
-		DependencyValidationManager.getInstance(this.project).addScopeListener(this::scopeChanged, parent);
-	}
-	
-	private void scopeChanged()
-	{
-		this.getNamedScope().ifPresent(scope ->
-			this.setNamedScope(NamedScopeHelper.getScopeByIdWithDefaultFallback(this.project, scope.getScopeId())));
 	}
 	
 	public boolean canBeResolvedInDefaultProject()
@@ -100,11 +75,6 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 		return this.location;
 	}
 	
-	public Optional<NamedScope> getNamedScope()
-	{
-		return Optional.ofNullable(this.namedScope);
-	}
-	
 	public void setLocation(final String location)
 	{
 		if(location == null || location.isBlank())
@@ -127,11 +97,6 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 	public void setDescription(@Nullable final String description)
 	{
 		this.description = description == null ? this.location : description;
-	}
-	
-	public void setNamedScope(final NamedScope namedScope)
-	{
-		this.namedScope = namedScope;
 	}
 	
 	public boolean isRemovable()
@@ -191,7 +156,6 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 	{
 		cloned.setDescription(this.getDescription());
 		cloned.setLocation(this.getLocation());
-		cloned.setNamedScope(this.getNamedScope().orElse(NamedScopeHelper.getDefaultScope(this.project)));
 		return cloned;
 	}
 	

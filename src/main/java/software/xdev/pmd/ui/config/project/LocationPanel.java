@@ -4,7 +4,6 @@ import static software.xdev.pmd.model.config.ConfigurationType.LOCAL_FILE;
 import static software.xdev.pmd.model.config.ConfigurationType.PROJECT_RELATIVE;
 import static software.xdev.pmd.ui.config.project.LocationPanel.LocationType.FILE;
 
-import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -18,11 +17,9 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -31,17 +28,14 @@ import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
-import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.search.scope.packageSet.NamedScope;
 import com.intellij.util.ui.JBUI;
 
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.config.ConfigurationLocationFactory;
 import software.xdev.pmd.model.config.ConfigurationType;
-import software.xdev.pmd.model.scope.NamedScopeHelper;
 
 
 @SuppressWarnings("checkstyle:MagicNumber")
@@ -59,7 +53,6 @@ public class LocationPanel extends JPanel
 	private final JTextField fileLocationField = new JTextField(20);
 	private final JRadioButton fileLocationRadio = new JRadioButton();
 	private final JTextField descriptionField = new JTextField();
-	private final ComboBox<NamedScope> scopeComboBox = new ComboBox<>();
 	private final JCheckBox relativeFileCheckbox = new JCheckBox();
 	
 	private final Project project;
@@ -95,25 +88,6 @@ public class LocationPanel extends JPanel
 		this.descriptionField.setToolTipText("A description of this configuration file");
 		
 		final JLabel fileLocationLabel = new JLabel("File:");
-		
-		final JLabel scopeLabel = new JLabel("Scope:");
-		NamedScopeHelper.getAllScopes(this.project).forEach(this.scopeComboBox::addItem);
-		this.scopeComboBox.setSelectedItem(NamedScopeHelper.getDefaultScope(this.project));
-		this.scopeComboBox.setRenderer(new DefaultListCellRenderer()
-		{
-			@Override
-			public Component getListCellRendererComponent(
-				final JList<?> list,
-				final Object value,
-				final int index,
-				final boolean isSelected,
-				final boolean cellHasFocus)
-			{
-				final var presentableName = ((NamedScope)value).getPresentableName();
-				super.getListCellRendererComponent(list, presentableName, index, isSelected, cellHasFocus);
-				return this;
-			}
-		});
 		
 		this.setBorder(JBUI.Borders.empty(8, 8, 4, 8));
 		
@@ -153,16 +127,6 @@ public class LocationPanel extends JPanel
 			Box.createVerticalGlue(), new GridBagConstraints(
 				0, 10, 3, 1, 0.0, 1.0,
 				GridBagConstraints.WEST, GridBagConstraints.VERTICAL, COMPONENT_INSETS, 0, 0));
-		
-		this.add(
-			scopeLabel, new GridBagConstraints(
-				0, 12, 1, 1, 0.0, 0.0,
-				GridBagConstraints.EAST, GridBagConstraints.NONE, COMPONENT_INSETS, 0, 0));
-		
-		this.add(
-			this.scopeComboBox, new GridBagConstraints(
-				1, 12, 2, 1, 0.0, 0.0,
-				GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, COMPONENT_INSETS, 0, 0));
 	}
 	
 	private void enabledLocation(final LocationType locationType)
@@ -188,7 +152,6 @@ public class LocationPanel extends JPanel
 	 */
 	public ConfigurationLocation getConfigurationLocation()
 	{
-		final NamedScope namedScope = (NamedScope)this.scopeComboBox.getSelectedItem();
 		final String newId = UUID.randomUUID().toString();
 		
 		if(this.fileLocationField.isEnabled())
@@ -200,8 +163,7 @@ public class LocationPanel extends JPanel
 					newId,
 					this.typeOfFile(),
 					this.fileLocation(),
-					this.descriptionField.getText(),
-					namedScope);
+					this.descriptionField.getText());
 			}
 		}
 		

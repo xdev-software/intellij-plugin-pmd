@@ -63,4 +63,9 @@ public record CombinedPMDAnalysisResult(
 			Collections.unmodifiableMap(psiFileFileIds)
 		);
 	}
+	
+	public boolean isEmpty()
+	{
+		return this.fileIdPsiFiles.isEmpty();
+	}
 }
