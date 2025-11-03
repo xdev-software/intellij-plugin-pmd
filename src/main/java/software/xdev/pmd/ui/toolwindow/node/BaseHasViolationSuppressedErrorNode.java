@@ -18,10 +18,12 @@ public abstract class BaseHasViolationSuppressedErrorNode extends BaseNode
 	@Override
 	public void update()
 	{
-		this.violationCount = this.childrenSum(HasViolationCount.class, HasViolationCount::violationCount);
+		this.violationCount =
+			this.childrenSum(HasViolationCount.class, HasViolationCount::violationCount);
 		this.suppressedCount =
 			this.childrenSum(HasSuppressedViolationCount.class, HasSuppressedViolationCount::suppressedCount);
-		this.errorCount = this.childrenSum(HasErrorCount.class, HasErrorCount::errorCount);
+		this.errorCount =
+			this.childrenSum(HasErrorCount.class, HasErrorCount::errorCount);
 	}
 	
 	protected String violationsSuppressedErrorToString()

@@ -210,7 +210,7 @@ public class PMDAnalyzer implements Disposable
 					(l, r) -> r,
 					BidirectionalMap::new)));
 		
-		LOG.warn("Analysis took " + (System.currentTimeMillis() - startMs) + "ms");
+		LOG.info("Analysis took " + (System.currentTimeMillis() - startMs) + "ms");
 		
 		return result;
 	}

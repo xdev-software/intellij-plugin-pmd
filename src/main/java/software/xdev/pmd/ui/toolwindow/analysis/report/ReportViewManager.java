@@ -43,13 +43,14 @@ public class ReportViewManager
 		
 		final ContentManager contentManager = toolWindow.getContentManager();
 		final ReportPanel reportPanel = new ReportPanel(this.project, result);
-		final Content currentFileContent = contentManager.getFactory().createContent(
+		final Content reportContent = contentManager.getFactory().createContent(
 			reportPanel,
 			"Report " + LocalDateTime.now().format(REPORT_DATE_FORMATTER),
 			true);
-		currentFileContent.setCloseable(true);
-		contentManager.addContent(currentFileContent);
+		reportContent.setDisposer(reportPanel);
+		reportContent.setCloseable(true);
+		contentManager.addContent(reportContent);
 		
-		toolWindow.show(() -> contentManager.setSelectedContent(currentFileContent));
+		toolWindow.show(() -> contentManager.setSelectedContent(reportContent));
 	}
 }

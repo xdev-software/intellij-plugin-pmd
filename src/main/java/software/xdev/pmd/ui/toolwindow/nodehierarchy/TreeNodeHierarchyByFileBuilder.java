@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.toolwindow;
+package software.xdev.pmd.ui.toolwindow.nodehierarchy;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,14 +15,11 @@ import java.util.stream.Collectors;
 
 import com.intellij.psi.PsiFile;
 
-import net.sourceforge.pmd.lang.document.FileId;
 import net.sourceforge.pmd.lang.rule.Rule;
 import net.sourceforge.pmd.reporting.Report;
 import net.sourceforge.pmd.reporting.RuleViolation;
 import software.xdev.pmd.currentfile.CombinedPMDAnalysisResult;
 import software.xdev.pmd.ui.toolwindow.node.BaseNode;
-import software.xdev.pmd.ui.toolwindow.node.ErrorInFileNode;
-import software.xdev.pmd.ui.toolwindow.node.ErrorNode;
 import software.xdev.pmd.ui.toolwindow.node.ErrorSummaryNode;
 import software.xdev.pmd.ui.toolwindow.node.FileOverviewNode;
 import software.xdev.pmd.ui.toolwindow.node.SuppressedSummaryNode;
@@ -30,18 +27,11 @@ import software.xdev.pmd.ui.toolwindow.node.SuppressedViolationNode;
 import software.xdev.pmd.ui.toolwindow.node.SuppressedViolationRuleNode;
 import software.xdev.pmd.ui.toolwindow.node.ViolationNode;
 import software.xdev.pmd.ui.toolwindow.node.ViolationRuleNode;
-import software.xdev.pmd.ui.toolwindow.node.other.NodeErrorAdapter;
 
 
-public class TreeNodeHierarchyBuilder
+public class TreeNodeHierarchyByFileBuilder extends AbstractTreeNodeHierarchyByBuilder
 {
-	private final CombinedPMDAnalysisResult result;
-	private final Map<FileId, PsiFile> fileIdPsiFiles;
-	
-	private final Map<PsiFile, FileOverviewNode> fileFileOverviewNodes = new HashMap<>();
-	
-	private final List<ErrorNode> generalErrors = new ArrayList<>();
-	private final Map<FileOverviewNode, Set<ErrorInFileNode>> errorsInFiles = new HashMap<>();
+	private final Map<PsiFile, FileOverviewNode> fileOverviewNodes = new HashMap<>();
 	
 	private final Map<FileOverviewNode, Map<ViolationRuleNode, Set<ViolationNode>>> fileViolations =
 		new HashMap<>();
@@ -49,38 +39,19 @@ public class TreeNodeHierarchyBuilder
 	private final Map<FileOverviewNode, Map<SuppressedViolationRuleNode, Set<SuppressedViolationNode>>>
 		fileSuppressedViolations = new HashMap<>();
 	
-	public TreeNodeHierarchyBuilder(final CombinedPMDAnalysisResult result)
+	public TreeNodeHierarchyByFileBuilder(final CombinedPMDAnalysisResult result)
 	{
-		this.result = result;
-		this.fileIdPsiFiles = result.fileIdPsiFiles();
+		super(result);
 	}
 	
 	private FileOverviewNode fileOverViewNode(final PsiFile psiFile)
 	{
-		return this.fileFileOverviewNodes.computeIfAbsent(psiFile, FileOverviewNode::new);
-	}
-	
-	private void computeGeneralErrors()
-	{
-		this.result.configErrors().stream()
-			.map(ce -> new ErrorNode(NodeErrorAdapter.fromString(ce.rule().getName() + ": " + ce.issue())))
-			.forEach(this.generalErrors::add);
+		return this.fileOverviewNodes.computeIfAbsent(psiFile, FileOverviewNode::new);
 	}
 	
 	private void computeErrors()
 	{
-		this.result.errors().forEach(pe -> {
-			final NodeErrorAdapter nodeErrorAdapter = NodeErrorAdapter.fromThrowable(pe.getError());
-			Optional.ofNullable(pe.getFileId())
-				.map(this.fileIdPsiFiles::get)
-				.ifPresentOrElse(
-					file -> this.errorsInFiles.computeIfAbsent(
-							this.fileOverViewNode(file),
-							ignored -> new LinkedHashSet<>())
-						.add(new ErrorInFileNode(nodeErrorAdapter, file)),
-					() -> this.generalErrors.add(new ErrorNode(nodeErrorAdapter))
-				);
-		});
+		this.computeErrors(this::fileOverViewNode);
 	}
 	
 	private void computeViolations()
@@ -103,6 +74,7 @@ public class TreeNodeHierarchyBuilder
 			this.fileSuppressedViolations);
 	}
 	
+	@SuppressWarnings("java:S119")
 	private <V, RVN, VN> void abstractComputeViolations(
 		final List<V> resultViolations,
 		final Function<V, RuleViolation> extractRuleViolation,
@@ -128,7 +100,7 @@ public class TreeNodeHierarchyBuilder
 		final Comparator<Map.Entry<Rule, Set<VN>>> comparator =
 			Comparator.<Map.Entry<Rule, Set<VN>>>comparingInt(e -> e.getKey().getPriority().getPriority())
 				.thenComparing(e -> e.getKey().getName());
-		violations.forEach((file, ruleViolations) -> {
+		violations.forEach((file, ruleViolations) ->
 			outputMap.put(
 				this.fileOverViewNode(file), ruleViolations.entrySet()
 					.stream()
@@ -137,10 +109,10 @@ public class TreeNodeHierarchyBuilder
 						e -> createRuleViolationNode.apply(e.getKey()),
 						Map.Entry::getValue,
 						(l, r) -> r,
-						LinkedHashMap::new)));
-		});
+						LinkedHashMap::new))));
 	}
 	
+	@Override
 	public List<BaseNode> build()
 	{
 		this.computeGeneralErrors();
@@ -150,7 +122,7 @@ public class TreeNodeHierarchyBuilder
 		
 		final List<BaseNode> nodes = new ArrayList<>();
 		
-		this.fileFileOverviewNodes.entrySet()
+		this.fileOverviewNodes.entrySet()
 			.stream()
 			.sorted(Comparator.comparing(e -> e.getKey().getName()))
 			.map(Map.Entry::getValue)
@@ -174,9 +146,8 @@ public class TreeNodeHierarchyBuilder
 					});
 				
 				Optional.ofNullable(this.errorsInFiles.get(fileNode))
-					.ifPresent(errorInFileNodes -> {
-						fileNode.add(new ErrorSummaryNode(errorInFileNodes));
-					});
+					.ifPresent(errorInFileNodes ->
+						fileNode.add(new ErrorSummaryNode(errorInFileNodes)));
 			})
 			.forEach(nodes::add);
 		

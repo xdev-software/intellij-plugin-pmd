@@ -1,6 +1,8 @@
 package software.xdev.pmd.ui.toolwindow;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,7 +16,9 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.DefaultCaret;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.EditorSettings;
 import com.intellij.openapi.editor.ex.EditorEx;
@@ -45,10 +49,12 @@ import software.xdev.pmd.ui.toolwindow.node.other.RulePriorityIcons;
 import software.xdev.pmd.util.pmd.PMDLanguageFileTypeMapper;
 
 
-public class RuleDetailPanel extends JBPanel<RuleDetailPanel>
+public class RuleDetailPanel extends JBPanel<RuleDetailPanel> implements Disposable
 {
 	private final Project project;
 	private final RuleDescriptionDocMarkdownToHtmlService mdToHtmlService;
+	private final EditorFactory editorFactory;
+	private final List<Editor> editorsToRelease = new ArrayList<>();
 	
 	public RuleDetailPanel(
 		final Project project,
@@ -57,6 +63,7 @@ public class RuleDetailPanel extends JBPanel<RuleDetailPanel>
 		super(new VerticalFlowLayout());
 		this.project = project;
 		this.mdToHtmlService = project.getService(RuleDescriptionDocMarkdownToHtmlService.class);
+		this.editorFactory = EditorFactory.getInstance();
 		
 		this.add(this.createTopPanel(rule));
 		
@@ -153,12 +160,13 @@ public class RuleDetailPanel extends JBPanel<RuleDetailPanel>
 	
 	private JComponent createCodePanel(final FileType fileType, final String code)
 	{
-		final EditorFactory editorFactory = EditorFactory.getInstance();
-		final Document doc = editorFactory.createDocument(code);
+		final Document doc = this.editorFactory.createDocument(code);
 		doc.setReadOnly(true);
-		final EditorEx viewer = (EditorEx)editorFactory.createViewer(doc);
+		final EditorEx viewer = (EditorEx)this.editorFactory.createViewer(doc);
 		viewer.setCaretEnabled(false);
 		viewer.setContextMenuGroupId(null);
+		
+		this.editorsToRelease.add(viewer);
 		
 		final EditorSettings settings = viewer.getSettings();
 		settings.setLineMarkerAreaShown(false);
@@ -234,5 +242,12 @@ public class RuleDetailPanel extends JBPanel<RuleDetailPanel>
 	private JBLabel createLabel(final String text)
 	{
 		return new JBLabel(text).setCopyable(true);
+	}
+	
+	@Override
+	public void dispose()
+	{
+		this.editorsToRelease.forEach(this.editorFactory::releaseEditor);
+		this.editorsToRelease.clear();
 	}
 }

@@ -24,12 +24,14 @@ public class PMDToolWindowFactory implements ToolWindowFactory
 		ApplicationManager.getApplication().invokeLater(() -> {
 			final ContentManager contentManager = toolWindow.getContentManager();
 			
+			final CurrentFilePanel currentFilePanel = new CurrentFilePanel(project);
 			final Content currentFileContent = contentManager.getFactory().createContent(
-				new CurrentFilePanel(project),
+				currentFilePanel,
 				"Current File",
 				false);
+			currentFileContent.setDisposer(currentFilePanel);
 			currentFileContent.setCloseable(false);
-			contentManager.addContent(currentFileContent);
+			contentManager.addContent(currentFileContent, 0);
 			
 			toolWindow.setType(ToolWindowType.DOCKED, null);
 		});

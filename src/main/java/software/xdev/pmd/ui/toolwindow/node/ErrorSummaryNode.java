@@ -14,9 +14,14 @@ public class ErrorSummaryNode extends BaseNode implements HasErrorCount
 {
 	private int errorCount;
 	
-	public ErrorSummaryNode(final Collection<? extends ErrorNode> errorNodesToAdd)
+	public ErrorSummaryNode(final Collection<? extends BaseNode> nodesToAdd)
 	{
-		errorNodesToAdd.forEach(this::add);
+		this.addAll(nodesToAdd);
+	}
+	
+	public void addAll(@NotNull final Collection<? extends BaseNode> nodesToAdd)
+	{
+		nodesToAdd.forEach(this::add);
 	}
 	
 	@Override

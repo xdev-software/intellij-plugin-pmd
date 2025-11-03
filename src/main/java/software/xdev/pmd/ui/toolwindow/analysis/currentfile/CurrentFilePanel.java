@@ -13,6 +13,7 @@ import software.xdev.pmd.currentfile.CurrentFileAnalysisListener;
 import software.xdev.pmd.currentfile.CurrentFileAnalysisManager;
 import software.xdev.pmd.ui.toolwindow.analysis.AnalysisPanel;
 import software.xdev.pmd.ui.toolwindow.node.RootNode;
+import software.xdev.pmd.ui.toolwindow.nodehierarchy.TreeNodeHierarchyFactories;
 
 
 public class CurrentFilePanel extends AnalysisPanel implements CurrentFileAnalysisListener, Disposable
@@ -21,7 +22,7 @@ public class CurrentFilePanel extends AnalysisPanel implements CurrentFileAnalys
 	
 	public CurrentFilePanel(final Project project)
 	{
-		super(project);
+		super(project, TreeNodeHierarchyFactories.BY_FILE);
 		
 		this.tree.setRootVisible(false);
 		
@@ -54,5 +55,6 @@ public class CurrentFilePanel extends AnalysisPanel implements CurrentFileAnalys
 	public void dispose()
 	{
 		this.fileAnalysisDisposeAction.dispose();
+		super.dispose();
 	}
 }
