@@ -1,6 +1,5 @@
 package software.xdev.pmd.config;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
@@ -20,50 +19,46 @@ import software.xdev.pmd.model.scope.ScanScope;
  * Represents the entire persistent plugin configuration on project level as an immutable object. This is intended to be
  * a simple DTO without any business logic.
  */
-public class PluginConfiguration
+public record PluginConfiguration(
+	boolean useSingleThread,
+	boolean showSuppressedWarnings,
+	boolean useCacheFile,
+	ScanScope scanScope,
+	SortedSet<ConfigurationLocation> locations,
+	SortedSet<String> activeLocationIds,
+	Cache cache
+)
 {
-	private final ScanScope scanScope;
-	private final SortedSet<ConfigurationLocation> locations;
-	private final SortedSet<String> activeLocationIds;
-	
-	private Map<String, ConfigurationLocation> idLocationCache;
-	private SortedSet<ConfigurationLocation> activeLocationCache;
-	
-	public PluginConfiguration(
-		final ScanScope scanScope,
-		final SortedSet<ConfigurationLocation> locations,
-		final SortedSet<String> activeLocationIds)
+	@SuppressWarnings("checkstyle:VisibilityModifier")
+	static class Cache
 	{
-		this.scanScope = scanScope;
-		this.locations = Collections.unmodifiableSortedSet(locations);
-		this.activeLocationIds = activeLocationIds.stream()
-			.filter(Objects::nonNull)
-			.collect(Collectors.toCollection(TreeSet::new));
+		public Map<String, ConfigurationLocation> idLocationCache;
+		public SortedSet<ConfigurationLocation> activeLocationCache;
 	}
 	
 	@Nullable
 	public ConfigurationLocation getLocationById(@NotNull final String locationId)
 	{
-		if(this.idLocationCache == null)
+		if(this.cache.idLocationCache == null)
 		{
-			this.idLocationCache = this.locations.stream()
+			this.cache.idLocationCache = this.locations.stream()
 				.collect(Collectors.toMap(ConfigurationLocation::getId, Function.identity()));
 		}
 		
-		return this.idLocationCache.get(locationId);
+		return this.cache.idLocationCache.get(locationId);
 	}
 	
 	@NotNull
 	public SortedSet<ConfigurationLocation> getActiveLocations()
 	{
-		if(this.activeLocationCache == null)
+		if(this.cache.activeLocationCache == null)
 		{
-			this.activeLocationCache = this.activeLocationIds().stream()
+			this.cache.activeLocationCache = this.activeLocationIds().stream()
 				.map(this::getLocationById)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toCollection(TreeSet::new));
 		}
-		return this.activeLocationCache;
+		return this.cache.activeLocationCache;
 	}
 	
 	public boolean hasChangedFrom(final Object other)
@@ -85,20 +80,5 @@ public class PluginConfiguration
 		}
 		
 		return this.locations.size() == other.locations.size();
-	}
-	
-	public ScanScope scanScope()
-	{
-		return this.scanScope;
-	}
-	
-	public SortedSet<ConfigurationLocation> locations()
-	{
-		return this.locations;
-	}
-	
-	public SortedSet<String> activeLocationIds()
-	{
-		return this.activeLocationIds;
 	}
 }

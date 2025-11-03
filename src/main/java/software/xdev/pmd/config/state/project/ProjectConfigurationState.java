@@ -1,7 +1,5 @@
 package software.xdev.pmd.config.state.project;
 
-import static software.xdev.pmd.config.PluginConfigurationBuilder.defaultConfiguration;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,7 +27,7 @@ public class ProjectConfigurationState implements PersistentStateComponent<Proje
 	
 	private ProjectSettingsState defaultProjectSettings()
 	{
-		return ProjectSettingsState.create(defaultConfiguration(this.project).build());
+		return ProjectSettingsState.create(new PluginConfigurationBuilder(this.project).build());
 	}
 	
 	private ProjectSettingsState projectSettingsOrLoadDefault()

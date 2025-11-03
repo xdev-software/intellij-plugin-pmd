@@ -54,7 +54,7 @@ public final class PsiFileValidator
 		return !pluginConfig.scanScope().includeOnlySupportedSources()
 			|| ApplicationManager.getApplication()
 			.getService(LanguageVersionResolverService.class)
-			.isFileSupportedByAnyResolve(psiFile);
+			.isFileSupportedByAnyResolver(psiFile);
 	}
 	
 	private static boolean isScannableIfTest(

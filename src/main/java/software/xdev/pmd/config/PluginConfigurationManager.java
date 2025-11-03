@@ -19,9 +19,8 @@ public class PluginConfigurationManager
 	@NotNull
 	public PluginConfiguration getCurrent()
 	{
-		final PluginConfigurationBuilder defaultConfig = PluginConfigurationBuilder.defaultConfiguration(this.project);
 		return this.projectConfigurationState()
-			.populate(defaultConfig)
+			.populate(new PluginConfigurationBuilder(this.project))
 			.build();
 	}
 	

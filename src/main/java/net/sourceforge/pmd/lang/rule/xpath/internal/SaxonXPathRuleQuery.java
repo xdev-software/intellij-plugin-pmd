@@ -337,7 +337,6 @@ public class SaxonXPathRuleQuery
 				return local;
 			}
 			
-			// TODO Saxon optimizer bug (js/codestyle.xml/AssignmentInOperand)
 			final Object actualValue = SaxonXPathRuleQuery.this.properties.getOrDefault(prop, prop.defaultValue());
 			final AtomicSequence converted = DomainConversion.convert(actualValue);
 			local.setStaticType(null, converted, 0);

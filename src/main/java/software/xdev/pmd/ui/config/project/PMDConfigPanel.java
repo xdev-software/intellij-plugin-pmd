@@ -7,9 +7,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -29,6 +31,9 @@ import com.intellij.ui.AnActionButtonRunnable;
 import com.intellij.ui.AnActionButtonUpdater;
 import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.ToolbarDecorator;
+import com.intellij.ui.components.JBCheckBox;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.panels.HorizontalLayout;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 
@@ -49,11 +54,13 @@ public class PMDConfigPanel extends JPanel
 	private static final int ACTIVE_COL_MAX_WIDTH = 55;
 	private static final int DESC_COL_MIN_WIDTH = 100;
 	private static final int DESC_COL_MAX_WIDTH = 200;
-	private static final int SCOPE_COL_MIN_WIDTH = 70;
 	private static final Dimension DECORATOR_DIMENSIONS = new Dimension(300, 50);
 	
 	private final JLabel scopeDropdownLabel = new JLabel("Scan Scope:");
 	private final ComboBox<ScanScope> scopeDropdown = new ComboBox<>(ScanScope.values());
+	private final JBCheckBox useSingleThreadCheckbox = new JBCheckBox("Use single thread");
+	private final JBCheckBox showSuppressedWarningsCheckbox = new JBCheckBox("Show suppressed warnings");
+	private final JBCheckBox useCacheFileCheckbox = new JBCheckBox("Use cache file");
 	
 	private final LocationTableModel locationModel = new LocationTableModel();
 	private final JBTable locationTable = new JBTable(this.locationModel);
@@ -76,33 +83,63 @@ public class PMDConfigPanel extends JPanel
 	
 	private JPanel buildConfigPanel()
 	{
-		this.scopeDropdownLabel.setToolTipText("Choose which files should be scanned");
-		this.scopeDropdown.setToolTipText("Choose which files should be scanned");
-		
 		final JPanel configFilePanel = new JPanel(new GridBagLayout());
 		configFilePanel.setOpaque(false);
 		
+		configFilePanel.add(this.scopeDropdownLabel, this.createDefaultGridBagConstraints(0, 0, 1));
+		configFilePanel.add(this.scopeDropdown, this.createDefaultGridBagConstraints(1, 0, 1));
 		configFilePanel.add(
-			this.scopeDropdownLabel, new GridBagConstraints(
-				0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST,
-				GridBagConstraints.NONE, COMPONENT_INSETS, 0, 0));
+			this.wrapWithInfoIcon(
+				this.useSingleThreadCheckbox,
+				"Analysis will be a lot slower but might be more stable"),
+			this.createDefaultGridBagConstraints(2, 0, 2));
+		configFilePanel.add(this.showSuppressedWarningsCheckbox, this.createDefaultGridBagConstraints(0, 1, 2));
 		configFilePanel.add(
-			this.scopeDropdown, new GridBagConstraints(
-				1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST,
-				GridBagConstraints.NONE, COMPONENT_INSETS, 0, 0));
+			this.wrapWithInfoIcon(
+				this.useCacheFileCheckbox,
+				"Repeated analysis will be a lot faster.<br>"
+					+ "Only disable this when you have problems with cache file corruption"),
+			this.createDefaultGridBagConstraints(2, 1, 2));
 		configFilePanel.add(
-			this.buildRuleFilePanel(), new GridBagConstraints(
-				0, 1, 4, 1, 1.0, 1.0, GridBagConstraints.WEST,
+			this.buildRuleFilePanel(),
+			new GridBagConstraints(
+				0, 2, 4, 1, 1.0, 1.0, GridBagConstraints.WEST,
 				GridBagConstraints.BOTH, COMPONENT_INSETS, 0, 0));
 		
 		return configFilePanel;
+	}
+	
+	private JPanel wrapWithInfoIcon(final JComponent component, final String infoText)
+	{
+		final JBLabel indicator = new JBLabel(AllIcons.General.Information);
+		indicator.setToolTipText(infoText);
+		
+		final JPanel hl = new JPanel(new HorizontalLayout(5));
+		hl.add(component);
+		hl.add(indicator);
+		return hl;
+	}
+	
+	private GridBagConstraints createDefaultGridBagConstraints(final int gridX, final int gridY, final int gridWidth)
+	{
+		return new GridBagConstraints(
+			gridX,
+			gridY,
+			gridWidth,
+			1,
+			gridWidth > 1 ? 1.0 : 0.0,
+			0.0,
+			GridBagConstraints.WEST,
+			GridBagConstraints.HORIZONTAL,
+			COMPONENT_INSETS,
+			0,
+			0);
 	}
 	
 	private JPanel buildRuleFilePanel()
 	{
 		this.setColumnWith(this.locationTable, 0, ACTIVE_COL_MIN_WIDTH, ACTIVE_COL_MAX_WIDTH, ACTIVE_COL_MAX_WIDTH);
 		this.setColumnWith(this.locationTable, 1, DESC_COL_MIN_WIDTH, DESC_COL_MAX_WIDTH, DESC_COL_MAX_WIDTH);
-		this.setColumnWith(this.locationTable, 3, SCOPE_COL_MIN_WIDTH, SCOPE_COL_MIN_WIDTH, null);
 		this.locationTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
 		this.locationTable.setStriped(true);
 		this.locationTable.getTableHeader().setReorderingAllowed(false);
@@ -145,21 +182,22 @@ public class PMDConfigPanel extends JPanel
 	public void showPluginConfiguration(@NotNull final PluginConfiguration pluginConfig)
 	{
 		this.scopeDropdown.setSelectedItem(pluginConfig.scanScope());
+		this.useSingleThreadCheckbox.setSelected(pluginConfig.useSingleThread());
+		this.showSuppressedWarningsCheckbox.setSelected(pluginConfig.showSuppressedWarnings());
+		this.useCacheFileCheckbox.setSelected(pluginConfig.useCacheFile());
 		this.locationModel.setLocations(new ArrayList<>(pluginConfig.locations()));
 		this.locationModel.setActiveLocations(pluginConfig.getActiveLocations());
 	}
 	
 	public PluginConfiguration getPluginConfiguration()
 	{
-		ScanScope scanScope = (ScanScope)this.scopeDropdown.getSelectedItem();
-		if(scanScope == null)
-		{
-			scanScope = ScanScope.getDefaultValue();
-		}
-		
-		// we don't know the scanBeforeCheckin flag at this point
-		return PluginConfigurationBuilder.defaultConfiguration(this.project)
-			.withScanScope(scanScope)
+		return new PluginConfigurationBuilder(this.project)
+			.withUseSingleThread(this.useSingleThreadCheckbox.isSelected())
+			.withShowSuppressedWarnings(this.showSuppressedWarningsCheckbox.isSelected())
+			.withUseCacheFile(this.useCacheFileCheckbox.isSelected())
+			.withScanScope(Objects.requireNonNullElseGet(
+				(ScanScope)this.scopeDropdown.getSelectedItem(),
+				ScanScope::getDefaultValue))
 			.withLocations(new TreeSet<>(this.locationModel.getLocations()))
 			.withActiveLocationIds(this.locationModel.getActiveLocations().stream()
 				.map(ConfigurationLocation::getId)

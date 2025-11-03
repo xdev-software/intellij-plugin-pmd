@@ -32,7 +32,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderEnumerator;
 import com.intellij.psi.PsiFile;
 import com.intellij.util.PathsList;
-import com.intellij.util.containers.BidirectionalMap;
 
 import net.sourceforge.pmd.PMDConfiguration;
 import net.sourceforge.pmd.PmdAnalysis;
@@ -137,8 +136,11 @@ public class PMDAnalyzer implements Disposable
 					.toList(),
 				RULESET_LOADER_SERVICE);
 		
+		final PluginConfiguration pluginConfiguration =
+			this.project.getService(PluginConfigurationManager.class).getCurrent();
+		
 		final Collection<PsiFile> applicableFiles = determineIfFilesApplicable
-			? this.determineApplicableFiles(optModule, filesToScan, progressIndicator)
+			? this.determineApplicableFiles(optModule, filesToScan, pluginConfiguration, progressIndicator)
 			: filesToScan;
 		if(applicableFiles.isEmpty())
 		{
@@ -167,10 +169,18 @@ public class PMDAnalyzer implements Disposable
 				pmdConfig.prependAuxClasspath(classPath);
 				return pmdConfig.getClassLoader();
 			}));
-		// TODO config
-		pmdConfig.setAnalysisCacheLocation(this.cacheFile(optModule));
-		// TODO Thread config
-		pmdConfig.setShowSuppressedViolations(true);
+		if(pluginConfiguration.showSuppressedWarnings())
+		{
+			pmdConfig.setShowSuppressedViolations(true);
+		}
+		if(pluginConfiguration.useSingleThread())
+		{
+			pmdConfig.setThreads(-1);
+		}
+		if(pluginConfiguration.useCacheFile())
+		{
+			pmdConfig.setAnalysisCacheLocation(this.cacheFile(optModule));
+		}
 		
 		progressIndicator.setText("Preparing files for scan");
 		
@@ -206,9 +216,7 @@ public class PMDAnalyzer implements Disposable
 				.filter(IDETextFile::hasFileId)
 				.collect(Collectors.toMap(
 					IDETextFile::getFileIdIfPresent,
-					IDETextFile::getPsiFile,
-					(l, r) -> r,
-					BidirectionalMap::new)));
+					IDETextFile::getPsiFile)));
 		
 		LOG.info("Analysis took " + (System.currentTimeMillis() - startMs) + "ms");
 		
@@ -246,6 +254,7 @@ public class PMDAnalyzer implements Disposable
 	private List<PsiFile> determineApplicableFiles(
 		final Optional<Module> optModule,
 		final Set<PsiFile> filesToScan,
+		final PluginConfiguration pluginConfiguration,
 		final ProgressIndicator progressIndicator)
 	{
 		progressIndicator.setText("Determining files for scan");
@@ -254,9 +263,6 @@ public class PMDAnalyzer implements Disposable
 		
 		final int totalFiles = filesToScan.size();
 		final AtomicInteger counter = new AtomicInteger(0);
-		
-		final PluginConfiguration pluginConfiguration =
-			this.project.getService(PluginConfigurationManager.class).getCurrent();
 		
 		final List<PsiFile> files = ReadAction.compute(() -> filesToScan.stream()
 			.filter(file -> {

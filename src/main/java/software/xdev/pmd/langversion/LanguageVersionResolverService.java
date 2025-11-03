@@ -106,7 +106,7 @@ public class LanguageVersionResolverService
 			.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 	
-	public boolean isFileSupportedByAnyResolve(final PsiFile file)
+	public boolean isFileSupportedByAnyResolver(final PsiFile file)
 	{
 		return this.orderedLangResolvers().stream().anyMatch(r -> r.isFileSupported(file));
 	}

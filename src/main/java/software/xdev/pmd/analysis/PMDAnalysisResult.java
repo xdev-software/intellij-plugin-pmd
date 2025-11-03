@@ -1,9 +1,11 @@
 package software.xdev.pmd.analysis;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jetbrains.annotations.Nullable;
 
 import com.intellij.psi.PsiFile;
-import com.intellij.util.containers.BidirectionalMap;
 
 import net.sourceforge.pmd.lang.document.FileId;
 import net.sourceforge.pmd.reporting.Report;
@@ -11,11 +13,11 @@ import net.sourceforge.pmd.reporting.Report;
 
 public record PMDAnalysisResult(
 	@Nullable Report report,
-	BidirectionalMap<FileId, PsiFile> fileIdPsiFiles
+	Map<FileId, PsiFile> fileIdPsiFiles
 )
 {
 	public static PMDAnalysisResult empty()
 	{
-		return new PMDAnalysisResult(null, new BidirectionalMap<>());
+		return new PMDAnalysisResult(null, new HashMap<>());
 	}
 }

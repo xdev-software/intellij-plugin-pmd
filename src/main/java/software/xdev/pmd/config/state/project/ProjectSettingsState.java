@@ -35,9 +35,12 @@ public class ProjectSettingsState
 	@Attribute
 	String serialisationVersion;
 	
-	// TODO
-	// Thread Count (null = auto)
-	// Batch process modules?
+	@Tag
+	Boolean useSingleThread;
+	@Tag
+	Boolean showSuppressedWarnings;
+	@Tag
+	Boolean useCacheFile;
 	@Tag
 	String scanScope;
 	@XCollection
@@ -45,17 +48,18 @@ public class ProjectSettingsState
 	@MapAnnotation
 	List<ConfigurationLocationState> locations;
 	
-	static ProjectSettingsState create(@NotNull final PluginConfiguration currentPluginConfig)
+	static ProjectSettingsState create(@NotNull final PluginConfiguration currentConfig)
 	{
 		final ProjectSettingsState projectSettings = new ProjectSettingsState();
 		
 		projectSettings.serialisationVersion = "1";
 		
-		projectSettings.scanScope = currentPluginConfig.scanScope().name();
-		
-		projectSettings.activeLocationIds = new ArrayList<>(currentPluginConfig.activeLocationIds());
-		
-		projectSettings.locations = currentPluginConfig.locations().stream()
+		projectSettings.useSingleThread = currentConfig.useSingleThread();
+		projectSettings.showSuppressedWarnings = currentConfig.showSuppressedWarnings();
+		projectSettings.useCacheFile = currentConfig.useCacheFile();
+		projectSettings.scanScope = currentConfig.scanScope().name();
+		projectSettings.activeLocationIds = new ArrayList<>(currentConfig.activeLocationIds());
+		projectSettings.locations = currentConfig.locations().stream()
 			.map(location -> new ConfigurationLocationState(
 				location.getId(),
 				location.getType().name(),
@@ -78,6 +82,9 @@ public class ProjectSettingsState
 		@NotNull final Project project)
 	{
 		return builder
+			.withUseSingleThread(this.useSingleThread)
+			.withShowSuppressedWarnings(this.showSuppressedWarnings)
+			.withUseCacheFile(this.useCacheFile)
 			.withScanScope(this.lookupScanScope())
 			.withLocations(this.deserializeLocations(project))
 			.withActiveLocationIds(new TreeSet<>(requireNonNullElseGet(

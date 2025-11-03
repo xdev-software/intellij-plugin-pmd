@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Possible values of the 'scope' configuration item.
  */
-public enum ScanScope // TODO: Check if this even makes sense
+public enum ScanScope
 {
 	/**
 	 * Scan only Java files which reside in source folders (main only)

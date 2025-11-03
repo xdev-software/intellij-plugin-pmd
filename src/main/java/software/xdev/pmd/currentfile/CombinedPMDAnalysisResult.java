@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.intellij.psi.PsiFile;
 
@@ -22,8 +20,7 @@ public record CombinedPMDAnalysisResult(
 	List<Report.SuppressedViolation> suppressedRuleViolations,
 	List<Report.ProcessingError> errors,
 	List<Report.ConfigurationError> configErrors,
-	Map<FileId, PsiFile> fileIdPsiFiles,
-	Map<PsiFile, Set<FileId>> psiFileFileIds // TODO: Remove?
+	Map<FileId, PsiFile> fileIdPsiFiles
 )
 {
 	public static CombinedPMDAnalysisResult combine(final Collection<PMDAnalysisResult> results)
@@ -33,7 +30,6 @@ public record CombinedPMDAnalysisResult(
 		final List<Report.ProcessingError> processingErrors = new ArrayList<>();
 		final List<Report.ConfigurationError> configErrors = new ArrayList<>();
 		final Map<FileId, PsiFile> fileIdPsiFiles = new HashMap<>();
-		final Map<PsiFile, Set<FileId>> psiFileFileIds = new HashMap<>();
 		
 		for(final PMDAnalysisResult result : results)
 		{
@@ -46,12 +42,7 @@ public record CombinedPMDAnalysisResult(
 				configErrors.addAll(report.getConfigurationErrors());
 			}
 			
-			result.fileIdPsiFiles().forEach((fileId, psiFile) ->
-			{
-				fileIdPsiFiles.put(fileId, psiFile);
-				psiFileFileIds.computeIfAbsent(psiFile, ignored -> new HashSet<>())
-					.add(fileId);
-			});
+			fileIdPsiFiles.putAll(result.fileIdPsiFiles());
 		}
 		
 		return new CombinedPMDAnalysisResult(
@@ -59,8 +50,7 @@ public record CombinedPMDAnalysisResult(
 			Collections.unmodifiableList(suppressedRuleViolations),
 			Collections.unmodifiableList(processingErrors),
 			Collections.unmodifiableList(configErrors),
-			Collections.unmodifiableMap(fileIdPsiFiles),
-			Collections.unmodifiableMap(psiFileFileIds)
+			Collections.unmodifiableMap(fileIdPsiFiles)
 		);
 	}
 	

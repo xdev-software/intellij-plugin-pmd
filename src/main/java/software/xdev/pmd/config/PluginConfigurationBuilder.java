@@ -4,8 +4,10 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.project.Project;
 
@@ -17,41 +19,65 @@ import software.xdev.pmd.model.scope.ScanScope;
 
 public final class PluginConfigurationBuilder
 {
+	private boolean useSingleThread;
+	private boolean showSuppressedWarnings;
+	private boolean useCacheFile;
 	private ScanScope scanScope;
 	private SortedSet<ConfigurationLocation> locations;
 	private SortedSet<String> activeLocationIds;
 	
-	private PluginConfigurationBuilder(
-		@NotNull final ScanScope scanScope,
-		@NotNull final SortedSet<ConfigurationLocation> locations,
-		@NotNull final SortedSet<String> activeLocationIds)
+	public PluginConfigurationBuilder(final Project project)
 	{
-		this.scanScope = scanScope;
-		this.locations = locations;
-		this.activeLocationIds = activeLocationIds;
-	}
-	
-	public static PluginConfigurationBuilder defaultConfiguration(@NotNull final Project project)
-	{
-		final SortedSet<ConfigurationLocation> defaultLocations = new TreeSet<>();
-		
-		BundledConfig.getAllBundledConfigs()
+		this.showSuppressedWarnings = true;
+		this.useCacheFile = true;
+		this.scanScope = ScanScope.getDefaultValue();
+		this.locations = BundledConfig.getAllBundledConfigs()
 			.stream()
 			.map(bc -> configurationLocationFactory(project).create(bc, project))
-			.forEach(defaultLocations::add);
-		
-		return new PluginConfigurationBuilder(
-			ScanScope.getDefaultValue(),
-			defaultLocations,
-			Collections.emptySortedSet());
+			.collect(Collectors.toCollection(TreeSet::new));
+		this.activeLocationIds = Collections.emptySortedSet();
 	}
 	
-	public static PluginConfigurationBuilder from(@NotNull final PluginConfiguration source)
+	public PluginConfigurationBuilder(final PluginConfiguration copyFrom)
 	{
-		return new PluginConfigurationBuilder(
-			source.scanScope(),
-			source.locations(),
-			source.activeLocationIds());
+		this.useSingleThread = copyFrom.useSingleThread();
+		this.showSuppressedWarnings = copyFrom.showSuppressedWarnings();
+		this.useCacheFile = copyFrom.useCacheFile();
+		this.scanScope = copyFrom.scanScope();
+		this.locations = copyFrom.locations();
+		this.activeLocationIds = copyFrom.activeLocationIds();
+	}
+	
+	public static PluginConfiguration copy(@NotNull final PluginConfiguration source)
+	{
+		return new PluginConfigurationBuilder(source).build();
+	}
+	
+	public PluginConfigurationBuilder withUseSingleThread(@Nullable final Boolean useSingleThread)
+	{
+		if(useSingleThread != null)
+		{
+			this.useSingleThread = useSingleThread;
+		}
+		return this;
+	}
+	
+	public PluginConfigurationBuilder withShowSuppressedWarnings(@Nullable final Boolean showSuppressedWarnings)
+	{
+		if(showSuppressedWarnings != null)
+		{
+			this.showSuppressedWarnings = showSuppressedWarnings;
+		}
+		return this;
+	}
+	
+	public PluginConfigurationBuilder withUseCacheFile(@Nullable final Boolean useCacheFile)
+	{
+		if(useCacheFile != null)
+		{
+			this.useCacheFile = useCacheFile;
+		}
+		return this;
 	}
 	
 	public PluginConfigurationBuilder withActiveLocationIds(@NotNull final SortedSet<String> newActiveLocationIds)
@@ -75,9 +101,17 @@ public final class PluginConfigurationBuilder
 	public PluginConfiguration build()
 	{
 		return new PluginConfiguration(
+			this.useSingleThread,
+			this.showSuppressedWarnings,
+			this.useCacheFile,
 			this.scanScope,
-			Objects.requireNonNullElseGet(this.locations, TreeSet::new),
-			Objects.requireNonNullElseGet(this.activeLocationIds, TreeSet::new));
+			Collections.unmodifiableSortedSet(Objects.requireNonNullElseGet(this.locations, TreeSet::new)),
+			this.activeLocationIds != null
+				? this.activeLocationIds.stream()
+				.filter(Objects::nonNull)
+				.collect(Collectors.toCollection(TreeSet::new))
+				: new TreeSet<>(),
+			new PluginConfiguration.Cache());
 	}
 	
 	private static ConfigurationLocationFactory configurationLocationFactory(final Project project)

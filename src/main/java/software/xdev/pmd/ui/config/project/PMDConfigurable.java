@@ -50,24 +50,22 @@ public class PMDConfigurable implements Configurable
 		return this.configPanel;
 	}
 	
+	private PluginConfiguration getConfigPanelPluginConfig()
+	{
+		return PluginConfigurationBuilder.copy(this.configPanel.getPluginConfiguration());
+	}
+	
 	@Override
 	public boolean isModified()
 	{
-		final PluginConfiguration oldConfig = this.pluginConfigurationManager.getCurrent();
-		final PluginConfiguration newConfig = PluginConfigurationBuilder
-			.from(this.configPanel.getPluginConfiguration())
-			.build();
-		
-		return !oldConfig.hasChangedFrom(newConfig);
+		return !this.pluginConfigurationManager.getCurrent() // Old
+			.hasChangedFrom(this.getConfigPanelPluginConfig()); // New
 	}
 	
 	@Override
 	public void apply()
 	{
-		final PluginConfiguration newConfig = PluginConfigurationBuilder
-			.from(this.configPanel.getPluginConfiguration())
-			.build();
-		this.pluginConfigurationManager.setCurrent(newConfig);
+		this.pluginConfigurationManager.setCurrent(this.getConfigPanelPluginConfig());
 	}
 	
 	@Override
