@@ -64,6 +64,7 @@ public class RuleDescriptionDocMarkdownToHtmlService
 		
 		String html = DocMarkdownToHtmlConverter.convert(this.project, md.trim());
 		
+		// Remove first paragraph which is not needed and creates ugly empty lines
 		if(html.startsWith("<p>") && html.length() > 3)
 		{
 			html = html.substring(3);

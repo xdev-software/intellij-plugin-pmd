@@ -38,10 +38,4 @@ public class RelativeFileConfigurationLocation extends FileConfigurationLocation
 			this.projectFilePaths().makeProjectRelative(
 				this.projectFilePaths().detokenize(location))));
 	}
-	
-	@Override
-	public Object clone()
-	{
-		return this.cloneCommonPropertiesTo(new RelativeFileConfigurationLocation(this.getProject(), this.getId()));
-	}
 }

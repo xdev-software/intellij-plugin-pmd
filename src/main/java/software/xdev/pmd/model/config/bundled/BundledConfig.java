@@ -86,12 +86,6 @@ public final class BundledConfig
 		return Objects.requireNonNull(all.get(id), "Failed to find id " + id);
 	}
 	
-	public static BundledConfig getDefault()
-	{
-		initAllIfRequired();
-		return all.values().stream().findFirst().orElseThrow();
-	}
-	
 	public static Collection<BundledConfig> getAllBundledConfigs()
 	{
 		initAllIfRequired();

@@ -23,7 +23,7 @@ public record CombinedPMDAnalysisResult(
 	List<Report.ProcessingError> errors,
 	List<Report.ConfigurationError> configErrors,
 	Map<FileId, PsiFile> fileIdPsiFiles,
-	Map<PsiFile, Set<FileId>> psiFileFileIds
+	Map<PsiFile, Set<FileId>> psiFileFileIds // TODO: Remove?
 )
 {
 	public static CombinedPMDAnalysisResult combine(final Collection<PMDAnalysisResult> results)

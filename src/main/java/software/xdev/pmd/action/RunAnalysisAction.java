@@ -71,13 +71,13 @@ public class RunAnalysisAction extends AbstractAnAction
 			public void run(@NotNull final ProgressIndicator indicator)
 			{
 				indicator.setIndeterminate(true);
-				RunAnalysisAction.this.analyse(project, indicator, selectedFiles);
+				RunAnalysisAction.this.analyze(project, indicator, selectedFiles);
 			}
 		});
 	}
 	
 	@SuppressWarnings("checkstyle:MagicNumber")
-	private void analyse(
+	private void analyze(
 		final Project project,
 		final ProgressIndicator progressIndicator,
 		final VirtualFile[] selectedFiles)

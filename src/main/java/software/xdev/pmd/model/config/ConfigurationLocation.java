@@ -20,7 +20,7 @@ import software.xdev.pmd.model.config.bundled.BundledConfigurationLocation;
  * <p>Note on order: Configuration locations are ordered by description text, followed by location and type, except
  * that the bundled configurations always go first.</p>
  */
-public abstract class ConfigurationLocation implements Cloneable, Comparable<ConfigurationLocation>
+public abstract class ConfigurationLocation implements Comparable<ConfigurationLocation>
 {
 	protected final Logger logger;
 	
@@ -150,16 +150,6 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 	}
 	
 	@Override
-	public abstract Object clone();
-	
-	protected ConfigurationLocation cloneCommonPropertiesTo(final ConfigurationLocation cloned)
-	{
-		cloned.setDescription(this.getDescription());
-		cloned.setLocation(this.getLocation());
-		return cloned;
-	}
-	
-	@Override
 	public boolean equals(final Object o)
 	{
 		if(!(o instanceof final ConfigurationLocation that))
@@ -179,7 +169,6 @@ public abstract class ConfigurationLocation implements Cloneable, Comparable<Con
 	@Override
 	public String toString()
 	{
-		assert this.description != null;
 		return this.description;
 	}
 	

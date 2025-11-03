@@ -38,13 +38,13 @@ public class BundledConfigurationLocation extends ConfigurationLocation
 	@Override
 	public void setLocation(final String location)
 	{
-		// do nothing, we always use the hard-coded location
+		// bundled
 	}
 	
 	@Override
 	public void setDescription(@Nullable final String description)
 	{
-		// do nothing, we always use the hard-coded description
+		// bundled
 	}
 	
 	@Override
@@ -69,13 +69,6 @@ public class BundledConfigurationLocation extends ConfigurationLocation
 	public boolean isRemovable()
 	{
 		return false;
-	}
-	
-	@Override
-	@NotNull
-	public BundledConfigurationLocation clone()
-	{
-		return new BundledConfigurationLocation(this.bundledConfig, this.getProject());
 	}
 	
 	@Override

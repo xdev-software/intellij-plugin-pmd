@@ -102,10 +102,4 @@ public class FileConfigurationLocation extends ConfigurationLocation
 	{
 		return this.getProject().getService(ProjectFilePaths.class);
 	}
-	
-	@Override
-	public Object clone()
-	{
-		return this.cloneCommonPropertiesTo(new FileConfigurationLocation(this.getProject(), this.getId()));
-	}
 }

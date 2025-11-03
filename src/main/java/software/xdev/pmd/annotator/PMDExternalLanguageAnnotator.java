@@ -1,8 +1,6 @@
 package software.xdev.pmd.annotator;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -35,7 +33,6 @@ import software.xdev.pmd.analysis.PMDAnalysisResult;
 import software.xdev.pmd.analysis.PMDAnalyzer;
 import software.xdev.pmd.config.ConfigurationLocationSource;
 import software.xdev.pmd.currentfile.CurrentFileAnalysisManager;
-import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
 import software.xdev.pmd.markdown.RuleDescriptionDocMarkdownToHtmlService;
 import software.xdev.pmd.util.Notifications;
 
@@ -44,9 +41,6 @@ public class PMDExternalLanguageAnnotator
 	extends ExternalAnnotator<PMDExternalLanguageAnnotator.FileInfo, PMDExternalLanguageAnnotator.PMDAnnotations>
 {
 	private static final Logger LOG = Logger.getInstance(PMDExternalLanguageAnnotator.class);
-	
-	private static final Map<MarkdownCacheKey, String> MARKDOWN_CACHE =
-		Collections.synchronizedMap(new SoftHashMap<>());
 	
 	@Nullable
 	@Override
