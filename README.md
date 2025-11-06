@@ -16,7 +16,7 @@ Provides real-time analysis and highlighting with <a href="https://pmd.github.io
 
 1. Install the plugin (see Installation guide below)
 2. Open a project
-3. Configure PMD for the project (`Settings > Tools > PMD`) <br/> <details><summary>Example</summary> <img src="./assets/project-configuration.avif"> </details>
+3. Configure PMD for the project (`Settings > Tools > PMD`) <br/> <details><summary>Example</summary> <img height=400 src="./assets/project-configuration.avif"> </details>
     * If there is already a project configuration file (`.idea/pmd-x.xml`) present this will be done automatically
 4. Open a supported file
 5. You should see the problems automatically highlighted in the file and more details in the PMD tool window <br/> <details><summary>Example</summary> <img src="./assets/annotator.avif"> <br/> <img src="./assets/toolwindow-current-file.avif"> </details>
