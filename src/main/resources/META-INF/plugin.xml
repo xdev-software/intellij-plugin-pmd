@@ -59,6 +59,7 @@
 				language="kotlin"
 				implementationClass="software.xdev.pmd.annotator.PMDExternalLanguageAnnotator"/>
 
+		<applicationService serviceImplementation="software.xdev.pmd.action.ActionFilesAnalyzer"/>
 		<applicationService serviceImplementation="software.xdev.pmd.langversion.LanguageVersionResolverService"/>
 	</extensions>
 

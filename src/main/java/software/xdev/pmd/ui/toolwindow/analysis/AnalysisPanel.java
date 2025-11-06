@@ -20,7 +20,6 @@ import com.intellij.ide.CommonActionsManager;
 import com.intellij.ide.DefaultTreeExpander;
 import com.intellij.ide.TreeExpander;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.ActionGroup;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -54,6 +53,8 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 {
 	protected final Project project;
 	
+	protected final DefaultActionGroup toolbarActionGroup;
+	
 	protected final Tree tree = new AnalysisTree();
 	protected final JBScrollPane treeScrollPane = new JBScrollPane(this.tree);
 	protected final DefaultTreeModel treeModel = new DefaultTreeModel(new RootNode());
@@ -81,6 +82,7 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 		this.project = project;
 		this.currentHierarchyBuilderFactory = currentHierarchyBuilderFactory;
 		
+		this.toolbarActionGroup = this.createActions();
 		this.setToolbar(this.createToolbar());
 		
 		this.tree.setCellRenderer(new NodeCellRenderer());
@@ -96,18 +98,18 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 	}
 	
 	@SuppressWarnings("checkstyle:MagicNumber")
-	protected JComponent createToolbar()
+	private JComponent createToolbar()
 	{
 		final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar(
 			PMDToolWindowFactory.TOOL_WINDOW_ID,
-			this.createActions(),
+			this.toolbarActionGroup,
 			false);
 		final JComponent toolbarComponent = toolbar.getComponent();
 		toolbar.setTargetComponent(this);
 		return toolbarComponent;
 	}
 	
-	private ActionGroup createActions()
+	private DefaultActionGroup createActions()
 	{
 		final DefaultActionGroup actionGroup = new DefaultActionGroup();
 		final CommonActionsManager manager = CommonActionsManager.getInstance();
@@ -142,8 +144,8 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 		actionGroup.add(new Separator());
 		
 		final TreeExpander treeExpander = new DefaultTreeExpander(this.tree);
-		actionGroup.add(manager.createCollapseAllAction(treeExpander, this));
 		actionGroup.add(manager.createExpandAllAction(treeExpander, this));
+		actionGroup.add(manager.createCollapseAllAction(treeExpander, this));
 		
 		return actionGroup;
 	}

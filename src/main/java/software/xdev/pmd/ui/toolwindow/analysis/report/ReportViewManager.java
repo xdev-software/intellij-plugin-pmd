@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
@@ -29,20 +30,23 @@ public class ReportViewManager
 		this.project = project;
 	}
 	
-	public void displayNewReport(final CombinedPMDAnalysisResult result)
+	public void displayNewReport(final CombinedPMDAnalysisResult result, final AnActionEvent triggeringEvent)
 	{
 		ApplicationManager.getApplication().invokeLater(() ->
 			Optional.ofNullable(ToolWindowManager.getInstance(this.project)
 					.getToolWindow(PMDToolWindowFactory.TOOL_WINDOW_ID))
-				.ifPresent(toolWindow -> this.displayNewReportInToolWindow(result, toolWindow)));
+				.ifPresent(toolWindow -> this.displayNewReportInToolWindow(result, triggeringEvent, toolWindow)));
 	}
 	
-	private void displayNewReportInToolWindow(final CombinedPMDAnalysisResult result, final ToolWindow toolWindow)
+	private void displayNewReportInToolWindow(
+		final CombinedPMDAnalysisResult result,
+		final AnActionEvent triggeringEvent,
+		final ToolWindow toolWindow)
 	{
 		toolWindow.activate(null);
 		
 		final ContentManager contentManager = toolWindow.getContentManager();
-		final ReportPanel reportPanel = new ReportPanel(this.project, result);
+		final ReportPanel reportPanel = new ReportPanel(this.project, result, triggeringEvent);
 		final Content reportContent = contentManager.getFactory().createContent(
 			reportPanel,
 			"Report " + LocalDateTime.now().format(REPORT_DATE_FORMATTER),
