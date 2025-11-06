@@ -4,7 +4,7 @@
 
 # <img alt="Plugin icon" src="./src/main/resources/META-INF/pluginIcon.svg" width="30"> PMD X
 
-Provides real-time analysis and highlighting with <a href="https://pmd.github.io">PMD</a> - an extensible cross-language static code analyzer.
+A plugin for IntelliJ that provides code analysis and highlighting with <a href="https://pmd.github.io">PMD</a> - an extensible cross-language static code analyzer.
 
 ## Features
 * Optimized for real-time analysis and zero configuration project setups that just require you to checkout the code
