@@ -8,18 +8,16 @@ Provides real-time analysis and highlighting with <a href="https://pmd.github.io
 
 ## Features
 * Optimized for real-time analysis and zero configuration project setups that just require you to checkout the code
-* Currently Java and Kotlin are supported
 * Real-time analysis and highlighting of currently edited file
 * Run bulk analysis of files by right clicking the project menu <br/> <details><summary>Example</summary> <img height=400 src="./assets/run-bulk-analysis.avif"> <br/> <img src="./assets/toolwindow-report.avif"> </details>
+* Currently Java and Kotlin are supported, Language versions are automatically detected
 
 ## Usage
-
-1. Install the plugin (see Installation guide below)
-2. Open a project
-3. Configure PMD for the project (`Settings > Tools > PMD`) <br/> <details><summary>Example</summary> <img height=500 src="./assets/project-configuration.avif"> </details>
+1. Install the plugin and open a project
+2. Configure PMD for the project (`Settings > Tools > PMD`) <br/> <details><summary>Example</summary> <img height=500 src="./assets/project-configuration.avif"> </details>
     * If there is already a project configuration file (`.idea/pmd-x.xml`) present this will be done automatically
-4. Open a supported file
-5. You should see the problems automatically highlighted in the file and more details in the PMD tool window <br/> <details><summary>Example</summary> <img src="./assets/annotator.avif"> <br/> <img src="./assets/toolwindow-current-file.avif"> </details>
+3. Open a supported file
+4. You should see the problems being automatically highlighted in the file and find more details in the PMD tool window <br/> <details><summary>Example</summary> <img src="./assets/annotator.avif"> <br/> <img src="./assets/toolwindow-current-file.avif"> </details>
 
 ## Installation
 [Installation guide for the latest release](https://github.com/xdev-software/intellij-plugin-pmd/releases/latest#Installation)
