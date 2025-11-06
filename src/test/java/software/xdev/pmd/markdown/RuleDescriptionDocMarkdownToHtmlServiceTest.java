@@ -21,9 +21,9 @@ class RuleDescriptionDocMarkdownToHtmlServiceTest
 		
 		assertEquals(
 			"<a href=\"https://example.org\">https://example.org</a><p>"
-				+ "<a href=\"https://docs.pmd-code.org/apidocs/pmd-core/" + PMDVersion.VERSION
-				+ "/net/sourceforge/pmd/lang/rule/Rule"
-				+ ".html\">Rule</a>",
+				+ "<a href=\"https://docs.pmd-code.org/apidocs/pmd-core/"
+				+ PMDVersion.VERSION
+				+ "/net/sourceforge/pmd/lang/rule/Rule.html\">Rule</a>",
 			ruleDescriptionDocMarkdownToHtmlService.mdToHtml("""
 				<https://example.org>
 				
