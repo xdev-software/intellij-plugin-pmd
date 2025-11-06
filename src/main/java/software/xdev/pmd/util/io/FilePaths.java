@@ -112,19 +112,13 @@ public final class FilePaths
 		@NotNull final String pathSeparator,
 		final String normalizedBasePath)
 	{
-		boolean baseIsFile = true;
-		
 		final File baseResource = new File(normalizedBasePath);
-		
 		if(baseResource.exists())
 		{
-			baseIsFile = baseResource.isFile();
+			return baseResource.isFile();
 		}
-		else if(basePath.endsWith(pathSeparator))
-		{
-			baseIsFile = false;
-		}
-		return baseIsFile;
+		
+		return !basePath.endsWith(pathSeparator);
 	}
 	
 	public static class PathResolutionException extends RuntimeException
