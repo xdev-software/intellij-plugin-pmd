@@ -16,7 +16,7 @@ Provides real-time analysis and highlighting with <a href="https://pmd.github.io
 
 1. Install the plugin (see Installation guide below)
 2. Open a project
-3. Configure PMD for the project (`Settings > Tools > PMD`) <br/> <details><summary>Example</summary> <img height=400 src="./assets/project-configuration.avif"> </details>
+3. Configure PMD for the project (`Settings > Tools > PMD`) <br/> <details><summary>Example</summary> <img height=500 src="./assets/project-configuration.avif"> </details>
     * If there is already a project configuration file (`.idea/pmd-x.xml`) present this will be done automatically
 4. Open a supported file
 5. You should see the problems automatically highlighted in the file and more details in the PMD tool window <br/> <details><summary>Example</summary> <img src="./assets/annotator.avif"> <br/> <img src="./assets/toolwindow-current-file.avif"> </details>
@@ -30,5 +30,9 @@ Provides real-time analysis and highlighting with <a href="https://pmd.github.io
 
 ## Contributing
 See the [contributing guide](./CONTRIBUTING.md) for detailed instructions on how to get started with our project.
+
+## Acknowledgment
+This plugin was inspired by existing plugin like [CheckStyle-IDEA](https://plugins.jetbrains.com/plugin/1065-checkstyle-idea), [Sonarlint](https://plugins.jetbrains.com/plugin/7973-sonarqube-for-ide) and "[PMD](https://plugins.jetbrains.com/plugin/1137-pmd)".
+Please have a look at [`THIRD-PARTY-CREDITS`](./THIRD-PARTY-CREDITS.md) for more details.
 
 <sub>Disclaimer: This is not an official PMD project and not associated</sub>

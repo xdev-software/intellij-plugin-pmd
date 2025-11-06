@@ -1,4 +1,5 @@
 # 1.0.0
 _Initial release_
 
-Support for Java and Kotlin
+* Bundled PMD version: 7.18.0
+* Support for Java and Kotlin
