@@ -23,7 +23,7 @@ public class LocationTableModel extends AbstractTableModel
 {
 	private static final int COLUMN_ACTIVE = 0;
 	private static final int COLUMN_DESCRIPTION = 1;
-	private static final int COLUMN_FILE = 2;
+	private static final int COLUMN_LOCATION = 2;
 	private static final int NUMBER_OF_COLUMNS = 3;
 	
 	private final List<ConfigurationLocation> locations = new ArrayList<>();
@@ -49,20 +49,6 @@ public class LocationTableModel extends AbstractTableModel
 		{
 			this.locations.add(location);
 			this.fireTableRowsInserted(this.locations.size() - 1, this.locations.size() - 1);
-		}
-	}
-	
-	public void updateLocation(final ConfigurationLocation location, final ConfigurationLocation newLocation)
-	{
-		if(location != null && newLocation != null)
-		{
-			final int index = this.locations.indexOf(location);
-			if(index != -1)
-			{
-				this.locations.remove(index);
-				this.locations.add(index, newLocation);
-				this.fireTableRowsUpdated(index, index);
-			}
 		}
 	}
 	
@@ -129,16 +115,6 @@ public class LocationTableModel extends AbstractTableModel
 		return this.activeLocations;
 	}
 	
-	/**
-	 * Clear all data from this table model.
-	 */
-	public void clear()
-	{
-		this.locations.clear();
-		
-		this.fireTableDataChanged();
-	}
-	
 	public List<ConfigurationLocation> getLocations()
 	{
 		return Collections.unmodifiableList(this.locations);
@@ -170,7 +146,7 @@ public class LocationTableModel extends AbstractTableModel
 		{
 			case COLUMN_ACTIVE -> "Active";
 			case COLUMN_DESCRIPTION -> "Description";
-			case COLUMN_FILE -> "File";
+			case COLUMN_LOCATION -> "Location";
 			default -> "???";
 		};
 	}
@@ -206,7 +182,7 @@ public class LocationTableModel extends AbstractTableModel
 		{
 			case COLUMN_ACTIVE -> this.activeLocations.contains(this.locations.get(rowIndex));
 			case COLUMN_DESCRIPTION -> this.locations.get(rowIndex).getDescription();
-			case COLUMN_FILE -> this.locations.get(rowIndex).getLocation();
+			case COLUMN_LOCATION -> this.locations.get(rowIndex).getRawLocation();
 			default -> throw new IllegalArgumentException("Invalid column: " + columnIndex);
 		};
 	}

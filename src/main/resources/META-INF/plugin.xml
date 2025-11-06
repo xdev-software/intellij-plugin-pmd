@@ -4,9 +4,11 @@
 	<vendor url="https://www.github.com/xdev-software">xdev-software</vendor>
 
 	<description><![CDATA[
-<p>TODO</p>
+<p>Provides real-time analysis and highlighting with <a href="https://pmd.github.io">PMD</a> - an extensible cross-language static code analyzer.</p>
+<p>The plugin is optimized for real-time analysis and zero configuration project setups that just require you to checkout the code.</p>
 <br/>
 <p>More information is available on <a href="https://github.com/xdev-software/intellij-plugin-pmd">GitHub</a>.</p>
+<p><sub>Disclaimer: This is not an official PMD project and not associated</sub></p>
     ]]></description>
 
 	<change-notes><![CDATA[
