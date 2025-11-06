@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<idea-plugin>
+	<extensions defaultExtensionNs="software.xdev.pmd">
+		<languageResolver
+				implementation="software.xdev.pmd.langversion.KotlinLanguageAndVersionResolver"/>
+
+		<languageVersionResolver
+				implementation="software.xdev.pmd.langversion.KotlinLanguageAndVersionResolver"/>
+	</extensions>
+</idea-plugin>
