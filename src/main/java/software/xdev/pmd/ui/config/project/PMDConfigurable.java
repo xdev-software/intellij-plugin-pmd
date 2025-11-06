@@ -4,7 +4,6 @@ import javax.swing.JComponent;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.project.Project;
 
@@ -19,8 +18,6 @@ import software.xdev.pmd.config.PluginConfigurationManager;
  */
 public class PMDConfigurable implements Configurable
 {
-	private static final Logger LOG = Logger.getInstance(PMDConfigurable.class);
-	
 	private final PMDConfigPanel configPanel;
 	private final PluginConfigurationManager pluginConfigurationManager;
 	

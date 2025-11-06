@@ -158,7 +158,6 @@ public class SaxonXPathRuleQuery
 			final List<Expression> expressions = this.getExpressionsForLocalNameOrDefault(node.getXPathNodeName());
 			for(final Expression expression : expressions)
 			{
-				@SuppressWarnings("PMD.CloseResource")
 				final SequenceIterator iterator = expression.iterate(xpathDynamicContext.getXPathContextObject());
 				Item current = iterator.next();
 				while(current != null)

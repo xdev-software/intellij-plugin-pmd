@@ -9,11 +9,6 @@ import org.jetbrains.annotations.NotNull;
 
 public final class FilePaths
 {
-	private FilePaths()
-	{
-		// utility class
-	}
-	
 	/**
 	 * Get the relative path from one file to another, specifying the directory separator. If one of the provided
 	 * resources does not exist, it is assumed to be a file unless it ends with '/' or '\'.
@@ -29,6 +24,7 @@ public final class FilePaths
 	 * @return the relative file.
 	 * @see "http://stackoverflow.com/a/3054692"
 	 */
+	@SuppressWarnings("PMD.AvoidStringBuilderOrBuffer")
 	public static String relativePath(
 		@NotNull final String targetPath,
 		@NotNull final String basePath,
@@ -59,7 +55,7 @@ public final class FilePaths
 		
 		// First get all the common elements. Store them as a string,
 		// and also count how many of them there are.
-		final StringBuilder common = new StringBuilder();
+		final StringBuilder common = new StringBuilder(500);
 		
 		int commonIndex = 0;
 		while(commonIndex < target.length && commonIndex < base.length
@@ -90,7 +86,7 @@ public final class FilePaths
 		// the resource referred to by this path may not actually exist, but it's the best I can do
 		final boolean baseIsFile = isBaseFile(basePath, pathSeparator, normalizedBasePath);
 		
-		final StringBuilder relative = new StringBuilder();
+		final StringBuilder relative = new StringBuilder(100);
 		
 		if(base.length != commonIndex)
 		{
@@ -137,5 +133,9 @@ public final class FilePaths
 		{
 			super(msg);
 		}
+	}
+	
+	private FilePaths()
+	{
 	}
 }

@@ -154,17 +154,14 @@ public class LocationPanel extends JPanel
 	{
 		final String newId = UUID.randomUUID().toString();
 		
-		if(this.fileLocationField.isEnabled())
+		if(this.fileLocationField.isEnabled() && this.isNotBlank(this.fileLocation()))
 		{
-			if(this.isNotBlank(this.fileLocation()))
-			{
-				return this.configurationLocationFactory().create(
-					this.project,
-					newId,
-					this.typeOfFile(),
-					this.fileLocation(),
-					this.descriptionField.getText());
-			}
+			return this.configurationLocationFactory().create(
+				this.project,
+				newId,
+				this.typeOfFile(),
+				this.fileLocation(),
+				this.descriptionField.getText());
 		}
 		
 		return null;

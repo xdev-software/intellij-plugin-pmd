@@ -69,6 +69,7 @@ class IDETextFile implements TextFile
 		}
 	}
 	
+	@SuppressWarnings("PMD.PreserveStackTrace")
 	private FileId calculateFileId()
 	{
 		try

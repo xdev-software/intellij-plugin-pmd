@@ -172,6 +172,7 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 		return this.description;
 	}
 	
+	@SuppressWarnings("PMD.CognitiveComplexity")
 	@Override
 	public int compareTo(@NotNull final ConfigurationLocation other)
 	{
