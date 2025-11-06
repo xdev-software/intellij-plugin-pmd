@@ -3,11 +3,11 @@ plugins {
     id 'idea'
     id 'checkstyle'
     id 'pmd'
-    id 'org.jetbrains.intellij.platform' version '2.10.2'
+    id 'org.jetbrains.intellij.platform' version '2.10.4'
 }
 
 ext {
-    checkstyleVersion = '12.0.1'
+    checkstyleVersion = '12.1.1'
 
     pmdVersion = '7.18.0'
 }
@@ -59,6 +59,7 @@ dependencies {
     checkstyle "com.puppycrawl.tools:checkstyle:${checkstyleVersion}"
     pmd "net.sourceforge.pmd:pmd-ant:${pmdVersion}",
             "net.sourceforge.pmd:pmd-java:${pmdVersion}"
+
     // https://discuss.gradle.org/t/multiple-excludes-for-multiple-dependencies/11573
     ['pmd-core', 'pmd-java', 'pmd-kotlin'].each {
         implementation("net.sourceforge.pmd:$it:${pmdVersion}") {
@@ -71,7 +72,8 @@ dependencies {
             exclude group: 'org.checkerframework', module: 'checker-qual'
         }
     }
-    testImplementation platform('org.junit:junit-bom:6.0.0'),
+
+    testImplementation platform('org.junit:junit-bom:6.0.1'),
             'org.junit.jupiter:junit-jupiter',
             'org.junit.jupiter:junit-jupiter-engine',
             'org.assertj:assertj-core:3.27.6'
