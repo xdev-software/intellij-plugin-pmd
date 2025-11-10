@@ -29,6 +29,8 @@ import com.intellij.openapi.vfs.VirtualFileVisitor;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 
+import software.xdev.pmd.analysis.NoAnalysisReason;
+import software.xdev.pmd.analysis.PMDAnalysisResult;
 import software.xdev.pmd.analysis.PMDAnalyzer;
 import software.xdev.pmd.analysis.PsiFileValidator;
 import software.xdev.pmd.config.ConfigurationLocationSource;
@@ -88,6 +90,9 @@ public class ActionFilesAnalyzer
 		
 		if(psiFiles.isEmpty())
 		{
+			project.getService(ReportViewManager.class).displayNewReport(
+				CombinedPMDAnalysisResult.combine(PMDAnalysisResult.empty(NoAnalysisReason.NO_APPLICABLE_FILES)),
+				triggeringEvent);
 			return;
 		}
 		progressIndicator.checkCanceled();

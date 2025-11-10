@@ -41,14 +41,17 @@ public class CurrentFilePanel extends AnalysisPanel implements CurrentFileAnalys
 	}
 	
 	@Override
-	protected void updateTreeInUI(final RootNode rootNode)
+	protected void updateTreeInUI(@Nullable final RootNode rootNode, @Nullable final String noAnalysisReason)
 	{
-		super.updateTreeInUI(rootNode);
-		defaultExpandTreeNode(
-			this.tree,
-			rootNode,
-			new TreePath(this.treeModel.getPathToRoot(rootNode)),
-			4);
+		super.updateTreeInUI(rootNode, noAnalysisReason);
+		if(rootNode != null)
+		{
+			defaultExpandTreeNode(
+				this.tree,
+				rootNode,
+				new TreePath(this.treeModel.getPathToRoot(rootNode)),
+				4);
+		}
 	}
 	
 	@Override

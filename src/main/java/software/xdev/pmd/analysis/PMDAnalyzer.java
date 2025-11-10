@@ -99,7 +99,11 @@ public class PMDAnalyzer implements Disposable
 	{
 		if(filesToScan.isEmpty())
 		{
-			return PMDAnalysisResult.empty();
+			return PMDAnalysisResult.empty(NoAnalysisReason.NO_FILES);
+		}
+		if(configurationLocations.isEmpty())
+		{
+			return PMDAnalysisResult.empty(NoAnalysisReason.NO_CONFIG_LOCATION_OR_EXCLUDED);
 		}
 		
 		final ReentrantLock lock = this.locks.computeIfAbsent(optModule, ignored -> new ReentrantLock());
@@ -147,7 +151,7 @@ public class PMDAnalyzer implements Disposable
 		if(applicableFiles.isEmpty())
 		{
 			cfLoadRuleSetsAsync.cancel(false);
-			return PMDAnalysisResult.empty();
+			return PMDAnalysisResult.empty(NoAnalysisReason.NO_APPLICABLE_FILES);
 		}
 		
 		progressIndicator.checkCanceled();
