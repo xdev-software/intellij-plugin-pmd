@@ -56,13 +56,19 @@ public final class Notifications
 			.notify(project);
 	}
 	
-	private static NotificationGroup balloonGroup()
+	public static NotificationGroup balloonGroup()
 	{
 		return NotificationGroupManager.getInstance()
 			.getNotificationGroup("PMDBalloonGroup");
 	}
 	
-	private static NotificationGroup logOnlyGroup()
+	public static NotificationGroup startupHintsGroup()
+	{
+		return NotificationGroupManager.getInstance()
+			.getNotificationGroup("PMDStartupHintsGroup");
+	}
+	
+	public static NotificationGroup logOnlyGroup()
 	{
 		return NotificationGroupManager.getInstance()
 			.getNotificationGroup("PMDLogOnlyGroup");
