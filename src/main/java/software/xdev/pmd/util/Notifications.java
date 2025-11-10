@@ -6,7 +6,6 @@ import static com.intellij.notification.NotificationType.WARNING;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import com.intellij.notification.NotificationAction;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationGroupManager;
 import com.intellij.openapi.project.Project;
@@ -20,12 +19,10 @@ public final class Notifications
 	
 	public static void showInfo(
 		final Project project,
-		final String infoText,
-		final NotificationAction action)
+		final String infoText)
 	{
 		balloonGroup()
 			.createNotification("", infoText, INFORMATION)
-			.addAction(action)
 			.notify(project);
 	}
 	
@@ -56,13 +53,19 @@ public final class Notifications
 			.notify(project);
 	}
 	
-	private static NotificationGroup balloonGroup()
+	public static NotificationGroup balloonGroup()
 	{
 		return NotificationGroupManager.getInstance()
 			.getNotificationGroup("PMDBalloonGroup");
 	}
 	
-	private static NotificationGroup logOnlyGroup()
+	public static NotificationGroup startupHintsGroup()
+	{
+		return NotificationGroupManager.getInstance()
+			.getNotificationGroup("PMDStartupHintsGroup");
+	}
+	
+	public static NotificationGroup logOnlyGroup()
 	{
 		return NotificationGroupManager.getInstance()
 			.getNotificationGroup("PMDLogOnlyGroup");

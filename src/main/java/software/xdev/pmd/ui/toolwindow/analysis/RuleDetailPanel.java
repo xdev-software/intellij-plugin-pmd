@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.toolwindow;
+package software.xdev.pmd.ui.toolwindow.analysis;
 
 import java.awt.Component;
 import java.util.ArrayList;

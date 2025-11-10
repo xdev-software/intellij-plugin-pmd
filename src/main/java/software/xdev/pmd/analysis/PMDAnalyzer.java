@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +36,7 @@ import com.intellij.util.PathsList;
 
 import net.sourceforge.pmd.PMDConfiguration;
 import net.sourceforge.pmd.PmdAnalysis;
+import net.sourceforge.pmd.internal.util.ClasspathClassLoader;
 import net.sourceforge.pmd.lang.Language;
 import net.sourceforge.pmd.lang.LanguageVersion;
 import net.sourceforge.pmd.lang.document.TextFile;
@@ -62,7 +64,7 @@ public class PMDAnalyzer implements Disposable
 	private final Map<Optional<Module>, ReentrantLock> locks = Collections.synchronizedMap(new HashMap<>());
 	private final Map<Optional<Module>, CacheFile> cacheFiles = Collections.synchronizedMap(new HashMap<>());
 	// Reuse classloader when path is the same
-	private final Map<String, ClassLoader> cachedAuxClassPathLoader =
+	private final Map<Set<String>, ClassLoader> cachedSdkLibAuxClassLoader =
 		Collections.synchronizedMap(new SoftHashMap<>());
 	
 	public PMDAnalyzer(final Project project)
@@ -97,7 +99,11 @@ public class PMDAnalyzer implements Disposable
 	{
 		if(filesToScan.isEmpty())
 		{
-			return PMDAnalysisResult.empty();
+			return PMDAnalysisResult.empty(NoAnalysisReason.NO_FILES);
+		}
+		if(configurationLocations.isEmpty())
+		{
+			return PMDAnalysisResult.empty(NoAnalysisReason.NO_CONFIG_LOCATION_OR_EXCLUDED);
 		}
 		
 		final ReentrantLock lock = this.locks.computeIfAbsent(optModule, ignored -> new ReentrantLock());
@@ -145,7 +151,7 @@ public class PMDAnalyzer implements Disposable
 		if(applicableFiles.isEmpty())
 		{
 			cfLoadRuleSetsAsync.cancel(false);
-			return PMDAnalysisResult.empty();
+			return PMDAnalysisResult.empty(NoAnalysisReason.NO_APPLICABLE_FILES);
 		}
 		
 		progressIndicator.checkCanceled();
@@ -161,14 +167,12 @@ public class PMDAnalyzer implements Disposable
 		final PMDConfiguration pmdConfig = new PMDConfiguration();
 		pmdConfig.setDefaultLanguageVersions(highestLanguageVersionAndFiles.keySet().stream().toList());
 		
-		final String fullClassPathFor = this.getFullClassPathFor(optModule
+		final List<Module> modules = optModule
 			.map(List::of)
-			.orElseGet(() -> List.of(ModuleManager.getInstance(this.project).getModules())));
-		pmdConfig.setClassLoader(this.cachedAuxClassPathLoader.computeIfAbsent(
-			fullClassPathFor, classPath -> {
-				pmdConfig.prependAuxClasspath(classPath);
-				return pmdConfig.getClassLoader();
-			}));
+			.orElseGet(() -> List.of(ModuleManager.getInstance(this.project).getModules()));
+		
+		pmdConfig.setClassLoader(this.classLoaderFor(modules));
+		
 		if(pluginConfiguration.showSuppressedWarnings())
 		{
 			pmdConfig.setShowSuppressedViolations(true);
@@ -314,16 +318,48 @@ public class PMDAnalyzer implements Disposable
 					.collect(Collectors.toSet())));
 	}
 	
-	private String getFullClassPathFor(final Collection<Module> modules)
+	@NotNull
+	private ClasspathClassLoader classLoaderFor(final List<Module> modules)
+	{
+		final Set<String> fullClassPaths = this.classPathFor(modules, UnaryOperator.identity());
+		final Set<String> appClassPaths = this.classPathFor(modules, o -> o.withoutSdk().withoutLibraries());
+		final Set<String> sdkLibClassPaths = fullClassPaths.stream()
+			.filter(s -> !appClassPaths.contains(s))
+			.collect(Collectors.toSet());
+		
+		return this.createClasspathClassLoader(
+			appClassPaths,
+			this.cachedSdkLibAuxClassLoader.computeIfAbsent(
+				sdkLibClassPaths,
+				paths -> this.createClasspathClassLoader(paths, PMDConfiguration.class.getClassLoader())));
+	}
+	
+	private Set<String> classPathFor(
+		final Collection<Module> modules,
+		final UnaryOperator<OrderEnumerator> mapOrderEnumerator)
 	{
 		return modules.stream()
 			.map(OrderEnumerator::orderEntries)
 			.map(OrderEnumerator::recursively)
+			.map(mapOrderEnumerator)
 			.map(OrderEnumerator::getPathsList)
 			.map(PathsList::getPathList)
 			.flatMap(Collection::stream)
-			.distinct()
-			.collect(Collectors.joining(File.pathSeparator));
+			.collect(Collectors.toSet());
+	}
+	
+	private ClasspathClassLoader createClasspathClassLoader(
+		final Set<String> classPaths,
+		final ClassLoader parentLoader)
+	{
+		try
+		{
+			return new ClasspathClassLoader(String.join(File.pathSeparator, classPaths), parentLoader);
+		}
+		catch(final IOException e)
+		{
+			throw new UncheckedIOException(e);
+		}
 	}
 	
 	@Override

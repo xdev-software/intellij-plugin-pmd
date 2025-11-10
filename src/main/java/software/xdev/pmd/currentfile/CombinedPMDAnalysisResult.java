@@ -1,17 +1,22 @@
 package software.xdev.pmd.currentfile;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import com.intellij.psi.PsiFile;
 
 import net.sourceforge.pmd.lang.document.FileId;
 import net.sourceforge.pmd.reporting.Report;
 import net.sourceforge.pmd.reporting.RuleViolation;
+import software.xdev.pmd.analysis.NoAnalysisReason;
 import software.xdev.pmd.analysis.PMDAnalysisResult;
 
 
@@ -20,9 +25,15 @@ public record CombinedPMDAnalysisResult(
 	List<Report.SuppressedViolation> suppressedRuleViolations,
 	List<Report.ProcessingError> errors,
 	List<Report.ConfigurationError> configErrors,
-	Map<FileId, PsiFile> fileIdPsiFiles
+	Map<FileId, PsiFile> fileIdPsiFiles,
+	Set<NoAnalysisReason> noAnalysisReasons
 )
 {
+	public static CombinedPMDAnalysisResult combine(final PMDAnalysisResult... results)
+	{
+		return combine(Arrays.asList(results));
+	}
+	
 	public static CombinedPMDAnalysisResult combine(final Collection<PMDAnalysisResult> results)
 	{
 		final List<RuleViolation> violations = new ArrayList<>();
@@ -30,6 +41,7 @@ public record CombinedPMDAnalysisResult(
 		final List<Report.ProcessingError> processingErrors = new ArrayList<>();
 		final List<Report.ConfigurationError> configErrors = new ArrayList<>();
 		final Map<FileId, PsiFile> fileIdPsiFiles = new HashMap<>();
+		final Set<NoAnalysisReason> noAnalysisReasons = EnumSet.noneOf(NoAnalysisReason.class);
 		
 		for(final PMDAnalysisResult result : results)
 		{
@@ -41,6 +53,8 @@ public record CombinedPMDAnalysisResult(
 				processingErrors.addAll(report.getProcessingErrors());
 				configErrors.addAll(report.getConfigurationErrors());
 			}
+			Optional.ofNullable(result.noAnalysisReason())
+				.ifPresent(noAnalysisReasons::add);
 			
 			fileIdPsiFiles.putAll(result.fileIdPsiFiles());
 		}
@@ -50,7 +64,8 @@ public record CombinedPMDAnalysisResult(
 			Collections.unmodifiableList(suppressedRuleViolations),
 			Collections.unmodifiableList(processingErrors),
 			Collections.unmodifiableList(configErrors),
-			Collections.unmodifiableMap(fileIdPsiFiles)
+			Collections.unmodifiableMap(fileIdPsiFiles),
+			noAnalysisReasons
 		);
 	}
 	

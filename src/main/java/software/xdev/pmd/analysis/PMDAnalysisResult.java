@@ -13,11 +13,17 @@ import net.sourceforge.pmd.reporting.Report;
 
 public record PMDAnalysisResult(
 	@Nullable Report report,
-	Map<FileId, PsiFile> fileIdPsiFiles
+	Map<FileId, PsiFile> fileIdPsiFiles,
+	@Nullable NoAnalysisReason noAnalysisReason
 )
 {
-	public static PMDAnalysisResult empty()
+	public PMDAnalysisResult(@Nullable final Report report, final Map<FileId, PsiFile> fileIdPsiFiles)
 	{
-		return new PMDAnalysisResult(null, new HashMap<>());
+		this(report, fileIdPsiFiles, null);
+	}
+	
+	public static PMDAnalysisResult empty(final NoAnalysisReason noAnalysisReason)
+	{
+		return new PMDAnalysisResult(null, new HashMap<>(), noAnalysisReason);
 	}
 }

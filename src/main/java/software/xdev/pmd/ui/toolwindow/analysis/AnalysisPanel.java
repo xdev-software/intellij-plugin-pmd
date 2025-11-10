@@ -8,13 +8,16 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTree;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingConstants;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.AutoScrollToSourceOptionProvider;
 import com.intellij.ide.CommonActionsManager;
 import com.intellij.ide.DefaultTreeExpander;
@@ -30,7 +33,9 @@ import com.intellij.openapi.actionSystem.UiDataProvider;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.ui.OnePixelSplitter;
+import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.JBTextArea;
 import com.intellij.ui.treeStructure.Tree;
@@ -38,7 +43,6 @@ import com.intellij.ui.treeStructure.Tree;
 import net.sourceforge.pmd.lang.rule.Rule;
 import software.xdev.pmd.currentfile.CombinedPMDAnalysisResult;
 import software.xdev.pmd.ui.toolwindow.PMDToolWindowFactory;
-import software.xdev.pmd.ui.toolwindow.RuleDetailPanel;
 import software.xdev.pmd.ui.toolwindow.node.BaseNode;
 import software.xdev.pmd.ui.toolwindow.node.RootNode;
 import software.xdev.pmd.ui.toolwindow.node.has.HasDoNotExpandByDefault;
@@ -277,18 +281,28 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 				this.mainSplit.setFirstComponent(new JLabel("Building Tree...")));
 			try
 			{
-				final RootNode rootNode = new RootNode();
+				RootNode rootNode = null;
+				String noAnalysisReason = null;
 				if(!this.result.isEmpty())
 				{
+					rootNode = new RootNode();
 					this.currentHierarchyBuilderFactory.createBuilder().apply(this.result)
 						.build()
 						.forEach(rootNode::add);
+					rootNode.executeRecursive(BaseNode::update);
+				}
+				else if(!this.result.noAnalysisReasons().isEmpty())
+				{
+					noAnalysisReason = this.result.noAnalysisReasons()
+						.iterator()
+						.next()
+						.getDisplayName();
 				}
 				
-				rootNode.executeRecursive(BaseNode::update);
-				
-				ApplicationManager.getApplication().invokeAndWait(() ->
-					this.updateTreeInUI(rootNode));
+				final RootNode rootNodeFinal = rootNode;
+				final String noAnalysisReasonFinal = noAnalysisReason;
+				ApplicationManager.getApplication().invokeAndWait(() -> this.updateTreeInUI(
+					rootNodeFinal, noAnalysisReasonFinal));
 			}
 			finally
 			{
@@ -298,11 +312,22 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 		});
 	}
 	
-	protected void updateTreeInUI(final RootNode rootNode)
+	protected void updateTreeInUI(
+		@Nullable final RootNode rootNode,
+		@Nullable final String noAnalysisReason)
 	{
-		this.mainSplit.setFirstComponent(this.treeScrollPane);
 		this.mainSplit.setSecondComponent(null); // Close Detail panel
+		this.mainSplit.setFirstComponent(noAnalysisReason == null
+			? this.treeScrollPane
+			: this.createNoAnalysisReasonPanel(noAnalysisReason));
 		this.treeModel.setRoot(rootNode);
+	}
+	
+	protected JComponent createNoAnalysisReasonPanel(final String noAnalysisReason)
+	{
+		final JBPanel<?> panel = new JBPanel<>(new VerticalFlowLayout());
+		panel.add(new JLabel(noAnalysisReason, AllIcons.General.Information, SwingConstants.LEADING));
+		return panel;
 	}
 	
 	protected static void defaultExpandTreeNode(
@@ -347,7 +372,7 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 	}
 	
 	
-	record PreviousRuleDetailsPanel(
+	protected record PreviousRuleDetailsPanel(
 		Rule rule,
 		RuleDetailPanel detailPanel
 	)
