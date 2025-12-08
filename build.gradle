@@ -3,13 +3,13 @@ plugins {
     id 'idea'
     id 'checkstyle'
     id 'pmd'
-    id 'org.jetbrains.intellij.platform' version '2.10.4'
+    id 'org.jetbrains.intellij.platform' version '2.10.5'
 }
 
 ext {
-    checkstyleVersion = '12.1.1'
+    checkstyleVersion = '12.2.0'
 
-    pmdVersion = '7.18.0'
+    pmdVersion = '7.19.0'
 }
 
 def properties(String key) {
