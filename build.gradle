@@ -59,6 +59,20 @@ dependencies {
     checkstyle "com.puppycrawl.tools:checkstyle:${checkstyleVersion}"
     pmd "net.sourceforge.pmd:pmd-ant:${pmdVersion}",
             "net.sourceforge.pmd:pmd-java:${pmdVersion}"
+
+    // https://discuss.gradle.org/t/multiple-excludes-for-multiple-dependencies/11573
+    ['pmd-core', 'pmd-java', 'pmd-kotlin'].each {
+        implementation("net.sourceforge.pmd:$it:${pmdVersion}") {
+            // Prevent conflict with IntelliJ's slf4j which results in a LinkageError
+            exclude group: 'org.slf4j', module: 'slf4j-api'
+            // GSON is not needed as we don't use a renderer
+            exclude group: 'com.google.code.gson', module: 'gson'
+            // Only used for 2(!) annotations
+            // https://github.com/pmd/pmd/issues/6134
+            exclude group: 'org.checkerframework', module: 'checker-qual'
+        }
+    }
+
     testImplementation platform('org.junit:junit-bom:6.0.1'),
             'org.junit.jupiter:junit-jupiter',
             'org.junit.jupiter:junit-jupiter-engine',
