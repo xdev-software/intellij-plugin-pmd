@@ -73,7 +73,7 @@ dependencies {
         }
     }
 
-    testImplementation platform('org.junit:junit-bom:6.0.1'),
+    testImplementation platform('org.junit:junit-bom:6.0.2'),
             'org.junit.jupiter:junit-jupiter',
             'org.junit.jupiter:junit-jupiter-engine',
             'org.assertj:assertj-core:3.27.6'
