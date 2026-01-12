@@ -1,3 +1,6 @@
+# 1.0.3
+* Update PMD to 7.20.0
+
 # 1.0.2
 * Update PMD to 7.19.0
 
