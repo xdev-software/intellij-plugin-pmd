@@ -32,8 +32,8 @@ public record PluginConfiguration(
 	@SuppressWarnings("checkstyle:VisibilityModifier")
 	static class Cache
 	{
-		public Map<String, ConfigurationLocation> idLocationCache;
-		public SortedSet<ConfigurationLocation> activeLocationCache;
+		Map<String, ConfigurationLocation> idLocationCache;
+		SortedSet<ConfigurationLocation> activeLocationCache;
 	}
 	
 	@Nullable

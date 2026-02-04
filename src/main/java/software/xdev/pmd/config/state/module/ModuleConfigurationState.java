@@ -140,12 +140,12 @@ public final class ModuleConfigurationState
 			return new ModuleSettings();
 		}
 		
-		public void setActiveLocationIds(@NotNull final SortedSet<String> newActiveLocationIds)
+		void setActiveLocationIds(@NotNull final SortedSet<String> newActiveLocationIds)
 		{
 			this.activeLocationsIds = new ArrayList<>(newActiveLocationIds);
 		}
 		
-		public void setExcludeFromScan(final boolean excludeFromScan)
+		void setExcludeFromScan(final boolean excludeFromScan)
 		{
 			this.excludeFromScan = excludeFromScan;
 		}
@@ -158,12 +158,12 @@ public final class ModuleConfigurationState
 			return new TreeSet<>(Objects.requireNonNullElse(this.activeLocationsIds, Collections.emptyList()));
 		}
 		
-		public boolean isExcludeFromScan()
+		boolean isExcludeFromScan()
 		{
 			return this.excludeFromScan;
 		}
 		
-		public void useLatestSerialisationFormat()
+		void useLatestSerialisationFormat()
 		{
 			this.serialisationVersion = "1";
 		}
