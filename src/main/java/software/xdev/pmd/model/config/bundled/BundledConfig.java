@@ -92,6 +92,7 @@ public final class BundledConfig
 		return all.values();
 	}
 	
+	@SuppressWarnings("checkstyle:IllegalIdentifierName")
 	private static void initAllIfRequired()
 	{
 		if(all != null)

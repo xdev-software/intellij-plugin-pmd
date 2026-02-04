@@ -132,7 +132,7 @@ public final class ModuleConfigurationState
 		@XCollection
 		private List<String> activeLocationsIds;
 		@Tag
-		private boolean excludeFromScan = false;
+		private boolean excludeFromScan;
 		
 		@NotNull
 		static ModuleSettings create(final Map<String, String> configuration)
