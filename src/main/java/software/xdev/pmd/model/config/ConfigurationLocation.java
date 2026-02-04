@@ -30,6 +30,7 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 	private String location;
 	private String description;
 	
+	@SuppressWarnings("checkstyle:IllegalIdentifierName")
 	protected RuleSet cachedRuleSet;
 	
 	protected ConfigurationLocation(
@@ -109,6 +110,7 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 		return !this.equals(configurationLocation);
 	}
 	
+	@SuppressWarnings("checkstyle:IllegalIdentifierName")
 	public void validate() throws Exception
 	{
 		final RuleSet ruleSet = this.loadRuleSet();

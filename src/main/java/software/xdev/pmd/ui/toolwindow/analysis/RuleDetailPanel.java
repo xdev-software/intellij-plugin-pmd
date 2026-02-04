@@ -202,14 +202,14 @@ public class RuleDetailPanel extends JBPanel<RuleDetailPanel> implements Disposa
 			Function<Rule, T> extractFromRule,
 			Function<T, String> format)
 		{
-			public static MetaInfoTableEntry<String> createForString(
+			static MetaInfoTableEntry<String> createForString(
 				final String name,
 				final Function<Rule, String> extractFromRule)
 			{
 				return new MetaInfoTableEntry<>(name, extractFromRule, Function.identity());
 			}
 			
-			public String formattedValue(final Rule rule)
+			String formattedValue(final Rule rule)
 			{
 				final T value = this.extractFromRule().apply(rule);
 				if(value == null)

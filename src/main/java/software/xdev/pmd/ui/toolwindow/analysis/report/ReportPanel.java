@@ -37,7 +37,7 @@ public class ReportPanel extends AnalysisPanel
 	{
 		private final AnActionEvent triggeringEvent;
 		
-		public ReRunAction(final AnActionEvent triggeringEvent)
+		ReRunAction(final AnActionEvent triggeringEvent)
 		{
 			super("Rerun", "Rerun analysis", AllIcons.Actions.Rerun);
 			this.triggeringEvent = triggeringEvent;

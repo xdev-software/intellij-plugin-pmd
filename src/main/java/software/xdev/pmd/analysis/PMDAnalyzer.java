@@ -233,7 +233,7 @@ public class PMDAnalyzer implements Disposable
 		private final ProgressIndicator progressIndicator;
 		private final int totalFiles;
 		
-		public ProgressReportingAnalysisListener(final ProgressIndicator progressIndicator, final int totalFiles)
+		ProgressReportingAnalysisListener(final ProgressIndicator progressIndicator, final int totalFiles)
 		{
 			this.progressIndicator = progressIndicator;
 			this.totalFiles = totalFiles;

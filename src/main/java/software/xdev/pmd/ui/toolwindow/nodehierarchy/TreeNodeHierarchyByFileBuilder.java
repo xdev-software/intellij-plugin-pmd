@@ -80,7 +80,7 @@ public class TreeNodeHierarchyByFileBuilder extends AbstractTreeNodeHierarchyByB
 		final Function<V, RuleViolation> extractRuleViolation,
 		final BiFunction<RuleViolation, PsiFile, VN> createViolationNode,
 		final Function<Rule, RVN> createRuleViolationNode,
-		final Map<FileOverviewNode, Map<RVN, Set<VN>>> outputMap)
+		final Map<FileOverviewNode, Map<RVN, Set<VN>>> outputs)
 	{
 		final Map<PsiFile, Map<Rule, Set<VN>>> violations = new HashMap<>();
 		resultViolations.forEach(violation -> {
@@ -101,7 +101,7 @@ public class TreeNodeHierarchyByFileBuilder extends AbstractTreeNodeHierarchyByB
 			Comparator.<Map.Entry<Rule, Set<VN>>>comparingInt(e -> e.getKey().getPriority().getPriority())
 				.thenComparing(e -> e.getKey().getName());
 		violations.forEach((file, ruleViolations) ->
-			outputMap.put(
+			outputs.put(
 				this.fileOverViewNode(file), ruleViolations.entrySet()
 					.stream()
 					.sorted(comparator)

@@ -256,12 +256,12 @@ public class PMDExternalLanguageAnnotator
 		private FileInfo initialAnalysisFileInfo;
 		private PMDAnnotations firstRunResult;
 		
-		public FirstAnnotateRunFaultyDuplicationWorkaround(final Runnable unbind)
+		FirstAnnotateRunFaultyDuplicationWorkaround(final Runnable unbind)
 		{
 			this.unbind = unbind;
 		}
 		
-		public PMDAnnotations check(final FileInfo info)
+		PMDAnnotations check(final FileInfo info)
 		{
 			if(this.initialAnalysisFileInfo == null)
 			{
@@ -280,7 +280,7 @@ public class PMDExternalLanguageAnnotator
 			return null;
 		}
 		
-		public void store(final FileInfo fileInfo, final PMDAnnotations analysisResult)
+		void store(final FileInfo fileInfo, final PMDAnnotations analysisResult)
 		{
 			if(fileInfo == this.initialAnalysisFileInfo)
 			{

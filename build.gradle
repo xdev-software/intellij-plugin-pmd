@@ -3,13 +3,13 @@ plugins {
     id 'idea'
     id 'checkstyle'
     id 'pmd'
-    id 'org.jetbrains.intellij.platform' version '2.10.5'
+    id 'org.jetbrains.intellij.platform' version '2.11.0'
 }
 
 ext {
-    checkstyleVersion = '13.0.0'
+    checkstyleVersion = '13.1.0'
 
-    pmdVersion = '7.20.0'
+    pmdVersion = '7.21.0'
 }
 
 def properties(String key) {
@@ -76,7 +76,7 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:6.0.2'),
             'org.junit.jupiter:junit-jupiter',
             'org.junit.jupiter:junit-jupiter-engine',
-            'org.assertj:assertj-core:3.27.6'
+            'org.assertj:assertj-core:3.27.7'
     testRuntimeOnly("org.junit.platform:junit-platform-launcher") {
         because("Only needed to run tests in a version of IntelliJ IDEA that bundles older versions")
     }

@@ -23,7 +23,7 @@ import software.xdev.pmd.util.io.ProjectFilePaths;
  */
 public class FileConfigurationLocation extends ConfigurationLocation
 {
-	private long lastLoadedRuleSetMs;
+	private long nextReloadRuleSetMs;
 	private Instant lastModifiedFileTime;
 	
 	public FileConfigurationLocation(
@@ -76,13 +76,15 @@ public class FileConfigurationLocation extends ConfigurationLocation
 		}
 	}
 	
+	@SuppressWarnings("checkstyle:IllegalIdentifierName")
 	@Override
 	protected synchronized RuleSet loadRuleSet() throws IOException
 	{
+		this.nextReloadRuleSetMs = System.currentTimeMillis() + 10 * 1000;
+		
 		final RuleSet ruleSet = new RuleSetLoader().loadFromString(
 			this.getLocation(),
 			new String(Files.readAllBytes(this.getLocationPath())));
-		this.lastLoadedRuleSetMs = System.currentTimeMillis();
 		this.lastModifiedFileTime = this.lastModifiedTimeFromLocation();
 		return ruleSet;
 	}
@@ -91,7 +93,7 @@ public class FileConfigurationLocation extends ConfigurationLocation
 	protected boolean shouldReloadRuleSet()
 	{
 		// Check if recently checked
-		return System.currentTimeMillis() - this.lastLoadedRuleSetMs >= 10 * 1000
+		return System.currentTimeMillis() > this.nextReloadRuleSetMs
 			// Check if file was modified
 			&& (this.lastModifiedFileTime == null
 			|| !this.lastModifiedFileTime.equals(this.lastModifiedTimeFromLocation()));

@@ -258,7 +258,7 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 		Supplier<JBScrollPane> scrollPaneSupplier
 	)
 	{
-		public DetailComponentInfo(final JComponent component)
+		DetailComponentInfo(final JComponent component)
 		{
 			this(component, JBScrollPane::new);
 		}
