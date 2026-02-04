@@ -24,7 +24,7 @@ class IDETextFile implements TextFile
 	
 	private FileId fileId;
 	
-	public IDETextFile(final LanguageVersion languageVersion, final PsiFile psiFile)
+	IDETextFile(final LanguageVersion languageVersion, final PsiFile psiFile)
 	{
 		this.languageVersion = languageVersion;
 		this.psiFile = psiFile;
@@ -43,12 +43,12 @@ class IDETextFile implements TextFile
 		return this.fileId;
 	}
 	
-	public FileId getFileIdIfPresent()
+	FileId getFileIdIfPresent()
 	{
 		return this.fileId;
 	}
 	
-	public boolean hasFileId()
+	boolean hasFileId()
 	{
 		return this.getFileIdIfPresent() != null;
 	}
@@ -119,7 +119,7 @@ class IDETextFile implements TextFile
 		// Nothing
 	}
 	
-	public PsiFile getPsiFile()
+	PsiFile getPsiFile()
 	{
 		return this.psiFile;
 	}
