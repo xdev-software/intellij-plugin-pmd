@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.roots.JavaProjectRootsUtil;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectFileIndex;
@@ -84,7 +84,7 @@ public final class PsiFileValidator
 			return false;
 		}
 		
-		final Module module = ModuleUtil.findModuleForPsiElement(element);
+		final Module module = ModuleUtilCore.findModuleForPsiElement(element);
 		if(module == null)
 		{
 			return false;
@@ -99,11 +99,11 @@ public final class PsiFileValidator
 		final PsiFile psiFile,
 		final Optional<Module> optModule)
 	{
-		if(optModule.isEmpty())
-		{
-			return true;
-		}
-		final Module elementModule = ModuleUtil.findModuleForPsiElement(psiFile);
-		return elementModule != null && elementModule.equals(optModule.get());
+		return optModule
+			.map(module -> {
+				final Module elementModule = ModuleUtilCore.findModuleForPsiElement(psiFile);
+				return elementModule != null && elementModule.equals(module);
+			})
+			.orElse(true);
 	}
 }
