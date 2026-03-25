@@ -1,3 +1,6 @@
+# 1.0.6
+* Correctly handle control flow exceptions in "doAnnotate"
+
 # 1.0.5
 * Update PMD to 7.22.0
 

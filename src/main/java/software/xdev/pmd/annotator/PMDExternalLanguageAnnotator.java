@@ -14,6 +14,7 @@ import com.intellij.lang.annotation.AnnotationBuilder;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.ExternalAnnotator;
 import com.intellij.lang.annotation.HighlightSeverity;
+import com.intellij.openapi.diagnostic.ControlFlowException;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -86,8 +87,14 @@ public class PMDExternalLanguageAnnotator
 			}
 			return annotations;
 		}
-		catch(final Exception ex)
+		catch(final RuntimeException ex)
 		{
+			// Control-flow exceptions (e.g. this class ProcessCanceledException) should never be logged
+			// Instead, these should have been rethrown if caught.
+			if(ex instanceof ControlFlowException)
+			{
+				throw ex;
+			}
 			LOG.error("Failed to annotate", ex);
 			Notifications.showException(project, ex);
 			return null;
