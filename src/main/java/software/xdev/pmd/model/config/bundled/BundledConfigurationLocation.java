@@ -53,6 +53,7 @@ public class BundledConfigurationLocation extends ConfigurationLocation
 		// always valid
 	}
 	
+	@Nullable
 	@Override
 	protected synchronized RuleSet loadRuleSet()
 	{

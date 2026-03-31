@@ -2,6 +2,7 @@ package software.xdev.pmd.model.config;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.WeakHashMap;
 
 import org.jetbrains.annotations.NotNull;
@@ -11,6 +12,7 @@ import com.intellij.openapi.project.Project;
 import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
 import software.xdev.pmd.model.config.bundled.BundledConfig;
 import software.xdev.pmd.model.config.bundled.BundledConfigurationLocation;
+import software.xdev.pmd.model.config.bundled.UnknownBundledConfigurationLocation;
 import software.xdev.pmd.model.config.file.FileConfigurationLocation;
 import software.xdev.pmd.model.config.file.RelativeFileConfigurationLocation;
 
@@ -65,7 +67,9 @@ public class ConfigurationLocationFactory
 				{
 					case LOCAL_FILE -> new FileConfigurationLocation(project, id);
 					case PROJECT_RELATIVE -> new RelativeFileConfigurationLocation(project, id);
-					case BUNDLED -> new BundledConfigurationLocation(BundledConfig.fromId(id), project);
+					case BUNDLED -> Optional.ofNullable(BundledConfig.fromId(id))
+						.map(c -> new BundledConfigurationLocation(c, project))
+						.orElseGet(() -> new UnknownBundledConfigurationLocation(id, project));
 				};
 				
 				configurationLocation.setLocation(location);
