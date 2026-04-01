@@ -1,3 +1,7 @@
+# 1.0.8
+* Correctly handle missing/removal of built-in configuration
+* Fix crash on non Java-IDEs #67
+
 # 1.0.7
 * Update PMD to 7.23.0
 

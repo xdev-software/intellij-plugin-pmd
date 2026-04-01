@@ -34,7 +34,6 @@
 		<projectService serviceImplementation="software.xdev.pmd.util.pmd.PMDLanguageFileTypeMapper"/>
 
 		<postStartupActivity implementation="software.xdev.pmd.startup.PMDStartupConfiguration"/>
-		<postStartupActivity implementation="software.xdev.pmd.startup.AutoMakeStartupHint"/>
 
 		<projectConfigurable instance="software.xdev.pmd.ui.config.project.PMDConfigurable"
 							 parentId="tools"

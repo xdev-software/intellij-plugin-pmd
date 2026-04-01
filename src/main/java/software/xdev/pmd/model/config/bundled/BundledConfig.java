@@ -10,6 +10,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.application.ApplicationManager;
 
@@ -29,19 +30,15 @@ public final class BundledConfig
 	
 	private final String description;
 	
-	private final String path;
-	
 	private BundledConfig(
 		final int sortOrder,
 		@NotNull final String id,
-		@NotNull final String description,
-		@NotNull final String path)
+		@NotNull final String description)
 	{
 		this.sortOrder = sortOrder;
 		this.id = id;
 		this.location = BUNDLED_LOCATION;
 		this.description = description;
-		this.path = path;
 	}
 	
 	public int getSortOrder()
@@ -66,12 +63,6 @@ public final class BundledConfig
 		return this.description;
 	}
 	
-	@NotNull
-	public String getPath()
-	{
-		return this.path;
-	}
-	
 	public boolean matches(@NotNull final ConfigurationLocation configurationLocation)
 	{
 		return configurationLocation.getType() == ConfigurationType.BUNDLED
@@ -79,11 +70,19 @@ public final class BundledConfig
 			&& Objects.equals(configurationLocation.getDescription(), this.description);
 	}
 	
+	private static final AtomicInteger UNKNOWN_COUNTER = new AtomicInteger(1000);
+	
 	@NotNull
+	public static BundledConfig createUnknownDummy(@NotNull final String id)
+	{
+		return new BundledConfig(UNKNOWN_COUNTER.getAndIncrement(), id, "UNKNOWN: " + id);
+	}
+	
+	@Nullable
 	public static BundledConfig fromId(@NotNull final String id)
 	{
 		initAllIfRequired();
-		return Objects.requireNonNull(all.get(id), "Failed to find id " + id);
+		return all.get(id);
 	}
 	
 	public static Collection<BundledConfig> getAllBundledConfigs()
@@ -114,8 +113,7 @@ public final class BundledConfig
 				e.getKey() + "-" + Arrays.stream(e.getValue().split("/"))
 					.reduce((l, r) -> r)
 					.flatMap(fileName -> Arrays.stream(fileName.split("\\.")).findFirst())
-					.orElse(e.getValue()),
-				e.getValue()
+					.orElse(e.getValue())
 			))
 			.collect(Collectors.toMap(
 				BundledConfig::getId,
