@@ -20,7 +20,7 @@ import kotlin.coroutines.Continuation;
 import software.xdev.pmd.util.Notifications;
 
 
-public class AutoMakeStartupHint implements ProjectActivity
+public class JavaCompilerAutoMakeStartupHint implements ProjectActivity
 {
 	@Nullable
 	@Override
