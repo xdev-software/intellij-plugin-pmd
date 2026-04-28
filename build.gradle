@@ -3,13 +3,13 @@ plugins {
     id 'idea'
     id 'checkstyle'
     id 'pmd'
-    id 'org.jetbrains.intellij.platform' version '2.13.1'
+    id 'org.jetbrains.intellij.platform' version '2.15.0'
 }
 
 ext {
-    checkstyleVersion = '13.4.0'
+    checkstyleVersion = '13.4.1'
 
-    pmdVersion = '7.23.0'
+    pmdVersion = '7.24.0'
 }
 
 def properties(String key) {
@@ -105,13 +105,8 @@ intellijPlatform {
     pluginVerification {
         ides {
             select {
-                it.types = [IntelliJPlatformType.IntellijIdeaCommunity]
-                it.sinceBuild = properties("platformSinceBuild")
-                it.untilBuild = '252.*'
-            }
-            select {
                 it.types = [IntelliJPlatformType.IntellijIdea]
-                it.sinceBuild = '253'
+                it.sinceBuild = properties("platformSinceBuild")
             }
         }
     }

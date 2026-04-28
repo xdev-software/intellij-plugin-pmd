@@ -85,8 +85,13 @@ public class ActionFilesAnalyzer
 			project.getService(PluginConfigurationManager.class).getCurrent();
 		final ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
 		
-		final Map<Optional<com.intellij.openapi.module.Module>, Set<PsiFile>> psiFiles = ReadAction.compute(() ->
-			this.collectFiles(projectFileIndex, psiManager, pluginConfiguration, progressIndicator, selectedFiles));
+		final Map<Optional<com.intellij.openapi.module.Module>, Set<PsiFile>> psiFiles =
+			ReadAction.computeBlocking(() -> this.collectFiles(
+				projectFileIndex,
+				psiManager,
+				pluginConfiguration,
+				progressIndicator,
+				selectedFiles));
 		
 		if(psiFiles.isEmpty())
 		{

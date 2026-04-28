@@ -178,8 +178,7 @@ public class PMDExternalLanguageAnnotator
 							+ "<p>"
 							+ ruleDescriptionDocMarkdownToHtmlService.mdToHtml(rule.getDescription())
 							+ "</p>")
-					.range(range)
-					.needsUpdateOnTyping(true);
+					.range(range);
 				
 				if(psiElement != null)
 				{

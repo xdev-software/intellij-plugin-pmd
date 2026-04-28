@@ -77,7 +77,7 @@ public class CurrentFileAnalysisManager implements FileEditorManagerListener, Di
 				return;
 			}
 			
-			final Optional<PsiFile> optPSIFile = ReadAction.compute(() -> Optional.of(editor)
+			final Optional<PsiFile> optPSIFile = ReadAction.computeBlocking(() -> Optional.of(editor)
 				.map(Editor::getDocument)
 				.map(FileDocumentManager.getInstance()::getFile)
 				.flatMap(this::findPSIFile));
