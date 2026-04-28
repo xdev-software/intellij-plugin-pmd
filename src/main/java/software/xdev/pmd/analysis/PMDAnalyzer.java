@@ -6,14 +6,13 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,7 +45,7 @@ import net.sourceforge.pmd.reporting.GlobalAnalysisListener;
 import net.sourceforge.pmd.reporting.Report;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
-import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
+import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHashMap;
 import software.xdev.pmd.langversion.ManagedLanguageVersionResolver;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 
@@ -61,11 +60,11 @@ public class PMDAnalyzer implements Disposable
 	
 	private final Project project;
 	
-	private final Map<Optional<Module>, ReentrantLock> locks = Collections.synchronizedMap(new HashMap<>());
-	private final Map<Optional<Module>, CacheFile> cacheFiles = Collections.synchronizedMap(new HashMap<>());
+	private final Map<Optional<Module>, ReentrantLock> locks = new ConcurrentHashMap<>();
+	private final Map<Optional<Module>, CacheFile> cacheFiles = new ConcurrentHashMap<>();
 	// Reuse classloader when path is the same
 	private final Map<Set<String>, ClassLoader> cachedSdkLibAuxClassLoader =
-		Collections.synchronizedMap(new SoftHashMap<>());
+		new ConcurrentReferenceHashMap<>();
 	
 	public PMDAnalyzer(final Project project)
 	{

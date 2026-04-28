@@ -1,9 +1,9 @@
 package software.xdev.pmd.markdown;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -13,7 +13,6 @@ import com.intellij.markdown.utils.doc.DocMarkdownToHtmlConverter;
 import com.intellij.openapi.project.Project;
 
 import net.sourceforge.pmd.PMDVersion;
-import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
 
 
 public class RuleDescriptionDocMarkdownToHtmlService
@@ -24,7 +23,7 @@ public class RuleDescriptionDocMarkdownToHtmlService
 	
 	private final Project project;
 	
-	private final Map<String, String> cache = Collections.synchronizedMap(new SoftHashMap<>());
+	private final Map<String, String> cache = new ConcurrentHashMap<>();
 	
 	public RuleDescriptionDocMarkdownToHtmlService(@NotNull final Project project)
 	{

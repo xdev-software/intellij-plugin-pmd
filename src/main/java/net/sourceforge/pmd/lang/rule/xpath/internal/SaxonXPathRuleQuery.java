@@ -5,14 +5,12 @@
 package net.sourceforge.pmd.lang.rule.xpath.internal;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import org.apache.commons.lang3.exception.ContextedRuntimeException;
 import org.slf4j.Logger;
@@ -45,6 +43,7 @@ import net.sourceforge.pmd.lang.rule.xpath.impl.XPathHandler;
 import net.sourceforge.pmd.properties.PropertyDescriptor;
 import net.sourceforge.pmd.util.DataMap;
 import net.sourceforge.pmd.util.DataMap.SimpleDataKey;
+import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHashMap;
 
 
 /**
@@ -57,8 +56,8 @@ public class SaxonXPathRuleQuery
 {
 	// IMPROVED
 	// Different XPathHandlers have different extensions (e.g. pmd-java) that are registered with configuration
-	private static Map<XPathHandler, CachedInitData> cachedInitData = Collections.synchronizedMap(new WeakHashMap<>());
-	
+	private static Map<XPathHandler, CachedInitData> cachedInitData = new ConcurrentReferenceHashMap<>(
+		ConcurrentReferenceHashMap.ReferenceType.WEAK);
 	
 	record CachedInitData(
 		Configuration configuration,

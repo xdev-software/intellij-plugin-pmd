@@ -1,3 +1,6 @@
+# 1.1.1
+* Improve performance by using `ConcurrentReferenceHashMap` instead of `synchronized`
+
 # 1.1.0
 * Update PMD to 7.24.0
 * Dropped support for IntelliJ IDEA < 261 to fix deprecations
