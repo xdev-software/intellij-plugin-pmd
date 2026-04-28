@@ -268,7 +268,7 @@ public class PMDAnalyzer implements Disposable
 		final int totalFiles = filesToScan.size();
 		final AtomicInteger counter = new AtomicInteger(0);
 		
-		final List<PsiFile> files = ReadAction.compute(() -> filesToScan.stream()
+		final List<PsiFile> files = ReadAction.computeBlocking(() -> filesToScan.stream()
 			.filter(file -> {
 				progressIndicator.setFraction((double)counter.incrementAndGet() / totalFiles);
 				progressIndicator.setText2(file != null ? file.getName() : null);

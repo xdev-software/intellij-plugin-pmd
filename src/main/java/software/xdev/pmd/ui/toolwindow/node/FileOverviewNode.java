@@ -29,7 +29,7 @@ public class FileOverviewNode extends BaseHasViolationSuppressedErrorNode
 	{
 		this.psiFile = psiFile;
 		// Icon requires read access so let's get it here
-		this.icon = ReadAction.compute(() -> psiFile.getIcon(0));
+		this.icon = ReadAction.computeBlocking(() -> psiFile.getIcon(0));
 		
 		this.filePositionSupplier = Suppliers.memoize(() -> new FilePosition(psiFile));
 	}
