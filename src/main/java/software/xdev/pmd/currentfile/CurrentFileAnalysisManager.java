@@ -2,11 +2,11 @@ package software.xdev.pmd.currentfile;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +40,7 @@ public class CurrentFileAnalysisManager implements FileEditorManagerListener, Di
 	@NotNull
 	private final AtomicReference<PsiFile> currentlySelectedFile = new AtomicReference<>();
 	private final Map<PsiFile, Map<ExternalAnnotator<?, ?>, PMDAnalysisResult>> fileAnalysisResults =
-		Collections.synchronizedMap(new HashMap<>());
+		new ConcurrentHashMap<>();
 	
 	public CurrentFileAnalysisManager(@NotNull final Project project)
 	{

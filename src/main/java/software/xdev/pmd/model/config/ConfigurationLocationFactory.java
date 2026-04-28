@@ -1,15 +1,13 @@
 package software.xdev.pmd.model.config;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-import java.util.WeakHashMap;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.project.Project;
 
-import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
+import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHashMap;
 import software.xdev.pmd.model.config.bundled.BundledConfig;
 import software.xdev.pmd.model.config.bundled.BundledConfigurationLocation;
 import software.xdev.pmd.model.config.bundled.UnknownBundledConfigurationLocation;
@@ -20,7 +18,7 @@ import software.xdev.pmd.model.config.file.RelativeFileConfigurationLocation;
 public class ConfigurationLocationFactory
 {
 	private final Map<CreateCacheKey, ConfigurationLocation> createCache =
-		Collections.synchronizedMap(new SoftHashMap<>());
+		new ConcurrentReferenceHashMap<>();
 	
 	
 	record CreateCacheKey(
@@ -37,7 +35,7 @@ public class ConfigurationLocationFactory
 	 * updates to one location (e.g. a URL change) are visible to other modules with a reference to the given location.
 	 */
 	private final Map<ConfigurationLocation, ConfigurationLocation> instanceDeduplicationCache =
-		Collections.synchronizedMap(new WeakHashMap<>());
+		new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.WEAK);
 	
 	/**
 	 * Create a new location.

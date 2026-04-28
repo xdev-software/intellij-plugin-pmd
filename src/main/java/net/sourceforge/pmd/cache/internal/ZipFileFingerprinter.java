@@ -12,7 +12,6 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.zip.ZipFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
+import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHashMap;
 
 
 /**
@@ -37,9 +36,7 @@ import software.xdev.pmd.external.org.apache.shiro.lang.util.SoftHashMap;
 public class ZipFileFingerprinter implements ClasspathEntryFingerprinter
 {
 	// IMPROVED
-	private static final Map<String, UrlCachedPayload> FILE_CRC_CHECKSUMS_CACHE =
-		Collections.synchronizedMap(new SoftHashMap<>());
-	
+	private static final Map<String, UrlCachedPayload> FILE_CRC_CHECKSUMS_CACHE = new ConcurrentReferenceHashMap<>();
 	
 	record UrlCachedPayload(
 		long length,
