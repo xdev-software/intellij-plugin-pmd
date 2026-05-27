@@ -1,4 +1,5 @@
 # 1.1.1
+* Fixed rare `InvalidVirtualFileAccessException` that might happen when switching projects as a invalid file could get selected #87
 * Improve performance by using `ConcurrentReferenceHashMap` instead of `synchronized`
 
 # 1.1.0
