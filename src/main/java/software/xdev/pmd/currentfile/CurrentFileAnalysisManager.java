@@ -113,7 +113,9 @@ public class CurrentFileAnalysisManager implements FileEditorManagerListener, Di
 	public void selectionChanged(@NotNull final FileEditorManagerEvent event)
 	{
 		final VirtualFile newFile = event.getNewFile();
-		if(newFile == null)
+		if(newFile == null
+			// We can get selection change events for invalid files: See #87
+			|| !newFile.isValid())
 		{
 			this.currentlySelectedFile.set(null);
 			return;
