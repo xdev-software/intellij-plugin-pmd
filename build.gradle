@@ -3,13 +3,13 @@ plugins {
     id 'idea'
     id 'checkstyle'
     id 'pmd'
-    id 'org.jetbrains.intellij.platform' version '2.16.0'
+    id 'org.jetbrains.intellij.platform' version '2.17.0'
 }
 
 ext {
-    checkstyleVersion = '13.5.0'
+    checkstyleVersion = '13.7.0'
 
-    pmdVersion = '7.25.0'
+    pmdVersion = '7.26.0'
 }
 
 def properties(String key) {
@@ -72,7 +72,7 @@ dependencies {
         }
     }
 
-    testImplementation platform('org.junit:junit-bom:6.0.3'),
+    testImplementation platform('org.junit:junit-bom:6.1.1'),
             'org.junit.jupiter:junit-jupiter',
             'org.junit.jupiter:junit-jupiter-engine',
             'org.assertj:assertj-core:3.27.7'

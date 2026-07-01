@@ -174,43 +174,34 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 		return this.description;
 	}
 	
-	@SuppressWarnings("PMD.CognitiveComplexity")
 	@Override
 	public int compareTo(@NotNull final ConfigurationLocation other)
 	{
-		int result;
 		// bundled configs go first, ordered by their position in the BundledConfig enum
 		if(other instanceof final BundledConfigurationLocation otherBundledConfigurationLocation)
 		{
 			if(this instanceof final BundledConfigurationLocation thisBundledConfigurationLocation)
 			{
-				final int o1 = thisBundledConfigurationLocation.getBundledConfig().getSortOrder();
-				final int o2 = otherBundledConfigurationLocation.getBundledConfig().getSortOrder();
-				result = Integer.compare(o1, o2);
+				return Integer.compare(
+					thisBundledConfigurationLocation.getBundledConfig().getSortOrder(),
+					otherBundledConfigurationLocation.getBundledConfig().getSortOrder());
 			}
-			else
-			{
-				result = 1;
-			}
+			return 1;
 		}
-		else
+		
+		if(this instanceof BundledConfigurationLocation)
 		{
-			if(this instanceof BundledConfigurationLocation)
+			return -1;
+		}
+		
+		int result = this.compareStrings(this.getDescription(), other.getDescription());
+		if(result == 0)
+		{
+			result = this.compareStrings(this.getLocation(), other.getLocation());
+			if(result == 0)
 			{
-				result = -1;
-			}
-			else
-			{
-				result = this.compareStrings(this.getDescription(), other.getDescription());
-				if(result == 0)
-				{
-					result = this.compareStrings(this.getLocation(), other.getLocation());
-					if(result == 0)
-					{
-						result = Comparator.nullsFirst(ConfigurationType::compareTo)
-							.compare(this.getType(), other.getType());
-					}
-				}
+				return Comparator.nullsFirst(ConfigurationType::compareTo)
+					.compare(this.getType(), other.getType());
 			}
 		}
 		return result;
