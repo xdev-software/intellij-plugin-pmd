@@ -1,3 +1,6 @@
+# 1.1.3
+* Updated PMD to 7.26.0
+
 # 1.1.2
 * Fixed rare `InvalidVirtualFileAccessException` that might happen when switching projects as a invalid file could get selected #87
 * Update PMD to 7.25.0
