@@ -1,3 +1,6 @@
+# 1.1.4
+* Prevent rare NPE in module configuration UI #107
+
 # 1.1.3
 * Updated PMD to 7.26.0
 

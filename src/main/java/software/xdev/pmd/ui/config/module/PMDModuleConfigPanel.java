@@ -133,9 +133,10 @@ public class PMDModuleConfigPanel extends JPanel
 	
 	private List<ConfigurationLocation> getConfigurationLocations()
 	{
-		final List<ConfigurationLocation> locations = new ArrayList<>();
+		final int size = this.configurationFilesModel.getSize();
+		final List<ConfigurationLocation> locations = new ArrayList<>(size);
 		
-		for(int i = 0; i < this.configurationFilesModel.getSize(); ++i)
+		for(int i = 0; i < size; ++i)
 		{
 			locations.add(this.configurationFilesModel.getElementAt(i));
 		}
@@ -225,7 +226,8 @@ public class PMDModuleConfigPanel extends JPanel
 	 */
 	public boolean isModified()
 	{
-		return !this.activeLocations.contains(this.getActiveLocation())
+		final ConfigurationLocation activeLocation = this.getActiveLocation();
+		return activeLocation != null && !this.activeLocations.contains(activeLocation)
 			|| !Objects.equals(this.configurationLocations, this.getConfigurationLocations())
 			|| this.excluded != this.isExcluded();
 	}

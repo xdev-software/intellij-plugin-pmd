@@ -11,7 +11,6 @@ public class PMDModuleConfigurationEditorProvider implements ModuleConfiguration
 	public ModuleConfigurationEditor[] createEditors(final ModuleConfigurationState state)
 	{
 		return new ModuleConfigurationEditor[]{
-			new PMDModuleConfigurationEditor(state.getCurrentRootModel()
-				.getModule())};
+			new PMDModuleConfigurationEditor(state.getCurrentRootModel().getModule())};
 	}
 }

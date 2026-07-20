@@ -3,11 +3,11 @@ plugins {
     id 'idea'
     id 'checkstyle'
     id 'pmd'
-    id 'org.jetbrains.intellij.platform' version '2.17.0'
+    id 'org.jetbrains.intellij.platform' version '2.18.1'
 }
 
 ext {
-    checkstyleVersion = '13.7.0'
+    checkstyleVersion = '13.8.0'
 
     pmdVersion = '7.26.0'
 }
@@ -72,7 +72,7 @@ dependencies {
         }
     }
 
-    testImplementation platform('org.junit:junit-bom:6.1.1'),
+    testImplementation platform('org.junit:junit-bom:6.1.2'),
             'org.junit.jupiter:junit-jupiter',
             'org.junit.jupiter:junit-jupiter-engine',
             'org.assertj:assertj-core:3.27.7'
