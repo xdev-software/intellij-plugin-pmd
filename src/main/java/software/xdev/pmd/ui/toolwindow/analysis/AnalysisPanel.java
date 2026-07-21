@@ -353,6 +353,16 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 		}
 	}
 	
+	public void navigateToSiblingResult(final boolean forward)
+	{
+		new SubsequentLeafFinder(this.tree, this.treeModel)
+			.find(forward)
+			.ifPresent(lp -> {
+				this.tree.setSelectionPath(lp);
+				this.tree.scrollPathToVisible(lp);
+			});
+	}
+	
 	@Override
 	public void dispose()
 	{

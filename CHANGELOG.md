@@ -1,3 +1,6 @@
+# 1.2.0
+* Add shortcuts for jumping to previous/next violation
+
 # 1.1.4
 * Prevent rare NPE in module configuration UI #107
 

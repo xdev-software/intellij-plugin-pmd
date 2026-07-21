@@ -79,6 +79,21 @@
 					text="Run Analysis"
 					icon="AllIcons.Actions.Find"/>
 		</group>
+
+
+		<action id="PreviousResultAction"
+		        class="software.xdev.pmd.action.analysispanel.AnalysisPanelJumpToPrevAction"
+		        text="Previous PMD Result"
+		        description="Navigate to previous PMD result"
+		        use-shortcut-of="PreviousOccurence"
+		        popup="false"/>
+
+		<action id="NextResultAction"
+		        class="software.xdev.pmd.action.analysispanel.AnalysisPanelJumpToNextAction"
+		        text="Next PMD Result"
+		        description="Navigate to next PMD result"
+		        use-shortcut-of="NextOccurence"
+		        popup="false"/>
 	</actions>
 
 	<extensionPoints>
