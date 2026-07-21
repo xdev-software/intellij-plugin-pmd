@@ -81,10 +81,6 @@
 		</group>
 	</actions>
 
-	<!-- Not detected when inside plugin-kotlin.xml -->
-	<extensions defaultExtensionNs="org.jetbrains.kotlin">
-		<supportsKotlinPluginMode supportsK2="true"/>
-	</extensions>
 	<extensionPoints>
 		<extensionPoint
 				name="languageResolver"
