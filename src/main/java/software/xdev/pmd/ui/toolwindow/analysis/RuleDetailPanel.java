@@ -104,6 +104,7 @@ public class RuleDetailPanel extends JBPanel<RuleDetailPanel> implements Disposa
 		final RulePriority priority = rule.getPriority();
 		
 		final JBLabel lblPriority = new JBLabel();
+		// Warning use 'setToolTipText(HtmlChunk)' can be ignored as these are enum values
 		lblPriority.setToolTipText(priority.getName() + " (" + priority.getPriority() + ")");
 		lblPriority.setIcon(RulePriorityIcons.get(priority));
 		topPanel.add(lblPriority, HorizontalLayout.LEFT);
@@ -115,6 +116,7 @@ public class RuleDetailPanel extends JBPanel<RuleDetailPanel> implements Disposa
 		if(rule.isDeprecated())
 		{
 			final JBLabel lblDeprecated = new JBLabel();
+			// Warning use 'setToolTipText(HtmlChunk)' can be ignored as this is a hardcoded string
 			lblDeprecated.setToolTipText("Deprecated");
 			lblDeprecated.setIcon(AllIcons.Nodes.ErrorIntroduction);
 			topPanel.add(lblDeprecated, HorizontalLayout.LEFT);
