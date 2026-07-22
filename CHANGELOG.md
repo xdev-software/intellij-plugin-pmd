@@ -1,6 +1,7 @@
 # 1.2.0
 * Add shortcuts for jumping to previous/next result/violation
 * Add a "scan entire project" button #59
+* Only show "Enable automatic build" hint on startup when projects have PMD enabled
 
 # 1.1.4
 * Prevent rare NPE in module configuration UI #107
