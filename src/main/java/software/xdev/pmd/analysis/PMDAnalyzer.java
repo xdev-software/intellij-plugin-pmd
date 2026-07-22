@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.intellij.concurrency.virtualThreads.IntelliJVirtualThreads;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diagnostic.Logger;
@@ -54,9 +55,10 @@ public class PMDAnalyzer implements Disposable
 {
 	private static final Logger LOG = Logger.getInstance(PMDAnalyzer.class);
 	
-	private static final ExecutorService RULESET_LOADER_SERVICE = Executors.newThreadPerTaskExecutor(Thread.ofVirtual()
-		.name("RuleSetLoader", 0)
-		.factory());
+	private static final ExecutorService RULESET_LOADER_SERVICE = Executors.newThreadPerTaskExecutor(
+		IntelliJVirtualThreads.ofVirtual()
+			.name("PMDX-RuleSetLoader-", 0)
+			.factory());
 	
 	private final Project project;
 	

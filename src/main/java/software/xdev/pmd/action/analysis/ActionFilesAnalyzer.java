@@ -3,13 +3,21 @@ package software.xdev.pmd.action.analysis;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.intellij.concurrency.virtualThreads.IntelliJVirtualThreads;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -39,6 +47,12 @@ import software.xdev.pmd.ui.toolwindow.analysis.report.ReportViewManager;
 
 public class ActionFilesAnalyzer
 {
+	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(
+		Math.max(Runtime.getRuntime().availableProcessors() - 1, 2),
+		IntelliJVirtualThreads.ofVirtual()
+			.name("PMDX-Parallel-Analysis-", 0)
+			.factory());
+	
 	public void analyze(@NotNull final ReplayableAnalysisInfo ra)
 	{
 		final Project project = ra.getProject();
@@ -95,19 +109,49 @@ public class ActionFilesAnalyzer
 			return;
 		}
 		progressIndicator.checkCanceled();
-		progressIndicator.setText("Launching analyses");
+		progressIndicator.setText("Launching analysis");
 		progressIndicator.setText2("");
 		
-		final CombinedPMDAnalysisResult combined = CombinedPMDAnalysisResult.combine(psiFiles.entrySet()
-			.parallelStream()
-			.map(e ->
-				project.getService(PMDAnalyzer.class).analyze(
+		final List<CompletableFuture<PMDAnalysisResult>> cfs = psiFiles.entrySet()
+			.stream()
+			.map(e -> CompletableFuture.supplyAsync(
+				() -> project.getService(PMDAnalyzer.class).analyze(
 					e.getKey(),
 					e.getValue(),
 					false,
 					project.getService(ConfigurationLocationSource.class)
 						.getConfigurationLocations(e.getKey().orElse(null)),
-					progressIndicator))
+					progressIndicator),
+				EXECUTOR
+			))
+			.toList();
+		
+		try
+		{
+			CompletableFuture.allOf(cfs.toArray(CompletableFuture[]::new))
+				.get(15, TimeUnit.MINUTES);
+		}
+		catch(final InterruptedException e)
+		{
+			progressIndicator.checkCanceled();
+			Thread.currentThread().interrupt();
+			throw new IllegalStateException("Got interrupted", e);
+		}
+		catch(final ExecutionException e)
+		{
+			progressIndicator.checkCanceled();
+			throw new IllegalStateException("Analysis execution failed", e);
+		}
+		catch(final TimeoutException e)
+		{
+			progressIndicator.checkCanceled();
+			progressIndicator.cancel();
+			throw new IllegalStateException("Analysis is taking too long", e);
+		}
+		
+		final CombinedPMDAnalysisResult combined = CombinedPMDAnalysisResult.combine(cfs
+			.stream()
+			.map(CompletableFuture::join)
 			.toList());
 		
 		project.getService(ReportViewManager.class).displayNewReport(combined, replayableAnalysisInfo);
