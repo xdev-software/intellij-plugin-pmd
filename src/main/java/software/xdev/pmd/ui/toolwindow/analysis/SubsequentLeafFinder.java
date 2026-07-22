@@ -6,7 +6,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import com.intellij.ui.treeStructure.Tree;
 
@@ -24,31 +23,43 @@ public class SubsequentLeafFinder
 	
 	public Optional<TreePath> find(final boolean forward)
 	{
-		final TreePath startingPath = this.tree.getSelectionPath();
+		TreePath startingPath = this.tree.getSelectionPath();
 		if(startingPath == null)
 		{
-			return Optional.empty();
+			// Assume first/last if nothing was selected
+			startingPath = this.tree.getPathForRow(forward ? 0 : this.tree.getRowCount() - 1);
+			if(this.treeModel.isLeaf(startingPath.getLastPathComponent()))
+			{
+				return Optional.of(startingPath);
+			}
+			else if(!forward) // Not a leaf and we are moving backwards -> Select first leaf of this component
+			{
+				return this.findNestedLeaf(startingPath, false);
+			}
 		}
 		
 		// Forward could have been called on a component that is not a leaf -> select the first leaf
-		return Optional.ofNullable(forward && !this.treeModel.isLeaf(startingPath.getLastPathComponent())
-			? this.findFirstLeaf(startingPath)
-			: this.findSubsequentLeaf(startingPath, forward));
+		return forward && !this.treeModel.isLeaf(startingPath.getLastPathComponent())
+			? this.findNestedLeaf(startingPath, true)
+			: this.findSubsequentLeaf(startingPath, forward);
 	}
 	
-	protected TreePath findFirstLeaf(final TreePath startingPath)
+	protected Optional<TreePath> findNestedLeaf(final TreePath startingPath, final boolean first)
 	{
-		TreePath next = startingPath.pathByAddingChild(
-			this.treeModel.getChild(startingPath.getLastPathComponent(), 0));
-		while(!this.treeModel.isLeaf(next.getLastPathComponent()))
+		TreePath next = startingPath;
+		do
 		{
-			next = next.pathByAddingChild(this.treeModel.getChild(next.getLastPathComponent(), 0));
+			next = next.pathByAddingChild(this.treeModel.getChild(
+				next.getLastPathComponent(),
+				first
+					? 0
+					: this.treeModel.getChildCount(next.getLastPathComponent()) - 1));
 		}
-		return next;
+		while(!this.treeModel.isLeaf(next.getLastPathComponent()));
+		return Optional.of(next);
 	}
 	
-	@Nullable
-	protected TreePath findSubsequentLeaf(
+	protected Optional<TreePath> findSubsequentLeaf(
 		@NotNull final TreePath startingPath,
 		final boolean forward)
 	{
@@ -71,11 +82,11 @@ public class SubsequentLeafFinder
 					nextSiblingPath = nextSiblingPath.pathByAddingChild(
 						this.treeModel.getChild(nextSiblingPath.getLastPathComponent(), startingChildIndex));
 				}
-				return nextSiblingPath;
+				return Optional.of(nextSiblingPath);
 			}
 			currentPath = parentPath;
 			parentPath = currentPath.getParentPath();
 		}
-		return null;
+		return Optional.empty();
 	}
 }

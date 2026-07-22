@@ -2,12 +2,20 @@ package software.xdev.pmd.ui.toolwindow.analysis.currentfile;
 
 import javax.swing.tree.TreePath;
 
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 
+import software.xdev.pmd.action.analysis.ActionFilesAnalyzer;
+import software.xdev.pmd.action.analysis.EventBasedReplayableAnalysisInfo;
 import software.xdev.pmd.currentfile.CombinedPMDAnalysisResult;
 import software.xdev.pmd.currentfile.CurrentFileAnalysisListener;
 import software.xdev.pmd.currentfile.CurrentFileAnalysisManager;
@@ -32,6 +40,9 @@ public class CurrentFilePanel extends AnalysisPanel implements CurrentFileAnalys
 		
 		// Init
 		service.explicitlyNotifyListener(this);
+		
+		this.toolbarActionGroup.add(new Separator());
+		this.toolbarActionGroup.add(new AnalyzeProjectAction());
 	}
 	
 	@Override
@@ -59,5 +70,23 @@ public class CurrentFilePanel extends AnalysisPanel implements CurrentFileAnalys
 	{
 		this.fileAnalysisDisposeAction.dispose();
 		super.dispose();
+	}
+	
+	static class AnalyzeProjectAction extends AnAction
+	{
+		AnalyzeProjectAction()
+		{
+			super("Analyze Project", "Run analysis on entire project", AllIcons.Actions.RunAll);
+		}
+		
+		@Override
+		public void actionPerformed(@NotNull final AnActionEvent ev)
+		{
+			ApplicationManager.getApplication()
+				.getService(ActionFilesAnalyzer.class)
+				.analyze(new EventBasedReplayableAnalysisInfo(
+					ev,
+					EventBasedReplayableAnalysisInfo::getCommonAncestorsContentRoots));
+		}
 	}
 }

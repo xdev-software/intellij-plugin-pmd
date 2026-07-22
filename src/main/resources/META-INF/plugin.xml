@@ -64,7 +64,7 @@
 				language="kotlin"
 				implementationClass="software.xdev.pmd.annotator.PMDExternalLanguageAnnotator"/>
 
-		<applicationService serviceImplementation="software.xdev.pmd.action.ActionFilesAnalyzer"/>
+		<applicationService serviceImplementation="software.xdev.pmd.action.analysis.ActionFilesAnalyzer"/>
 		<applicationService serviceImplementation="software.xdev.pmd.langversion.LanguageVersionResolverService"/>
 	</extensions>
 
@@ -82,18 +82,40 @@
 
 
 		<action id="PreviousResultAction"
-		        class="software.xdev.pmd.action.analysispanel.AnalysisPanelJumpToPrevAction"
-		        text="Previous PMD Result"
-		        description="Navigate to previous PMD result"
+		        class="software.xdev.pmd.action.analysispanel.JumpToPrevAnalysisPanelAction"
+		        text="Previous PMD Result (ToolWindow Only)"
+		        description="Navigate to previous PMD result (ToolWindow only)"
 		        use-shortcut-of="PreviousOccurence"
-		        popup="false"/>
+		        popup="false">
+			<keyboard-shortcut first-keystroke="ctrl alt NUMPAD8" keymap="$default"/>
+		</action>
 
 		<action id="NextResultAction"
-		        class="software.xdev.pmd.action.analysispanel.AnalysisPanelJumpToNextAction"
-		        text="Next PMD Result"
-		        description="Navigate to next PMD result"
+		        class="software.xdev.pmd.action.analysispanel.JumpToNextAnalysisPanelAction"
+		        text="Next PMD Result (ToolWindow Only)"
+		        description="Navigate to next PMD result (ToolWindow only)"
 		        use-shortcut-of="NextOccurence"
-		        popup="false"/>
+		        popup="false">
+			<keyboard-shortcut first-keystroke="ctrl alt NUMPAD2" keymap="$default"/>
+		</action>
+
+		<action id="PreviousResultGlobalAction"
+		        class="software.xdev.pmd.action.analysispanel.JumpToPrevGlobalAnalysisPanelAction"
+		        text="Previous PMD Result (Globally Active)"
+		        description="Navigate to previous PMD result (globally active)"
+		        popup="false">
+			<keyboard-shortcut first-keystroke="ctrl alt shift NUMPAD8" keymap="$default"/>
+			<keyboard-shortcut first-keystroke="ctrl alt NUMPAD9" keymap="$default"/>
+		</action>
+
+		<action id="NextResultGlobalAction"
+		        class="software.xdev.pmd.action.analysispanel.JumpToNextGlobalAnalysisPanelAction"
+		        text="Next PMD Result (Globally Active)"
+		        description="Navigate to next PMD result (globally active)"
+		        popup="false">
+			<keyboard-shortcut first-keystroke="ctrl alt shift NUMPAD2" keymap="$default"/>
+			<keyboard-shortcut first-keystroke="ctrl alt NUMPAD3" keymap="$default"/>
+		</action>
 	</actions>
 
 	<extensionPoints>

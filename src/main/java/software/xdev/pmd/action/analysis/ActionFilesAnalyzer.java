@@ -1,4 +1,4 @@
-package software.xdev.pmd.action;
+package software.xdev.pmd.action.analysis;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,9 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jetbrains.annotations.NotNull;
 
-import com.intellij.openapi.actionSystem.ActionPlaces;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -22,7 +19,6 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileVisitor;
@@ -43,17 +39,15 @@ import software.xdev.pmd.ui.toolwindow.analysis.report.ReportViewManager;
 
 public class ActionFilesAnalyzer
 {
-	public void analyzeFromAction(@NotNull final AnActionEvent ev)
+	public void analyze(@NotNull final ReplayableAnalysisInfo ra)
 	{
-		final Project project = ev.getData(CommonDataKeys.PROJECT);
+		final Project project = ra.getProject();
 		if(project == null || project.isDisposed())
 		{
 			return;
 		}
 		
-		final VirtualFile[] selectedFiles = ActionPlaces.MAIN_MENU.equals(ev.getPlace())
-			? VfsUtil.getCommonAncestors(ProjectRootManager.getInstance(project).getContentRoots())
-			: ev.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY);
+		final VirtualFile[] selectedFiles = ra.getFiles(project);
 		if(selectedFiles == null || selectedFiles.length == 0)
 		{
 			return;
@@ -65,7 +59,7 @@ public class ActionFilesAnalyzer
 			public void run(@NotNull final ProgressIndicator indicator)
 			{
 				indicator.setIndeterminate(true);
-				ActionFilesAnalyzer.this.analyzeAsync(project, indicator, selectedFiles, ev);
+				ActionFilesAnalyzer.this.analyzeAsync(project, indicator, selectedFiles, ra);
 			}
 		});
 	}
@@ -75,7 +69,7 @@ public class ActionFilesAnalyzer
 		final Project project,
 		final ProgressIndicator progressIndicator,
 		final VirtualFile[] selectedFiles,
-		final AnActionEvent triggeringEvent)
+		final ReplayableAnalysisInfo replayableAnalysisInfo)
 	{
 		progressIndicator.setText("Collecting files...");
 		progressIndicator.setIndeterminate(true);
@@ -97,7 +91,7 @@ public class ActionFilesAnalyzer
 		{
 			project.getService(ReportViewManager.class).displayNewReport(
 				CombinedPMDAnalysisResult.combine(PMDAnalysisResult.empty(NoAnalysisReason.NO_APPLICABLE_FILES)),
-				triggeringEvent);
+				replayableAnalysisInfo);
 			return;
 		}
 		progressIndicator.checkCanceled();
@@ -116,7 +110,7 @@ public class ActionFilesAnalyzer
 					progressIndicator))
 			.toList());
 		
-		project.getService(ReportViewManager.class).displayNewReport(combined, triggeringEvent);
+		project.getService(ReportViewManager.class).displayNewReport(combined, replayableAnalysisInfo);
 	}
 	
 	@NotNull

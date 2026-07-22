@@ -1,10 +1,5 @@
 package software.xdev.pmd.action.analysispanel;
 
-import java.awt.Component;
-import java.awt.KeyboardFocusManager;
-
-import javax.swing.SwingUtilities;
-
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread;
@@ -37,8 +32,7 @@ public abstract class AnalysisPanelKeyboardAction extends AnAction
 			return;
 		}
 		
-		final Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
-		if(focusOwner == null || !SwingUtilities.isDescendingFrom(focusOwner, toolWindow.getComponent()))
+		if(this.shouldAbort(toolWindow))
 		{
 			return;
 		}
@@ -51,6 +45,11 @@ public abstract class AnalysisPanelKeyboardAction extends AnAction
 		}
 		
 		this.exec(analysisPanel);
+	}
+	
+	protected boolean shouldAbort(final ToolWindow toolWindow)
+	{
+		return false;
 	}
 	
 	protected abstract void exec(AnalysisPanel analysisPanel);

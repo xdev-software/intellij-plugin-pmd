@@ -34,6 +34,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.ui.VerticalFlowLayout;
+import com.intellij.pom.Navigatable;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
@@ -355,11 +356,27 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 	
 	public void navigateToSiblingResult(final boolean forward)
 	{
+		this.navigateToSiblingResult(forward, false);
+	}
+	
+	public void navigateToSiblingResultAndNavigate(final boolean forward)
+	{
+		this.navigateToSiblingResult(forward, true);
+	}
+	
+	private void navigateToSiblingResult(final boolean forward, final boolean forceNavigate)
+	{
 		new SubsequentLeafFinder(this.tree, this.treeModel)
 			.find(forward)
 			.ifPresent(lp -> {
 				this.tree.setSelectionPath(lp);
 				this.tree.scrollPathToVisible(lp);
+				
+				if(forceNavigate && lp.getLastPathComponent() instanceof final Navigatable navigatable
+					&& navigatable.canNavigate())
+				{
+					navigatable.navigate(false);
+				}
 			});
 	}
 	
