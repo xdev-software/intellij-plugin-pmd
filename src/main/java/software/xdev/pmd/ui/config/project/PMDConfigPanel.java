@@ -112,7 +112,7 @@ public class PMDConfigPanel extends JPanel
 	private JPanel wrapWithInfoIcon(final JComponent component, final String infoText)
 	{
 		final JBLabel indicator = new JBLabel(AllIcons.General.Information);
-		// Warning use 'setToolTipText(HtmlChunk)' can be ignored as this is a hardcoded string
+		// Warning 'setToolTipText(HtmlChunk)' can be ignored as this is a hardcoded string
 		indicator.setToolTipText(infoText);
 		
 		final JPanel hl = new JPanel(new HorizontalLayout(5));

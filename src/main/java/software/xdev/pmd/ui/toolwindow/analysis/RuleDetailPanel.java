@@ -3,6 +3,7 @@ package software.xdev.pmd.ui.toolwindow.analysis;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,6 +27,7 @@ import com.intellij.openapi.editor.highlighter.EditorHighlighterFactory;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.VerticalFlowLayout;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.BrowserHyperlinkListener;
 import com.intellij.ui.HyperlinkLabel;
 import com.intellij.ui.ToolbarDecorator;
@@ -44,6 +46,7 @@ import net.sourceforge.pmd.lang.LanguageVersion;
 import net.sourceforge.pmd.lang.rule.Rule;
 import net.sourceforge.pmd.lang.rule.RulePriority;
 import net.sourceforge.pmd.lang.rule.RuleTargetSelector;
+import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHashMap;
 import software.xdev.pmd.markdown.RuleDescriptionDocMarkdownToHtmlService;
 import software.xdev.pmd.ui.toolwindow.node.other.RulePriorityIcons;
 import software.xdev.pmd.util.pmd.PMDLanguageFileTypeMapper;
@@ -51,6 +54,9 @@ import software.xdev.pmd.util.pmd.PMDLanguageFileTypeMapper;
 
 public class RuleDetailPanel extends JBPanel<RuleDetailPanel> implements Disposable
 {
+	private static final Map<String, String> CACHED_SANITIZED_LINKS =
+		new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.WEAK);
+	
 	private final Project project;
 	private final RuleDescriptionDocMarkdownToHtmlService mdToHtmlService;
 	private final EditorFactory editorFactory;
@@ -104,7 +110,7 @@ public class RuleDetailPanel extends JBPanel<RuleDetailPanel> implements Disposa
 		final RulePriority priority = rule.getPriority();
 		
 		final JBLabel lblPriority = new JBLabel();
-		// Warning use 'setToolTipText(HtmlChunk)' can be ignored as these are enum values
+		// Warning 'setToolTipText(HtmlChunk)' can be ignored as these are enum values
 		lblPriority.setToolTipText(priority.getName() + " (" + priority.getPriority() + ")");
 		lblPriority.setIcon(RulePriorityIcons.get(priority));
 		topPanel.add(lblPriority, HorizontalLayout.LEFT);
@@ -116,7 +122,7 @@ public class RuleDetailPanel extends JBPanel<RuleDetailPanel> implements Disposa
 		if(rule.isDeprecated())
 		{
 			final JBLabel lblDeprecated = new JBLabel();
-			// Warning use 'setToolTipText(HtmlChunk)' can be ignored as this is a hardcoded string
+			// Warning 'setToolTipText(HtmlChunk)' can be ignored as this is a hardcoded string
 			lblDeprecated.setToolTipText("Deprecated");
 			lblDeprecated.setIcon(AllIcons.Nodes.ErrorIntroduction);
 			topPanel.add(lblDeprecated, HorizontalLayout.LEFT);
@@ -126,6 +132,9 @@ public class RuleDetailPanel extends JBPanel<RuleDetailPanel> implements Disposa
 			.ifPresent(url -> {
 				final HyperlinkLabel externalInfo = new HyperlinkLabel("External info");
 				externalInfo.setHyperlinkTarget(url);
+				// Warning 'setToolTipText(HtmlChunk)' can be ignored because this is already escaped
+				externalInfo.setToolTipText(
+					CACHED_SANITIZED_LINKS.computeIfAbsent(url, StringUtil::escapeXmlEntities));
 				topPanel.add(externalInfo, HorizontalLayout.RIGHT);
 			});
 		
