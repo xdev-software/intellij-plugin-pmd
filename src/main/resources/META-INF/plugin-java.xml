@@ -6,7 +6,8 @@
 
 		<languageVersionResolver
 				implementation="software.xdev.pmd.langversion.JavaLanguageAndVersionResolver"/>
-
+	</extensions>
+	<extensions defaultExtensionNs="com.intellij">
 		<postStartupActivity implementation="software.xdev.pmd.startup.JavaCompilerAutoMakeStartupHint"/>
 	</extensions>
 </idea-plugin>
