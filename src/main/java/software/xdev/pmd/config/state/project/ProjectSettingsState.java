@@ -3,13 +3,9 @@ package software.xdev.pmd.config.state.project;
 import static java.util.Objects.requireNonNullElseGet;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
@@ -146,30 +142,6 @@ public class ProjectSettingsState
 			}
 		}
 		return ScanScope.getDefaultValue();
-	}
-	
-	@SuppressWarnings("PMD.AvoidRecompilingPatterns")
-	private SortedSet<Pattern> deserializeProjectRelativeFileExclusions()
-	{
-		if(this.projectRelativeFileExclusions == null)
-		{
-			return Collections.emptySortedSet();
-		}
-		return this.projectRelativeFileExclusions.stream()
-			.filter(Objects::nonNull)
-			.filter(s -> !s.isBlank())
-			.map(s -> {
-				try
-				{
-					return Pattern.compile(s);
-				}
-				catch(final PatternSyntaxException ex)
-				{
-					return null;
-				}
-			})
-			.filter(Objects::nonNull)
-			.collect(Collectors.toCollection(TreeSet::new));
 	}
 	
 	@Nullable
