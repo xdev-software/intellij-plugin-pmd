@@ -56,7 +56,7 @@ public class PMDConfigurable implements Configurable
 	public boolean isModified()
 	{
 		return !this.pluginConfigurationManager.getCurrent() // Old
-			.hasChangedFrom(this.getConfigPanelPluginConfig()); // New
+			.isIdentical(this.getConfigPanelPluginConfig()); // New
 	}
 	
 	@Override

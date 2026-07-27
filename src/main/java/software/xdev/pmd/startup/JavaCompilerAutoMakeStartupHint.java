@@ -61,7 +61,7 @@ public class JavaCompilerAutoMakeStartupHint implements ProjectActivity
 					!compilerWorkspaceConfig.allowAutoMakeWhileRunningApplication(),
 					"'Allow auto-make to start even if developed application is currently running' is disabled. "
 						+ " The classpath will not be updated when the app is running.",
-					"Enabled 'Allow auto-make to start even if developed application is currently running'",
+					"Enable 'Allow auto-make to start even if developed application is currently running'",
 					() -> AdvancedSettings.setBoolean("compiler.automake.allow.when.app.running", true)
 				))
 			.filter(Fix::required)

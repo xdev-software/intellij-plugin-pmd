@@ -24,8 +24,10 @@ public record PluginConfiguration(
 	boolean showSuppressedWarnings,
 	boolean useCacheFile,
 	ScanScope scanScope,
+	SortedSet<PatternContainer> projectRelativeFileExclusions,
 	SortedSet<ConfigurationLocation> locations,
 	SortedSet<String> activeLocationIds,
+	boolean importSettingsFromMaven,
 	Cache cache
 )
 {
@@ -34,6 +36,19 @@ public record PluginConfiguration(
 	{
 		Map<String, ConfigurationLocation> idLocationCache;
 		SortedSet<ConfigurationLocation> activeLocationCache;
+		
+		// Cache should be ignored when comparing
+		@Override
+		public boolean equals(final Object o)
+		{
+			return o instanceof Cache;
+		}
+		
+		@Override
+		public int hashCode()
+		{
+			return 1;
+		}
 	}
 	
 	@Nullable
@@ -61,9 +76,9 @@ public record PluginConfiguration(
 		return this.cache.activeLocationCache;
 	}
 	
-	public boolean hasChangedFrom(final Object other)
+	public boolean isIdentical(final PluginConfiguration other)
 	{
-		return this.equals(other) && this.locationsAreEqual((PluginConfiguration)other);
+		return this.equals(other) && this.locationsAreEqual(other);
 	}
 	
 	private boolean locationsAreEqual(final PluginConfiguration other)

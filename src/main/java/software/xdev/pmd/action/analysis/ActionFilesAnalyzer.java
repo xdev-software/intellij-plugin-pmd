@@ -36,7 +36,7 @@ import com.intellij.psi.PsiManager;
 import software.xdev.pmd.analysis.NoAnalysisReason;
 import software.xdev.pmd.analysis.PMDAnalysisResult;
 import software.xdev.pmd.analysis.PMDAnalyzer;
-import software.xdev.pmd.analysis.PsiFileValidator;
+import software.xdev.pmd.analysis.validate.PsiFileValidator;
 import software.xdev.pmd.config.ConfigurationLocationSource;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
@@ -92,12 +92,14 @@ public class ActionFilesAnalyzer
 		final PluginConfiguration pluginConfiguration =
 			project.getService(PluginConfigurationManager.class).getCurrent();
 		final ProjectFileIndex projectFileIndex = ProjectRootManager.getInstance(project).getFileIndex();
+		final PsiFileValidator psiFileValidator = project.getService(PsiFileValidator.class);
 		
 		final Map<Optional<com.intellij.openapi.module.Module>, Set<PsiFile>> psiFiles =
 			ReadAction.computeBlocking(() -> this.collectFiles(
 				projectFileIndex,
 				psiManager,
 				pluginConfiguration,
+				psiFileValidator,
 				progressIndicator,
 				selectedFiles));
 		
@@ -108,6 +110,7 @@ public class ActionFilesAnalyzer
 				replayableAnalysisInfo);
 			return;
 		}
+		
 		progressIndicator.checkCanceled();
 		progressIndicator.setText("Launching analysis");
 		progressIndicator.setText2("");
@@ -162,6 +165,7 @@ public class ActionFilesAnalyzer
 		final ProjectFileIndex projectFileIndex,
 		final PsiManager psiManager,
 		final PluginConfiguration pluginConfiguration,
+		final PsiFileValidator psiFileValidator,
 		final ProgressIndicator progressIndicator,
 		final VirtualFile[] selectedFiles)
 	{
@@ -172,8 +176,12 @@ public class ActionFilesAnalyzer
 			@Override
 			public boolean visitFile(@NotNull final VirtualFile file)
 			{
-				progressIndicator.checkCanceled();
-				progressIndicator.setText2(counterScanned.getAndIncrement() + "x elements checked");
+				final int count = counterScanned.getAndIncrement();
+				if(count % 3 == 0)
+				{
+					progressIndicator.checkCanceled();
+					progressIndicator.setText2(count + "x elements checked");
+				}
 				
 				if(file.isDirectory())
 				{
@@ -194,7 +202,7 @@ public class ActionFilesAnalyzer
 				final Optional<Module> optModule =
 					Optional.ofNullable(ModuleUtilCore.findModuleForFile(psiFile));
 				
-				if(!PsiFileValidator.isScannable(psiFile, optModule, pluginConfiguration))
+				if(!psiFileValidator.isScannable(psiFile, optModule, pluginConfiguration))
 				{
 					return false;
 				}
@@ -209,6 +217,9 @@ public class ActionFilesAnalyzer
 		
 		Arrays.stream(selectedFiles).forEach(file ->
 			VfsUtilCore.visitChildrenRecursively(file, fileVisitor));
+		
+		progressIndicator.checkCanceled();
+		
 		return psiFiles;
 	}
 }

@@ -44,6 +44,7 @@ import net.sourceforge.pmd.lang.rule.RuleSet;
 import net.sourceforge.pmd.reporting.FileAnalysisListener;
 import net.sourceforge.pmd.reporting.GlobalAnalysisListener;
 import net.sourceforge.pmd.reporting.Report;
+import software.xdev.pmd.analysis.validate.PsiFileValidator;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
 import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHashMap;
@@ -269,12 +270,14 @@ public class PMDAnalyzer implements Disposable
 		final int totalFiles = filesToScan.size();
 		final AtomicInteger counter = new AtomicInteger(0);
 		
+		final PsiFileValidator psiFileValidator = this.project.getService(PsiFileValidator.class);
+		
 		final List<PsiFile> files = ReadAction.computeBlocking(() -> filesToScan.stream()
 			.filter(file -> {
 				progressIndicator.setFraction((double)counter.incrementAndGet() / totalFiles);
 				progressIndicator.setText2(file != null ? file.getName() : null);
 				
-				return PsiFileValidator.isScannable(
+				return psiFileValidator.isScannable(
 					file,
 					optModule,
 					pluginConfiguration);

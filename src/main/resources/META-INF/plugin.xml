@@ -20,9 +20,11 @@
 	<depends>com.intellij.modules.platform</depends>
 	<depends optional="true" config-file="plugin-java.xml">com.intellij.modules.java</depends>
 	<depends optional="true" config-file="plugin-kotlin.xml">org.jetbrains.kotlin</depends>
+	<depends optional="true" config-file="plugin-maven.xml">org.jetbrains.idea.maven</depends>
 
 	<extensions defaultExtensionNs="com.intellij">
 		<projectService serviceImplementation="software.xdev.pmd.analysis.PMDAnalyzer"/>
+		<projectService serviceImplementation="software.xdev.pmd.analysis.validate.PsiFileValidator"/>
 		<projectService serviceImplementation="software.xdev.pmd.model.config.ConfigurationLocationFactory"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.ConfigurationLocationSource"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.PluginConfigurationManager"/>

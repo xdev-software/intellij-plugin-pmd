@@ -3,9 +3,13 @@ package software.xdev.pmd.config.state.project;
 import static java.util.Objects.requireNonNullElseGet;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +23,7 @@ import com.intellij.util.xmlb.annotations.MapAnnotation;
 import com.intellij.util.xmlb.annotations.Tag;
 import com.intellij.util.xmlb.annotations.XCollection;
 
+import software.xdev.pmd.config.PatternContainer;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
 import software.xdev.pmd.model.config.ConfigurationLocation;
@@ -44,9 +49,13 @@ public class ProjectSettingsState
 	@Tag
 	String scanScope;
 	@XCollection
+	List<String> projectRelativeFileExclusions;
+	@XCollection
 	List<String> activeLocationIds;
 	@MapAnnotation
 	List<ConfigurationLocationState> locations;
+	@Tag
+	boolean importSettingsFromMaven;
 	
 	static ProjectSettingsState create(@NotNull final PluginConfiguration currentConfig)
 	{
@@ -58,6 +67,9 @@ public class ProjectSettingsState
 		projectSettings.showSuppressedWarnings = currentConfig.showSuppressedWarnings();
 		projectSettings.useCacheFile = currentConfig.useCacheFile();
 		projectSettings.scanScope = currentConfig.scanScope().name();
+		projectSettings.projectRelativeFileExclusions = currentConfig.projectRelativeFileExclusions().stream()
+			.map(PatternContainer::patternString)
+			.toList();
 		projectSettings.activeLocationIds = new ArrayList<>(currentConfig.activeLocationIds());
 		projectSettings.locations = currentConfig.locations().stream()
 			.map(location -> new ConfigurationLocationState(
@@ -66,7 +78,8 @@ public class ProjectSettingsState
 				location.getRawLocation(),
 				location.getDescription()
 			))
-			.collect(Collectors.toList());
+			.toList();
+		projectSettings.importSettingsFromMaven = currentConfig.importSettingsFromMaven();
 		
 		return projectSettings;
 	}
@@ -86,10 +99,12 @@ public class ProjectSettingsState
 			.withShowSuppressedWarnings(this.showSuppressedWarnings)
 			.withUseCacheFile(this.useCacheFile)
 			.withScanScope(this.lookupScanScope())
+			.withProjectRelativeFileExclusionsRaw(this.projectRelativeFileExclusions)
 			.withLocations(this.deserializeLocations(project))
 			.withActiveLocationIds(new TreeSet<>(requireNonNullElseGet(
 				this.activeLocationIds,
-				ArrayList::new)));
+				ArrayList::new)))
+			.withImportSettingFromMaven(this.importSettingsFromMaven);
 	}
 	
 	@NotNull
@@ -131,6 +146,30 @@ public class ProjectSettingsState
 			}
 		}
 		return ScanScope.getDefaultValue();
+	}
+	
+	@SuppressWarnings("PMD.AvoidRecompilingPatterns")
+	private SortedSet<Pattern> deserializeProjectRelativeFileExclusions()
+	{
+		if(this.projectRelativeFileExclusions == null)
+		{
+			return Collections.emptySortedSet();
+		}
+		return this.projectRelativeFileExclusions.stream()
+			.filter(Objects::nonNull)
+			.filter(s -> !s.isBlank())
+			.map(s -> {
+				try
+				{
+					return Pattern.compile(s);
+				}
+				catch(final PatternSyntaxException ex)
+				{
+					return null;
+				}
+			})
+			.filter(Objects::nonNull)
+			.collect(Collectors.toCollection(TreeSet::new));
 	}
 	
 	@Nullable

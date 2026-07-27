@@ -37,6 +37,7 @@ import com.intellij.ui.components.panels.HorizontalLayout;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 
+import software.xdev.pmd.config.PatternContainer;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
 import software.xdev.pmd.model.config.ConfigurationLocation;
@@ -56,14 +57,34 @@ public class PMDConfigPanel extends JPanel
 	private static final int DESC_COL_MAX_WIDTH = 200;
 	private static final Dimension DECORATOR_DIMENSIONS = new Dimension(300, 50);
 	
-	private final JLabel scopeDropdownLabel = new JLabel("Scan Scope:");
-	private final ComboBox<ScanScope> scopeDropdown = new ComboBox<>(ScanScope.values());
-	private final JBCheckBox useSingleThreadCheckbox = new JBCheckBox("Use single thread");
-	private final JBCheckBox showSuppressedWarningsCheckbox = new JBCheckBox("Show suppressed warnings");
-	private final JBCheckBox useCacheFileCheckbox = new JBCheckBox("Use cache file");
+	private final JLabel lblScopeDropdown = new JLabel("Scan Scope:");
+	private final ComboBox<ScanScope> cbScope = new ComboBox<>(ScanScope.values());
+	private final JBCheckBox chbxUseSingleThread = new JBCheckBox("Use single thread");
+	private final JBCheckBox chbxShowSuppressedWarnings = new JBCheckBox("Show suppressed warnings");
+	private final JBCheckBox chbxUseCacheFile = new JBCheckBox("Use cache file");
+	private final JBCheckBox chbxImportSettingsFromMaven = new JBCheckBox("Import settings from Maven");
 	
 	private final LocationTableModel locationModel = new LocationTableModel();
 	private final JBTable locationTable = new JBTable(this.locationModel);
+	
+	private final FileMaskPanelContainer exclusionPanelContainer = new FileMaskPanelContainer(
+		"Exclusions",
+		"Nothing excluded",
+		"Add exclusion",
+		"Edit exclusion",
+		"""
+			<html><body>
+			<p>Ignores certain files (patterns).
+			<p>(use case sensitive Java regular expression that matches the end of the full file path)</p>
+			<ul>
+			<li><strong>Ignore\\.java</strong>              (exclude file 'Ignore.java' in all folders)</li>
+			<li><strong>.*\\.properties</strong>            (exclude all '.properties' in all folders)</li>
+			<li><strong>src/Ignore\\.java</strong>          (exclude file 'Ignore.java' in 'src' folders)</li>
+			<li><strong>ignore/.*</strong>                  (exclude folder 'ignore' recursively)</li>
+			<li><strong>myProject/Ignore.md</strong>        (exclude file 'Ignore.md' in project 'myProject')</li>
+			</ul>
+			</body></html>"""
+	);
 	
 	private final Project project;
 	
@@ -86,25 +107,37 @@ public class PMDConfigPanel extends JPanel
 		final JPanel configFilePanel = new JPanel(new GridBagLayout());
 		configFilePanel.setOpaque(false);
 		
-		configFilePanel.add(this.scopeDropdownLabel, this.createDefaultGridBagConstraints(0, 0, 1));
-		configFilePanel.add(this.scopeDropdown, this.createDefaultGridBagConstraints(1, 0, 1));
+		configFilePanel.add(this.lblScopeDropdown, this.createDefaultGridBagConstraints(0, 0, 1));
+		configFilePanel.add(this.cbScope, this.createDefaultGridBagConstraints(1, 0, 1));
 		configFilePanel.add(
 			this.wrapWithInfoIcon(
-				this.useSingleThreadCheckbox,
+				this.chbxUseSingleThread,
 				"Analysis will be a lot slower but might be more stable"),
 			this.createDefaultGridBagConstraints(2, 0, 2));
-		configFilePanel.add(this.showSuppressedWarningsCheckbox, this.createDefaultGridBagConstraints(0, 1, 2));
+		
+		configFilePanel.add(this.chbxShowSuppressedWarnings, this.createDefaultGridBagConstraints(0, 1, 2));
 		configFilePanel.add(
 			this.wrapWithInfoIcon(
-				this.useCacheFileCheckbox,
+				this.chbxUseCacheFile,
 				"Repeated analysis will be a lot faster.<br>"
 					+ "Only disable this when you have problems with cache file corruption"),
 			this.createDefaultGridBagConstraints(2, 1, 2));
+		
+		configFilePanel.add(
+			this.wrapWithInfoIcon(
+				this.chbxImportSettingsFromMaven,
+				"Experimental/Best effort - not all options/usage possibilities of the maven plugin are supported.<br>"
+					+ "Importing only happens during maven project syncing.<br/>"
+					+ "It's recommended to only enable this when importing changed configuration."),
+			this.createDefaultGridBagConstraints(0, 2, 2));
+		
 		configFilePanel.add(
 			this.buildRuleFilePanel(),
-			new GridBagConstraints(
-				0, 2, 4, 1, 1.0, 1.0, GridBagConstraints.WEST,
-				GridBagConstraints.BOTH, COMPONENT_INSETS, 0, 0));
+			this.createFullWidthGridBagConstraints(3, 1.0));
+		
+		configFilePanel.add(
+			this.exclusionPanelContainer.getPanel(),
+			this.createFullWidthGridBagConstraints(4, 0.1));
 		
 		return configFilePanel;
 	}
@@ -132,6 +165,22 @@ public class PMDConfigPanel extends JPanel
 			0.0,
 			GridBagConstraints.WEST,
 			GridBagConstraints.HORIZONTAL,
+			COMPONENT_INSETS,
+			0,
+			0);
+	}
+	
+	private GridBagConstraints createFullWidthGridBagConstraints(final int gridY, final double weighty)
+	{
+		return new GridBagConstraints(
+			0,
+			gridY,
+			4,
+			1,
+			1.0,
+			weighty,
+			GridBagConstraints.WEST,
+			GridBagConstraints.BOTH,
 			COMPONENT_INSETS,
 			0,
 			0);
@@ -182,27 +231,33 @@ public class PMDConfigPanel extends JPanel
 	
 	public void showPluginConfiguration(@NotNull final PluginConfiguration pluginConfig)
 	{
-		this.scopeDropdown.setSelectedItem(pluginConfig.scanScope());
-		this.useSingleThreadCheckbox.setSelected(pluginConfig.useSingleThread());
-		this.showSuppressedWarningsCheckbox.setSelected(pluginConfig.showSuppressedWarnings());
-		this.useCacheFileCheckbox.setSelected(pluginConfig.useCacheFile());
+		this.cbScope.setSelectedItem(pluginConfig.scanScope());
+		this.chbxUseSingleThread.setSelected(pluginConfig.useSingleThread());
+		this.chbxShowSuppressedWarnings.setSelected(pluginConfig.showSuppressedWarnings());
+		this.chbxUseCacheFile.setSelected(pluginConfig.useCacheFile());
+		this.chbxImportSettingsFromMaven.setSelected(pluginConfig.importSettingsFromMaven());
 		this.locationModel.setLocations(new ArrayList<>(pluginConfig.locations()));
 		this.locationModel.setActiveLocations(pluginConfig.getActiveLocations());
+		this.exclusionPanelContainer.update(pluginConfig.projectRelativeFileExclusions().stream()
+			.map(PatternContainer::patternString)
+			.collect(Collectors.toCollection(TreeSet::new)));
 	}
 	
 	public PluginConfiguration getPluginConfiguration()
 	{
 		return new PluginConfigurationBuilder(this.project)
-			.withUseSingleThread(this.useSingleThreadCheckbox.isSelected())
-			.withShowSuppressedWarnings(this.showSuppressedWarningsCheckbox.isSelected())
-			.withUseCacheFile(this.useCacheFileCheckbox.isSelected())
+			.withUseSingleThread(this.chbxUseSingleThread.isSelected())
+			.withShowSuppressedWarnings(this.chbxShowSuppressedWarnings.isSelected())
+			.withUseCacheFile(this.chbxUseCacheFile.isSelected())
 			.withScanScope(Objects.requireNonNullElseGet(
-				(ScanScope)this.scopeDropdown.getSelectedItem(),
+				(ScanScope)this.cbScope.getSelectedItem(),
 				ScanScope::getDefaultValue))
+			.withProjectRelativeFileExclusionsRaw(this.exclusionPanelContainer.getPatterns())
 			.withLocations(new TreeSet<>(this.locationModel.getLocations()))
 			.withActiveLocationIds(this.locationModel.getActiveLocations().stream()
 				.map(ConfigurationLocation::getId)
 				.collect(Collectors.toCollection(TreeSet::new)))
+			.withImportSettingFromMaven(this.chbxImportSettingsFromMaven.isSelected())
 			.build();
 	}
 	
