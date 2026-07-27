@@ -1,5 +1,5 @@
 # 1.2.0
-* Make it possible to add (project-wide) exclusions
+* Make it possible to add (project-wide) exclusions #58
 * Add support for importing settings from Maven PMD plugin (best-effort)
 * Add shortcuts for jumping to previous/next result/violation
 * Add a "scan entire project" button #59
