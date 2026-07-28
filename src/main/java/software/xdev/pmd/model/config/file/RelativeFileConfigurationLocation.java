@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 
 import software.xdev.pmd.model.config.ConfigurationType;
+import software.xdev.pmd.util.io.ProjectFilePaths;
 
 
 /**
@@ -34,8 +35,9 @@ public class RelativeFileConfigurationLocation extends FileConfigurationLocation
 			throw new IllegalArgumentException("A non-blank location is required");
 		}
 		
-		super.setLocation(this.projectFilePaths().tokenise(
-			this.projectFilePaths().makeProjectRelative(
-				this.projectFilePaths().detokenize(location))));
+		final ProjectFilePaths projectFilePaths = this.projectFilePaths();
+		super.setLocation(projectFilePaths.tokenise(
+			projectFilePaths.makeProjectRelative(
+				projectFilePaths.detokenize(location))));
 	}
 }

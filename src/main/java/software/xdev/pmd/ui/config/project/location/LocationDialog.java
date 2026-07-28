@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.config.project;
+package software.xdev.pmd.ui.config.project.location;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;

@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.config.project;
+package software.xdev.pmd.ui.config.project.exclusion;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -22,7 +22,7 @@ import com.intellij.ui.components.JBList;
 import software.xdev.pmd.config.PatternContainer;
 
 
-class FileMaskPanelContainer
+public class FileMaskPanelManager
 {
 	private SortedSet<String> patterns = new TreeSet<>();
 	
@@ -34,7 +34,7 @@ class FileMaskPanelContainer
 	private final JPanel patternPanel;
 	private final JPanel panel;
 	
-	FileMaskPanelContainer(
+	public FileMaskPanelManager(
 		final String textTitle,
 		final String textEmpty,
 		final String textAddTitle,
@@ -45,7 +45,7 @@ class FileMaskPanelContainer
 	}
 	
 	@SuppressWarnings("checkstyle:MagicNumber")
-	FileMaskPanelContainer(
+	FileMaskPanelManager(
 		final String textTitle,
 		final String textEmpty,
 		final String textAddTitle,
@@ -88,19 +88,19 @@ class FileMaskPanelContainer
 		};
 	}
 	
-	JPanel getPanel()
+	public JPanel getPanel()
 	{
 		return this.panel;
 	}
 	
-	void update(final SortedSet<String> patterns)
+	public void update(final SortedSet<String> patterns)
 	{
 		this.patterns = new TreeSet<>(patterns);
 		this.patternModels.clear();
 		this.patternModels.addAllSorted(patterns);
 	}
 	
-	SortedSet<String> getPatterns()
+	public SortedSet<String> getPatterns()
 	{
 		return this.patterns;
 	}

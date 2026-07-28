@@ -1,8 +1,8 @@
-package software.xdev.pmd.ui.config.project;
+package software.xdev.pmd.ui.config.project.location;
 
 import static software.xdev.pmd.model.config.ConfigurationType.LOCAL_FILE;
 import static software.xdev.pmd.model.config.ConfigurationType.PROJECT_RELATIVE;
-import static software.xdev.pmd.ui.config.project.LocationPanel.LocationType.FILE;
+import static software.xdev.pmd.ui.config.project.location.LocationPanel.LocationType.FILE;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
