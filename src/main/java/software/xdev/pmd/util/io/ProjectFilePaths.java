@@ -1,7 +1,5 @@
 package software.xdev.pmd.util.io;
 
-import static java.util.Arrays.asList;
-
 import java.io.File;
 import java.util.function.Function;
 
@@ -19,7 +17,6 @@ public class ProjectFilePaths
 	private static final Logger LOG = Logger.getInstance(ProjectFilePaths.class);
 	
 	private static final String IDEA_PROJECT_DIR = "$PROJECT_DIR$";
-	private static final String LEGACY_PROJECT_DIR = "$PRJ_DIR$";
 	
 	private final Project project;
 	private final char separatorChar;
@@ -121,23 +118,20 @@ public class ProjectFilePaths
 	
 	private String replaceProjectToken(final String path)
 	{
-		for(final String projectDirToken : asList(IDEA_PROJECT_DIR, LEGACY_PROJECT_DIR))
+		final int prefixLocation = path.indexOf(IDEA_PROJECT_DIR);
+		if(prefixLocation >= 0)
 		{
-			final int prefixLocation = path.indexOf(projectDirToken);
-			if(prefixLocation >= 0)
+			final File projectPath = this.projectPath();
+			if(projectPath != null)
 			{
-				final File projectPath = this.projectPath();
-				if(projectPath != null)
-				{
-					final String projectRelativePath =
-						this.toSystemPath(path.substring(prefixLocation + projectDirToken.length()));
-					final String completePath = projectPath + File.separator + projectRelativePath;
-					return this.absolutePathOf.apply(new File(completePath));
-				}
-				else
-				{
-					LOG.warn("Could not detokenize path as project dir is unset: " + path);
-				}
+				final String projectRelativePath =
+					this.toSystemPath(path.substring(prefixLocation + IDEA_PROJECT_DIR.length()));
+				final String completePath = projectPath + File.separator + projectRelativePath;
+				return this.absolutePathOf.apply(new File(completePath));
+			}
+			else
+			{
+				LOG.warn("Could not detokenize path as project dir is unset: " + path);
 			}
 		}
 		return null;
