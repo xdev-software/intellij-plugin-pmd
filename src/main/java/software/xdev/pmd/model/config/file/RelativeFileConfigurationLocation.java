@@ -33,10 +33,6 @@ public class RelativeFileConfigurationLocation extends FileConfigurationLocation
 	@Override
 	public void setLocation(String location)
 	{
-		if(location.startsWith(LEGACY_IDEA_PROJECT_DIR) && location.length() > LEGACY_IDEA_PROJECT_DIR.length() + 1)
-		{
-			location = location.substring(LEGACY_IDEA_PROJECT_DIR.length() + 1);
-		}
 		// Detect legacy $PROJECT_DIR$ that was resolved during importing
 		if(location.length() > 5
 			// linux e.g. /abc/...
