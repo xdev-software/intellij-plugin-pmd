@@ -151,7 +151,7 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 	@Override
 	public int compareTo(@NotNull final ConfigurationLocation other)
 	{
-		// bundled configs go first, ordered by their position in the BundledConfig enum
+		// bundled configs go last, ordered by their position in the BundledConfig enum
 		if(other instanceof final BundledConfigurationLocation otherBundledConfigurationLocation)
 		{
 			if(this instanceof final BundledConfigurationLocation thisBundledConfigurationLocation)
@@ -160,12 +160,12 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 					thisBundledConfigurationLocation.getBundledConfig().getSortOrder(),
 					otherBundledConfigurationLocation.getBundledConfig().getSortOrder());
 			}
-			return 1;
+			return -1;
 		}
 		
 		if(this instanceof BundledConfigurationLocation)
 		{
-			return -1;
+			return 1;
 		}
 		
 		int result = this.compareStrings(this.getDescription(), other.getDescription());

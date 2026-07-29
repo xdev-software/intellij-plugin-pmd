@@ -5,6 +5,7 @@
 * Add a "scan entire project" button #59
 * Only show "Enable automatic build" hint on startup when projects have PMD enabled
 * Refactor location store
+* Order bundled locations at the end
 
 # 1.1.4
 * Prevent rare NPE in module configuration UI #107
