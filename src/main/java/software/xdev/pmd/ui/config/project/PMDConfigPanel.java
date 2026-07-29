@@ -1,6 +1,7 @@
 package software.xdev.pmd.ui.config.project;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -23,13 +24,15 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.panels.HorizontalLayout;
 import com.intellij.util.ui.JBUI;
 
-import software.xdev.pmd.config.PatternContainer;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
+import software.xdev.pmd.config.plugin.PatternContainer;
+import software.xdev.pmd.config.plugin.ThirdPartyClasspathConfigContainer;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.scope.ScanScope;
 import software.xdev.pmd.ui.config.project.components.exclusion.FileMaskPanelManager;
 import software.xdev.pmd.ui.config.project.components.rulefilelocation.LocationPanelManager;
+import software.xdev.pmd.ui.config.project.components.thirdpartyclasspath.ThirdPartyClasspathPanelManager;
 
 
 /**
@@ -79,6 +82,7 @@ public class PMDConfigPanel extends JPanel
 		this.project = project;
 		
 		this.rulefileLocationPanelManager = new LocationPanelManager(project, this);
+		this.thirdPartyClasspathPanelManager = new ThirdPartyClasspathPanelManager(project, this);
 		
 		this.initialise();
 	}
@@ -117,13 +121,26 @@ public class PMDConfigPanel extends JPanel
 					+ "It's recommended to only enable this when importing changed configuration."),
 			this.createDefaultGridBagConstraints(0, 2, 2));
 		
-		configFilePanel.add(
+		this.addPanel(
+			configFilePanel,
 			this.rulefileLocationPanelManager.buildPanel(),
-			this.createFullWidthGridBagConstraints(3, 1.0));
+			3,
+			1.0,
+			300);
 		
-		configFilePanel.add(
+		this.addPanel(
+			configFilePanel,
 			this.exclusionPanelManager.getPanel(),
-			this.createFullWidthGridBagConstraints(4, 0.1));
+			4,
+			0.1,
+			150);
+		
+		this.addPanel(
+			configFilePanel,
+			this.thirdPartyClasspathPanelManager.buildPanel(),
+			5,
+			0.5,
+			150);
 		
 		return configFilePanel;
 	}
@@ -172,6 +189,20 @@ public class PMDConfigPanel extends JPanel
 			0);
 	}
 	
+	private void addPanel(
+		final JPanel panel,
+		final JPanel panelToAdd,
+		final int gridY,
+		final double weighty,
+		final int preferredHeight
+	)
+	{
+		panelToAdd.setPreferredSize(new Dimension(Integer.MAX_VALUE, preferredHeight));
+		panel.add(
+			panelToAdd,
+			this.createFullWidthGridBagConstraints(gridY, weighty));
+	}
+	
 	public void showPluginConfiguration(@NotNull final PluginConfiguration pluginConfig)
 	{
 		this.cbScope.setSelectedItem(pluginConfig.scanScope());
@@ -184,6 +215,8 @@ public class PMDConfigPanel extends JPanel
 		this.exclusionPanelManager.update(pluginConfig.projectRelativeFileExclusions().stream()
 			.map(PatternContainer::patternString)
 			.collect(Collectors.toCollection(TreeSet::new)));
+		this.thirdPartyClasspathPanelManager.setThirdPartyClassPath(
+			pluginConfig.thirdPartyClasspath().absolutePathStrings());
 	}
 	
 	public PluginConfiguration getPluginConfiguration()
@@ -200,6 +233,10 @@ public class PMDConfigPanel extends JPanel
 			.withActiveLocationIds(this.rulefileLocationPanelManager.locationModel().getActiveLocations().stream()
 				.map(ConfigurationLocation::getId)
 				.collect(Collectors.toCollection(TreeSet::new)))
+			.withThirdPartyClasspath(
+				ThirdPartyClasspathConfigContainer.createFromUI(
+					this.project,
+					this.thirdPartyClasspathPanelManager.getThirdPartyClassPath()))
 			.withImportSettingFromMaven(this.chbxImportSettingsFromMaven.isSelected())
 			.build();
 	}

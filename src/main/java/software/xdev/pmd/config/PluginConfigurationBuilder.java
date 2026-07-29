@@ -12,6 +12,8 @@ import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.project.Project;
 
+import software.xdev.pmd.config.plugin.PatternContainer;
+import software.xdev.pmd.config.plugin.ThirdPartyClasspathConfigContainer;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.config.ConfigurationLocationFactory;
 import software.xdev.pmd.model.config.bundled.BundledConfig;
@@ -27,6 +29,7 @@ public final class PluginConfigurationBuilder
 	private SortedSet<PatternContainer> projectRelativeFileExclusions;
 	private SortedSet<ConfigurationLocation> locations;
 	private SortedSet<String> activeLocationIds;
+	private ThirdPartyClasspathConfigContainer thirdPartyClasspath;
 	private boolean importSettingsFromMaven;
 	
 	public PluginConfigurationBuilder(final Project project)
@@ -34,12 +37,13 @@ public final class PluginConfigurationBuilder
 		this.showSuppressedWarnings = true;
 		this.useCacheFile = true;
 		this.scanScope = ScanScope.getDefaultValue();
-		this.projectRelativeFileExclusions = Collections.emptySortedSet();
+		this.projectRelativeFileExclusions = null;
 		this.locations = BundledConfig.getAllBundledConfigs()
 			.stream()
 			.map(bc -> configurationLocationFactory(project).create(bc, project))
 			.collect(Collectors.toCollection(TreeSet::new));
-		this.activeLocationIds = Collections.emptySortedSet();
+		this.activeLocationIds = null;
+		this.thirdPartyClasspath = null;
 		this.importSettingsFromMaven = false;
 	}
 	
@@ -52,6 +56,7 @@ public final class PluginConfigurationBuilder
 		this.projectRelativeFileExclusions = copyFrom.projectRelativeFileExclusions();
 		this.locations = copyFrom.locations();
 		this.activeLocationIds = copyFrom.activeLocationIds();
+		this.thirdPartyClasspath = copyFrom.thirdPartyClasspath();
 		this.importSettingsFromMaven = copyFrom.importSettingsFromMaven();
 	}
 	
@@ -87,6 +92,12 @@ public final class PluginConfigurationBuilder
 		return this;
 	}
 	
+	public PluginConfigurationBuilder withScanScope(@NotNull final ScanScope newScanScope)
+	{
+		this.scanScope = newScanScope;
+		return this;
+	}
+	
 	public PluginConfigurationBuilder withProjectRelativeFileExclusionsRaw(
 		final Collection<String> projectRelativeFileExclusions)
 	{
@@ -119,9 +130,10 @@ public final class PluginConfigurationBuilder
 		return this;
 	}
 	
-	public PluginConfigurationBuilder withScanScope(@NotNull final ScanScope newScanScope)
+	public PluginConfigurationBuilder withThirdPartyClasspath(
+		final ThirdPartyClasspathConfigContainer thirdPartyClasspath)
 	{
-		this.scanScope = newScanScope;
+		this.thirdPartyClasspath = thirdPartyClasspath;
 		return this;
 	}
 	
@@ -147,6 +159,7 @@ public final class PluginConfigurationBuilder
 				.filter(Objects::nonNull)
 				.collect(Collectors.toCollection(TreeSet::new))
 				: new TreeSet<>(),
+			Objects.requireNonNullElseGet(this.thirdPartyClasspath, ThirdPartyClasspathConfigContainer::createEmpty),
 			this.importSettingsFromMaven,
 			new PluginConfiguration.Cache());
 	}

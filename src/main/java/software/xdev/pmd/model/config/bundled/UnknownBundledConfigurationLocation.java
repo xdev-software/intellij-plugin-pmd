@@ -24,13 +24,13 @@ public class UnknownBundledConfigurationLocation extends BundledConfigurationLoc
 	}
 	
 	@Override
-	protected synchronized RuleSet loadRuleSet()
+	protected synchronized RuleSet loadRuleSet(final ClassLoader ignored)
 	{
 		return null;
 	}
 	
 	@Override
-	public @Nullable RuleSet getOrRefreshCachedRuleSet()
+	public @Nullable RuleSet getOrRefreshCachedRuleSet(final ClassLoader ignored)
 	{
 		return null;
 	}

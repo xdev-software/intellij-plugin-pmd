@@ -84,9 +84,9 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 	}
 	
 	@SuppressWarnings("checkstyle:IllegalIdentifierName")
-	public void validate() throws Exception
+	public void validate(final ClassLoader classLoader) throws Exception
 	{
-		final RuleSet ruleSet = this.loadRuleSet();
+		final RuleSet ruleSet = this.loadRuleSet(classLoader);
 		if(ruleSet.getRules().isEmpty())
 		{
 			throw new IllegalStateException("No rules detected");
@@ -94,27 +94,29 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 		this.cachedRuleSet = ruleSet;
 	}
 	
-	protected abstract RuleSet loadRuleSet() throws Exception;
+	protected abstract RuleSet loadRuleSet(final ClassLoader classLoader) throws Exception;
 	
-	protected abstract boolean shouldReloadRuleSet();
+	protected abstract boolean shouldReloadRuleSet(final ClassLoader classLoader);
 	
 	@Nullable
-	public RuleSet getOrRefreshCachedRuleSet()
+	public RuleSet getOrRefreshCachedRuleSet(final ClassLoader classLoader)
 	{
-		if(this.cachedRuleSet == null || this.shouldReloadRuleSet())
+		if(this.cachedRuleSet == null || this.shouldReloadRuleSet(classLoader))
 		{
-			this.loadRuleSetSyncIfStillRequired(this.cachedRuleSet);
+			this.loadRuleSetSyncIfStillRequired(this.cachedRuleSet, classLoader);
 		}
 		return this.cachedRuleSet;
 	}
 	
-	protected synchronized void loadRuleSetSyncIfStillRequired(final RuleSet expectedRuleSetWhenLoadingStarts)
+	protected synchronized void loadRuleSetSyncIfStillRequired(
+		final RuleSet expectedRuleSetWhenLoadingStarts,
+		final ClassLoader classLoader)
 	{
 		if(this.cachedRuleSet == null || this.cachedRuleSet == expectedRuleSetWhenLoadingStarts)
 		{
 			try
 			{
-				this.cachedRuleSet = this.loadRuleSet();
+				this.cachedRuleSet = this.loadRuleSet(classLoader);
 			}
 			catch(final Exception ex)
 			{

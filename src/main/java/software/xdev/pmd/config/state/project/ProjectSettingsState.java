@@ -3,9 +3,11 @@ package software.xdev.pmd.config.state.project;
 import static java.util.Objects.requireNonNullElseGet;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
@@ -19,9 +21,10 @@ import com.intellij.util.xmlb.annotations.MapAnnotation;
 import com.intellij.util.xmlb.annotations.Tag;
 import com.intellij.util.xmlb.annotations.XCollection;
 
-import software.xdev.pmd.config.PatternContainer;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
+import software.xdev.pmd.config.plugin.PatternContainer;
+import software.xdev.pmd.config.plugin.ThirdPartyClasspathConfigContainer;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.config.ConfigurationLocationFactory;
 import software.xdev.pmd.model.config.ConfigurationType;
@@ -50,6 +53,8 @@ public class ProjectSettingsState
 	List<String> activeLocationIds;
 	@MapAnnotation
 	List<ConfigurationLocationState> locations;
+	@XCollection
+	List<String> thirdPartyClasspaths;
 	@Tag
 	boolean importSettingsFromMaven;
 	
@@ -63,21 +68,38 @@ public class ProjectSettingsState
 		projectSettings.showSuppressedWarnings = currentConfig.showSuppressedWarnings();
 		projectSettings.useCacheFile = currentConfig.useCacheFile();
 		projectSettings.scanScope = currentConfig.scanScope().name();
-		projectSettings.projectRelativeFileExclusions = currentConfig.projectRelativeFileExclusions().stream()
-			.map(PatternContainer::patternString)
-			.toList();
+		projectSettings.projectRelativeFileExclusions = useNullIfEmpty(
+			currentConfig.projectRelativeFileExclusions(),
+			l -> l.stream()
+				.map(PatternContainer::patternString)
+				.toList());
 		projectSettings.activeLocationIds = new ArrayList<>(currentConfig.activeLocationIds());
 		projectSettings.locations = currentConfig.locations().stream()
 			.map(location -> new ConfigurationLocationState(
 				location.getId(),
 				location.getType().name(),
-				location.getRawLocation(),
+				location.getLocation(),
 				location.getDescription()
 			))
 			.toList();
+		projectSettings.thirdPartyClasspaths = useNullIfEmpty(
+			currentConfig.thirdPartyClasspath().classpaths(),
+			ArrayList::new);
 		projectSettings.importSettingsFromMaven = currentConfig.importSettingsFromMaven();
 		
 		return projectSettings;
+	}
+	
+	static <C extends Collection<?>, R> R useNullIfEmpty(
+		final C baseList,
+		final Function<C, R> mapperIfPresent)
+	{
+		if(baseList.isEmpty())
+		{
+			return null;
+		}
+		
+		return mapperIfPresent.apply(baseList);
 	}
 	
 	@SuppressWarnings("unused")
@@ -100,6 +122,8 @@ public class ProjectSettingsState
 			.withActiveLocationIds(new TreeSet<>(requireNonNullElseGet(
 				this.activeLocationIds,
 				ArrayList::new)))
+			.withThirdPartyClasspath(
+				ThirdPartyClasspathConfigContainer.createFromPersisted(project, this.thirdPartyClasspaths))
 			.withImportSettingFromMaven(this.importSettingsFromMaven);
 	}
 	

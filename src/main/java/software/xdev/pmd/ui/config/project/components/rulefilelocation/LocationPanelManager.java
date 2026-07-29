@@ -63,7 +63,7 @@ public class LocationPanelManager extends SubPMDConfigPanelManager
 		container.add(new TitledSeparator("Configuration File"), BorderLayout.NORTH);
 		container.add(tableDecorator.createPanel(), BorderLayout.CENTER);
 		final JLabel infoLabel = new JLabel(
-			"The active rules file may be overridden, or deactivated, by module settings.",
+			"The active rules may be overridden or deactivated by module settings",
 			AllIcons.General.Information, SwingConstants.LEFT);
 		infoLabel.setBorder(JBUI.Borders.empty(8, 0, 4, 0));
 		container.add(infoLabel, BorderLayout.SOUTH);

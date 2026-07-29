@@ -1,6 +1,7 @@
 package software.xdev.pmd.model.config.file;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -12,9 +13,10 @@ import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.project.Project;
 
 import net.sourceforge.pmd.lang.rule.RuleSet;
-import net.sourceforge.pmd.lang.rule.RuleSetLoader;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.config.ConfigurationType;
+import software.xdev.pmd.model.config.file.pmd.DefaultRuleSetLoaderCreator;
+import software.xdev.pmd.model.config.file.pmd.LoadFromStringRuleSetLoaderWorkaround;
 import software.xdev.pmd.util.io.ProjectFilePaths;
 
 
@@ -24,6 +26,9 @@ import software.xdev.pmd.util.io.ProjectFilePaths;
 public class FileConfigurationLocation extends ConfigurationLocation
 {
 	protected long nextReloadRuleSetMs;
+	// Use WeakReference to prevent memory leak
+	protected WeakReference<ClassLoader> previouslyUsedClassLoaderRef;
+	
 	protected Instant lastModifiedFileTime;
 	protected String location;
 	protected Path locationPath;
@@ -94,22 +99,29 @@ public class FileConfigurationLocation extends ConfigurationLocation
 	
 	@SuppressWarnings("checkstyle:IllegalIdentifierName")
 	@Override
-	protected synchronized RuleSet loadRuleSet() throws IOException
+	protected synchronized RuleSet loadRuleSet(final ClassLoader classLoader) throws IOException
 	{
 		this.nextReloadRuleSetMs = System.currentTimeMillis() + 10 * 1000;
 		
-		final RuleSet ruleSet = new RuleSetLoader().loadFromString(
-			this.getLocation(),
-			new String(Files.readAllBytes(this.locationPath)));
+		// Do this here due to IOEx
+		final String rulesetXmlContent = new String(Files.readAllBytes(this.locationPath));
+		final RuleSet ruleSet = DefaultRuleSetLoaderCreator.createAndLoad(rsl ->
+			LoadFromStringRuleSetLoaderWorkaround.loadFromString(
+				rsl.loadResourcesWith(classLoader),
+				this.getLocation(),
+				rulesetXmlContent));
 		this.lastModifiedFileTime = this.lastModifiedTimeFromLocation();
+		this.previouslyUsedClassLoaderRef = new WeakReference<>(classLoader);
 		return ruleSet;
 	}
 	
 	@Override
-	protected boolean shouldReloadRuleSet()
+	protected boolean shouldReloadRuleSet(final ClassLoader classLoader)
 	{
-		// Check if recently checked
-		return System.currentTimeMillis() > this.nextReloadRuleSetMs
+		// Check if classloader mismatch
+		return this.previouslyUsedClassLoaderRef == null || this.previouslyUsedClassLoaderRef.get() != classLoader
+			// Check if recently checked
+			|| System.currentTimeMillis() > this.nextReloadRuleSetMs
 			// Check if file was modified
 			&& (this.lastModifiedFileTime == null
 			|| !this.lastModifiedFileTime.equals(this.lastModifiedTimeFromLocation()));

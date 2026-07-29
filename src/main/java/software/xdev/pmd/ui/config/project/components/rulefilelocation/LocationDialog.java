@@ -23,6 +23,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.util.ui.JBUI;
 
+import software.xdev.pmd.analysis.ProjectScanClasspathManager;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 
 
@@ -189,7 +190,8 @@ public class LocationDialog extends DialogWrapper
 		
 		try
 		{
-			this.configurationLocation.validate();
+			this.configurationLocation.validate(
+				this.project.getService(ProjectScanClasspathManager.class).getClassLoader());
 			return Step.COMPLETE;
 		}
 		catch(final Exception e)

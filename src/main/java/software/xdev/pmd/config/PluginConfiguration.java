@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import software.xdev.pmd.config.plugin.PatternContainer;
+import software.xdev.pmd.config.plugin.ThirdPartyClasspathConfigContainer;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.scope.ScanScope;
 
@@ -27,6 +29,7 @@ public record PluginConfiguration(
 	SortedSet<PatternContainer> projectRelativeFileExclusions,
 	SortedSet<ConfigurationLocation> locations,
 	SortedSet<String> activeLocationIds,
+	ThirdPartyClasspathConfigContainer thirdPartyClasspath,
 	boolean importSettingsFromMaven,
 	Cache cache
 )

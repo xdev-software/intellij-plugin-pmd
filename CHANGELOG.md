@@ -6,6 +6,7 @@
 * Only show "Enable automatic build" hint on startup when projects have PMD enabled
 * Refactor location store
 * Order bundled locations at the end
+* Implement support for 3rd party class path rules
 
 # 1.1.4
 * Prevent rare NPE in module configuration UI #107
