@@ -1,4 +1,4 @@
-package software.xdev.pmd.config;
+package software.xdev.pmd.config.plugin;
 
 import java.util.Map;
 import java.util.Objects;

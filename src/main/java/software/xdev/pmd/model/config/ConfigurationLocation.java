@@ -27,8 +27,6 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 	private final String id;
 	private final ConfigurationType type;
 	private final Project project;
-	private String location;
-	private String description;
 	
 	@SuppressWarnings("checkstyle:IllegalIdentifierName")
 	protected RuleSet cachedRuleSet;
@@ -66,39 +64,14 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 		return this.type;
 	}
 	
-	public String getLocation()
-	{
-		return this.location;
-	}
+	// NOTE: This is the unresolved location that is persisted!
+	public abstract void setLocation(final String location);
 	
-	public String getRawLocation()
-	{
-		return this.location;
-	}
+	public abstract String getLocation();
 	
-	public void setLocation(final String location)
-	{
-		if(location == null || location.isBlank())
-		{
-			throw new IllegalArgumentException("A non-blank location is required");
-		}
-		
-		this.location = location;
-		if(this.description == null)
-		{
-			this.description = location;
-		}
-	}
+	public abstract void setDescription(@Nullable final String description);
 	
-	public String getDescription()
-	{
-		return this.description;
-	}
-	
-	public void setDescription(@Nullable final String description)
-	{
-		this.description = description == null ? this.location : description;
-	}
+	public abstract String getDescription();
 	
 	public boolean isRemovable()
 	{
@@ -158,7 +131,8 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 		{
 			return false;
 		}
-		return this.getType() == that.getType() && Objects.equals(this.getLocation(), that.getLocation())
+		return this.getType() == that.getType()
+			&& Objects.equals(this.getLocation(), that.getLocation())
 			&& Objects.equals(this.getDescription(), that.getDescription());
 	}
 	
@@ -171,7 +145,7 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 	@Override
 	public String toString()
 	{
-		return this.description;
+		return this.getDescription();
 	}
 	
 	@Override

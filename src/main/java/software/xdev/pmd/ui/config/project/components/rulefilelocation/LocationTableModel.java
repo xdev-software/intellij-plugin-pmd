@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.config.project.location;
+package software.xdev.pmd.ui.config.project.components.rulefilelocation;
 
 import static java.util.function.Predicate.not;
 
@@ -182,7 +182,7 @@ public class LocationTableModel extends AbstractTableModel
 		{
 			case COLUMN_ACTIVE -> this.activeLocations.contains(this.locations.get(rowIndex));
 			case COLUMN_DESCRIPTION -> this.locations.get(rowIndex).getDescription();
-			case COLUMN_LOCATION -> this.locations.get(rowIndex).getRawLocation();
+			case COLUMN_LOCATION -> this.locations.get(rowIndex).getLocation();
 			default -> throw new IllegalArgumentException("Invalid column: " + columnIndex);
 		};
 	}

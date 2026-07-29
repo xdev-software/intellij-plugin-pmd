@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 
 import software.xdev.pmd.model.config.ConfigurationType;
-import software.xdev.pmd.util.io.ProjectFilePaths;
 
 
 /**
@@ -14,6 +13,8 @@ import software.xdev.pmd.util.io.ProjectFilePaths;
  */
 public class RelativeFileConfigurationLocation extends FileConfigurationLocation
 {
+	private static final String LEGACY_IDEA_PROJECT_DIR_START = "$PROJECT_DIR$/";
+	
 	public RelativeFileConfigurationLocation(
 		@NotNull final Project project,
 		@NotNull final String id)
@@ -30,14 +31,14 @@ public class RelativeFileConfigurationLocation extends FileConfigurationLocation
 	@Override
 	public void setLocation(final String location)
 	{
-		if(location == null || location.isBlank())
-		{
-			throw new IllegalArgumentException("A non-blank location is required");
-		}
-		
-		final ProjectFilePaths projectFilePaths = this.projectFilePaths();
-		super.setLocation(projectFilePaths.tokenise(
-			projectFilePaths.makeProjectRelative(
-				projectFilePaths.detokenize(location))));
+		super.setLocation(location.startsWith(LEGACY_IDEA_PROJECT_DIR_START)
+			? location.substring(LEGACY_IDEA_PROJECT_DIR_START.length())
+			: location);
+	}
+	
+	@Override
+	protected String getRealLocation()
+	{
+		return this.projectFilePaths().makeProjectRelativePathAbsolute(super.getRealLocation());
 	}
 }

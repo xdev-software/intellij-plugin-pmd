@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.config.project.location;
+package software.xdev.pmd.ui.config.project.components.rulefilelocation;
 
 import static javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS;
 import static javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS;

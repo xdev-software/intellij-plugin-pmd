@@ -1,8 +1,7 @@
-package software.xdev.pmd.ui.config.project.location;
+package software.xdev.pmd.ui.config.project.components.rulefilelocation;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.Dimension;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -27,20 +26,25 @@ import com.intellij.util.ui.JBUI;
 
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.ui.config.project.PMDConfigPanel;
+import software.xdev.pmd.ui.config.project.components.SubPMDConfigPanelManager;
 
 
-public class LocationManager
+public class LocationPanelManager extends SubPMDConfigPanelManager
 {
 	private static final int ACTIVE_COL_MIN_WIDTH = 40;
 	private static final int ACTIVE_COL_MAX_WIDTH = 55;
 	private static final int DESC_COL_MIN_WIDTH = 100;
 	private static final int DESC_COL_MAX_WIDTH = 200;
-	private static final Dimension DECORATOR_DIMENSIONS = new Dimension(300, 50);
 	
 	final LocationTableModel locationModel = new LocationTableModel();
 	final JBTable locationTable = new JBTable(this.locationModel);
 	
-	public JPanel buildRuleFilePanel(final Project project, final PMDConfigPanel pmdConfigPanel)
+	public LocationPanelManager(final Project project, final PMDConfigPanel pmdConfigPanel)
+	{
+		super(project, pmdConfigPanel);
+	}
+	
+	public JPanel buildPanel()
 	{
 		this.setColumnWith(this.locationTable, 0, ACTIVE_COL_MIN_WIDTH, ACTIVE_COL_MAX_WIDTH, ACTIVE_COL_MAX_WIDTH);
 		this.setColumnWith(this.locationTable, 1, DESC_COL_MIN_WIDTH, DESC_COL_MAX_WIDTH, DESC_COL_MAX_WIDTH);
@@ -49,7 +53,7 @@ public class LocationManager
 		this.locationTable.getTableHeader().setReorderingAllowed(false);
 		
 		final ToolbarDecorator tableDecorator = ToolbarDecorator.createDecorator(this.locationTable);
-		tableDecorator.setAddAction(new AddLocationAction(project, pmdConfigPanel));
+		tableDecorator.setAddAction(new AddLocationAction());
 		tableDecorator.setRemoveAction(new RemoveLocationAction());
 		tableDecorator.setEditActionUpdater(new EnableWhenSelected());
 		tableDecorator.setRemoveActionUpdater(new EnableWhenSelectedAndRemovable());
@@ -90,35 +94,26 @@ public class LocationManager
 	
 	class AddLocationAction implements AnActionButtonRunnable
 	{
-		private final Project project;
-		private final PMDConfigPanel pmdConfigPanel;
-		
-		AddLocationAction(final Project project, final PMDConfigPanel pmdConfigPanel)
-		{
-			this.project = project;
-			this.pmdConfigPanel = pmdConfigPanel;
-		}
-		
 		@Override
 		public void run(final AnActionButton anActionButton)
 		{
 			final LocationDialog dialogue = new LocationDialog(
-				(Dialog)SwingUtilities.getAncestorOfClass(Dialog.class, this.pmdConfigPanel),
-				this.project);
+				(Dialog)SwingUtilities.getAncestorOfClass(Dialog.class, LocationPanelManager.this.pmdConfigPanel),
+				LocationPanelManager.this.project);
 			
 			if(dialogue.showAndGet())
 			{
 				final ConfigurationLocation newLocation = dialogue.getConfigurationLocation();
-				if(LocationManager.this.locationModel.getLocations().contains(newLocation))
+				if(LocationPanelManager.this.locationModel.getLocations().contains(newLocation))
 				{
 					Messages.showWarningDialog(
-						this.project,
+						LocationPanelManager.this.project,
 						"This location has already been added",
 						"Duplicate Location");
 				}
 				else
 				{
-					LocationManager.this.locationModel.addLocation(dialogue.getConfigurationLocation());
+					LocationPanelManager.this.locationModel.addLocation(dialogue.getConfigurationLocation());
 				}
 			}
 		}
@@ -130,13 +125,13 @@ public class LocationManager
 		@Override
 		public void run(final AnActionButton anActionButton)
 		{
-			final int selectedIndex = LocationManager.this.locationTable.getSelectedRow();
+			final int selectedIndex = LocationPanelManager.this.locationTable.getSelectedRow();
 			if(selectedIndex == -1)
 			{
 				return;
 			}
 			
-			LocationManager.this.locationModel.removeLocationAt(selectedIndex);
+			LocationPanelManager.this.locationModel.removeLocationAt(selectedIndex);
 		}
 	}
 	
@@ -146,9 +141,9 @@ public class LocationManager
 		@Override
 		public boolean isEnabled(@NotNull final AnActionEvent e)
 		{
-			final int selectedItem = LocationManager.this.locationTable.getSelectedRow();
+			final int selectedItem = LocationPanelManager.this.locationTable.getSelectedRow();
 			return selectedItem >= 0
-				&& LocationManager.this.locationModel.getLocationAt(selectedItem).isRemovable();
+				&& LocationPanelManager.this.locationModel.getLocationAt(selectedItem).isRemovable();
 		}
 	}
 	
@@ -158,7 +153,7 @@ public class LocationManager
 		@Override
 		public boolean isEnabled(@NotNull final AnActionEvent e)
 		{
-			return LocationManager.this.locationTable.getSelectedRow() >= 0;
+			return LocationPanelManager.this.locationTable.getSelectedRow() >= 0;
 		}
 	}
 }

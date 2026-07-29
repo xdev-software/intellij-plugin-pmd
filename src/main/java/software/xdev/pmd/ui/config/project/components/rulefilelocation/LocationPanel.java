@@ -1,8 +1,8 @@
-package software.xdev.pmd.ui.config.project.location;
+package software.xdev.pmd.ui.config.project.components.rulefilelocation;
 
 import static software.xdev.pmd.model.config.ConfigurationType.LOCAL_FILE;
 import static software.xdev.pmd.model.config.ConfigurationType.PROJECT_RELATIVE;
-import static software.xdev.pmd.ui.config.project.location.LocationPanel.LocationType.FILE;
+import static software.xdev.pmd.ui.config.project.components.rulefilelocation.LocationPanel.LocationType.FILE;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -10,7 +10,11 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.swing.AbstractAction;
@@ -36,6 +40,7 @@ import com.intellij.util.ui.JBUI;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.config.ConfigurationLocationFactory;
 import software.xdev.pmd.model.config.ConfigurationType;
+import software.xdev.pmd.util.io.ProjectFilePaths;
 
 
 @SuppressWarnings("checkstyle:MagicNumber")
@@ -138,11 +143,9 @@ public class LocationPanel extends JPanel
 	
 	private ConfigurationType typeOfFile()
 	{
-		if(this.relativeFileCheckbox.isSelected())
-		{
-			return PROJECT_RELATIVE;
-		}
-		return LOCAL_FILE;
+		return this.relativeFileCheckbox.isSelected()
+			? PROJECT_RELATIVE
+			: LOCAL_FILE;
 	}
 	
 	/**
@@ -154,52 +157,73 @@ public class LocationPanel extends JPanel
 	{
 		final String newId = UUID.randomUUID().toString();
 		
-		if(this.fileLocationField.isEnabled() && this.isNotBlank(this.fileLocation()))
+		if(this.fileLocationField.isEnabled() && this.isNotBlank(this.fileLocationField.getText()))
 		{
+			final ConfigurationType type = this.typeOfFile();
 			return this.configurationLocationFactory().create(
 				this.project,
 				newId,
-				this.typeOfFile(),
-				this.fileLocation(),
+				type,
+				this.project.getService(ProjectFilePaths.class)
+					.toUnixPath(this.getFileLocationPath(type).toString()),
 				this.descriptionField.getText());
 		}
 		
 		return null;
 	}
 	
-	private String fileLocation()
+	private Path getFileLocationPath(final ConfigurationType type)
 	{
 		final String filename = this.trim(this.fileLocationField.getText());
-		
-		if(new File(filename).exists())
+		if(filename == null || filename.isBlank())
 		{
-			return filename;
+			throw new IllegalArgumentException("Invalid path: " + filename);
 		}
 		
-		final File projectRelativePath = this.projectRelativeFileOf(filename);
-		if(projectRelativePath.exists())
+		final Path path = Paths.get(filename);
+		if(path.isAbsolute())
 		{
-			return projectRelativePath.getAbsolutePath();
+			// Handle absolute path
+			if(!Files.exists(path))
+			{
+				throw new IllegalArgumentException("Invalid path: " + path);
+			}
+			
+			if(type != PROJECT_RELATIVE)
+			{
+				return path;
+			}
+			
+			// Make project relative
+			return this.guessProjectNioPath().relativize(path);
 		}
 		
-		return filename;
+		// Handle relative path
+		// Validate that the file exists
+		final Path absolutePath = this.guessProjectNioPath()
+			.resolve(path)
+			.normalize()
+			.toAbsolutePath();
+		
+		if(!Files.exists(absolutePath))
+		{
+			throw new IllegalArgumentException("Invalid path: " + absolutePath);
+		}
+		
+		return type == PROJECT_RELATIVE ? path : absolutePath;
 	}
 	
-	private File projectRelativeFileOf(final String filename)
+	private Path guessProjectNioPath()
 	{
-		return Paths.get(new File(this.project.getBasePath(), filename).getAbsolutePath())
-			.normalize()
-			.toAbsolutePath()
-			.toFile();
+		return Objects.requireNonNull(
+				ProjectUtil.guessProjectDir(this.project),
+				"Unable to determine project dir")
+			.toNioPath();
 	}
 	
 	private String trim(final String text)
 	{
-		if(text != null)
-		{
-			return text.trim();
-		}
-		return null;
+		return text != null ? text.trim() : null;
 	}
 	
 	private ConfigurationLocationFactory configurationLocationFactory()
@@ -210,30 +234,6 @@ public class LocationPanel extends JPanel
 	private boolean isNotBlank(final String str)
 	{
 		return str != null && !str.isBlank();
-	}
-	
-	/**
-	 * Set the configuration location.
-	 *
-	 * @param configurationLocation the location.
-	 */
-	public void setConfigurationLocation(final ConfigurationLocation configurationLocation)
-	{
-		this.relativeFileCheckbox.setSelected(false);
-		
-		if(configurationLocation == null)
-		{
-			this.fileLocationRadio.setEnabled(true);
-			this.fileLocationField.setText(null);
-		}
-		else if(configurationLocation.getType() == LOCAL_FILE
-			|| configurationLocation.getType() == PROJECT_RELATIVE)
-		{
-			this.fileLocationRadio.setEnabled(true);
-			this.fileLocationField.setText(configurationLocation.getLocation());
-			this.relativeFileCheckbox.setSelected(configurationLocation.getType() == PROJECT_RELATIVE);
-		}
-		throw new IllegalArgumentException("Unsupported configuration type: " + configurationLocation.getType());
 	}
 	
 	private final class BrowseAction extends AbstractAction
@@ -252,10 +252,18 @@ public class LocationPanel extends JPanel
 		@Override
 		public void actionPerformed(final ActionEvent e)
 		{
-			final String configFilePath = LocationPanel.this.fileLocation();
-			final VirtualFile toSelect = (configFilePath != null && !configFilePath.isBlank())
-				? LocalFileSystem.getInstance().findFileByPath(configFilePath)
-				: ProjectUtil.guessProjectDir(LocationPanel.this.project);
+			Optional<Path> fileLocationPath;
+			try
+			{
+				fileLocationPath = Optional.ofNullable(LocationPanel.this.getFileLocationPath(LOCAL_FILE));
+			}
+			catch(final Exception ex)
+			{
+				fileLocationPath = Optional.empty();
+			}
+			final VirtualFile toSelect = fileLocationPath
+				.map(LocalFileSystem.getInstance()::findFileByNioFile)
+				.orElseGet(() -> ProjectUtil.guessProjectDir(LocationPanel.this.project));
 			
 			final VirtualFile chosen = FileChooser.chooseFile(
 				FileChooserDescriptorFactory.createSingleFileDescriptor("xml"),

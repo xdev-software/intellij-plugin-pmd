@@ -16,7 +16,6 @@ import com.intellij.openapi.application.ApplicationManager;
 
 import software.xdev.pmd.langversion.LanguageVersionResolverService;
 import software.xdev.pmd.model.config.ConfigurationLocation;
-import software.xdev.pmd.model.config.ConfigurationType;
 
 
 public final class BundledConfig
@@ -65,9 +64,14 @@ public final class BundledConfig
 	
 	public boolean matches(@NotNull final ConfigurationLocation configurationLocation)
 	{
-		return configurationLocation.getType() == ConfigurationType.BUNDLED
-			&& Objects.equals(configurationLocation.getLocation(), this.location)
-			&& Objects.equals(configurationLocation.getDescription(), this.description);
+		if(!(configurationLocation instanceof final BundledConfigurationLocation bundledConfigurationLocation))
+		{
+			return false;
+		}
+		
+		final BundledConfig otherConfig = bundledConfigurationLocation.getBundledConfig();
+		return Objects.equals(this.getLocation(), otherConfig.getLocation())
+			&& Objects.equals(this.getDescription(), otherConfig.getDescription());
 	}
 	
 	private static final AtomicInteger UNKNOWN_COUNTER = new AtomicInteger(1000);

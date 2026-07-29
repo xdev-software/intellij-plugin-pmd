@@ -198,9 +198,7 @@ public class PMDMavenAfterImportConfigurator implements MavenAfterImportConfigur
 		final ConfigurationLocation configurationLocation = absolutePath
 			? new FileConfigurationLocation(project, id)
 			: new RelativeFileConfigurationLocation(project, id);
-		configurationLocation.setLocation(absolutePath
-			? s
-			: "$PROJECT_DIR$/" + s);
+		configurationLocation.setLocation(s);
 		configurationLocation.setDescription(s);
 		
 		return configurationLocation;

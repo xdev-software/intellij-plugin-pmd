@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.config.project.location;
+package software.xdev.pmd.ui.config.project.components.rulefilelocation;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -31,6 +32,8 @@ import software.xdev.pmd.model.config.ConfigurationLocation;
 @SuppressWarnings("checkstyle:MagicNumber")
 public class LocationDialog extends DialogWrapper
 {
+	private static final Logger LOG = Logger.getInstance(LocationDialog.class);
+	
 	private static final Insets COMPONENT_INSETS = JBUI.insets(4);
 	private static final int WIDTH = 500;
 	private static final int HEIGHT = 400;
@@ -226,7 +229,16 @@ public class LocationDialog extends DialogWrapper
 		switch(this.currentStep)
 		{
 			case SELECT:
-				location = this.locationPanel.getConfigurationLocation();
+				try
+				{
+					location = this.locationPanel.getConfigurationLocation();
+				}
+				catch(final Exception ex)
+				{
+					this.showError("Failed to get configuration: " + ex.getMessage());
+					LOG.debug("Failed to get configuration", ex);
+					return;
+				}
 				if(location == null)
 				{
 					this.showError("No location has been entered");

@@ -37,15 +37,6 @@ public class ConfigurationLocationFactory
 	private final Map<ConfigurationLocation, ConfigurationLocation> instanceDeduplicationCache =
 		new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.WEAK);
 	
-	/**
-	 * Create a new location.
-	 *
-	 * @param project     the project this location is associated with.
-	 * @param type        the type.
-	 * @param location    the location.
-	 * @param description the optional description.
-	 * @return the location.
-	 */
 	public @NotNull ConfigurationLocation create(
 		final Project project,
 		final String id,

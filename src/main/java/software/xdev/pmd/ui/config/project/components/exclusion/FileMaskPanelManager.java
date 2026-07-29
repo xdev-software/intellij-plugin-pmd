@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.config.project.exclusion;
+package software.xdev.pmd.ui.config.project.components.exclusion;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -19,7 +19,7 @@ import com.intellij.ui.TitledSeparator;
 import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBList;
 
-import software.xdev.pmd.config.PatternContainer;
+import software.xdev.pmd.config.plugin.PatternContainer;
 
 
 public class FileMaskPanelManager

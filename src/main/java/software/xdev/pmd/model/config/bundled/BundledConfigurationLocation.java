@@ -23,8 +23,6 @@ public class BundledConfigurationLocation extends ConfigurationLocation
 		@NotNull final Project project)
 	{
 		super(bundledConfig.getId(), ConfigurationType.BUNDLED, project);
-		super.setLocation(bundledConfig.getLocation());
-		super.setDescription(bundledConfig.getDescription());
 		
 		this.bundledConfig = bundledConfig;
 	}
@@ -38,13 +36,25 @@ public class BundledConfigurationLocation extends ConfigurationLocation
 	@Override
 	public void setLocation(final String location)
 	{
-		// bundled
+		// noop
+	}
+	
+	@Override
+	public String getLocation()
+	{
+		return "(bundled)";
 	}
 	
 	@Override
 	public void setDescription(@Nullable final String description)
 	{
-		// bundled
+		// noop
+	}
+	
+	@Override
+	public String getDescription()
+	{
+		return this.bundledConfig.getDescription();
 	}
 	
 	@Override
@@ -57,7 +67,7 @@ public class BundledConfigurationLocation extends ConfigurationLocation
 	@Override
 	protected synchronized RuleSet loadRuleSet()
 	{
-		return new RuleSetLoader().loadFromResource(this.getLocation());
+		return new RuleSetLoader().loadFromResource(this.getBundledConfig().getLocation());
 	}
 	
 	@Override

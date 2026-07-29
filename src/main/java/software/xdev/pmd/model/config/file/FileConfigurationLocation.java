@@ -23,8 +23,11 @@ import software.xdev.pmd.util.io.ProjectFilePaths;
  */
 public class FileConfigurationLocation extends ConfigurationLocation
 {
-	private long nextReloadRuleSetMs;
-	private Instant lastModifiedFileTime;
+	protected long nextReloadRuleSetMs;
+	protected Instant lastModifiedFileTime;
+	protected String location;
+	protected Path locationPath;
+	protected String description;
 	
 	public FileConfigurationLocation(
 		@NotNull final Project project,
@@ -44,23 +47,36 @@ public class FileConfigurationLocation extends ConfigurationLocation
 	@Override
 	public String getLocation()
 	{
-		return this.projectFilePaths().detokenize(super.getLocation());
+		return this.location;
 	}
 	
 	@Override
 	public void setLocation(final String location)
 	{
-		if(location == null || location.isBlank())
-		{
-			throw new IllegalArgumentException("A non-blank location is required");
-		}
-		
-		super.setLocation(this.projectFilePaths().tokenise(location));
+		this.location = location;
+		this.locationPath = this.getLocationPath();
+	}
+	
+	protected String getRealLocation()
+	{
+		return this.projectFilePaths().toSystemPath(this.getLocation());
 	}
 	
 	protected Path getLocationPath()
 	{
-		return Paths.get(this.getLocation());
+		return Paths.get(this.getRealLocation());
+	}
+	
+	@Override
+	public void setDescription(final String description)
+	{
+		this.description = description;
+	}
+	
+	@Override
+	public String getDescription()
+	{
+		return this.description;
 	}
 	
 	@Nullable
@@ -68,7 +84,7 @@ public class FileConfigurationLocation extends ConfigurationLocation
 	{
 		try
 		{
-			return Files.getLastModifiedTime(this.getLocationPath()).toInstant();
+			return Files.getLastModifiedTime(this.locationPath).toInstant();
 		}
 		catch(final IOException e)
 		{
@@ -84,7 +100,7 @@ public class FileConfigurationLocation extends ConfigurationLocation
 		
 		final RuleSet ruleSet = new RuleSetLoader().loadFromString(
 			this.getLocation(),
-			new String(Files.readAllBytes(this.getLocationPath())));
+			new String(Files.readAllBytes(this.locationPath)));
 		this.lastModifiedFileTime = this.lastModifiedTimeFromLocation();
 		return ruleSet;
 	}

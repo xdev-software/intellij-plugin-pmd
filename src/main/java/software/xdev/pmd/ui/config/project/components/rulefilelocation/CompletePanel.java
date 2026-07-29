@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.config.project.location;
+package software.xdev.pmd.ui.config.project.components.rulefilelocation;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;

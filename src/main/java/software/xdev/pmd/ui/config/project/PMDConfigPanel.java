@@ -28,8 +28,8 @@ import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
 import software.xdev.pmd.model.config.ConfigurationLocation;
 import software.xdev.pmd.model.scope.ScanScope;
-import software.xdev.pmd.ui.config.project.exclusion.FileMaskPanelManager;
-import software.xdev.pmd.ui.config.project.location.LocationManager;
+import software.xdev.pmd.ui.config.project.components.exclusion.FileMaskPanelManager;
+import software.xdev.pmd.ui.config.project.components.rulefilelocation.LocationPanelManager;
 
 
 /**
@@ -47,7 +47,7 @@ public class PMDConfigPanel extends JPanel
 	private final JBCheckBox chbxUseCacheFile = new JBCheckBox("Use cache file");
 	private final JBCheckBox chbxImportSettingsFromMaven = new JBCheckBox("Import settings from Maven");
 	
-	private final LocationManager locationManager = new LocationManager();
+	private final LocationPanelManager rulefileLocationPanelManager;
 	
 	private final FileMaskPanelManager exclusionPanelManager = new FileMaskPanelManager(
 		"Exclusions",
@@ -68,6 +68,8 @@ public class PMDConfigPanel extends JPanel
 			</body></html>"""
 	);
 	
+	private final ThirdPartyClasspathPanelManager thirdPartyClasspathPanelManager;
+	
 	final Project project;
 	
 	public PMDConfigPanel(@NotNull final Project project)
@@ -75,6 +77,8 @@ public class PMDConfigPanel extends JPanel
 		super(new BorderLayout());
 		
 		this.project = project;
+		
+		this.rulefileLocationPanelManager = new LocationPanelManager(project, this);
 		
 		this.initialise();
 	}
@@ -114,7 +118,7 @@ public class PMDConfigPanel extends JPanel
 			this.createDefaultGridBagConstraints(0, 2, 2));
 		
 		configFilePanel.add(
-			this.locationManager.buildRuleFilePanel(this.project, this),
+			this.rulefileLocationPanelManager.buildPanel(),
 			this.createFullWidthGridBagConstraints(3, 1.0));
 		
 		configFilePanel.add(
@@ -175,8 +179,8 @@ public class PMDConfigPanel extends JPanel
 		this.chbxShowSuppressedWarnings.setSelected(pluginConfig.showSuppressedWarnings());
 		this.chbxUseCacheFile.setSelected(pluginConfig.useCacheFile());
 		this.chbxImportSettingsFromMaven.setSelected(pluginConfig.importSettingsFromMaven());
-		this.locationManager.locationModel().setLocations(new ArrayList<>(pluginConfig.locations()));
-		this.locationManager.locationModel().setActiveLocations(pluginConfig.getActiveLocations());
+		this.rulefileLocationPanelManager.locationModel().setLocations(new ArrayList<>(pluginConfig.locations()));
+		this.rulefileLocationPanelManager.locationModel().setActiveLocations(pluginConfig.getActiveLocations());
 		this.exclusionPanelManager.update(pluginConfig.projectRelativeFileExclusions().stream()
 			.map(PatternContainer::patternString)
 			.collect(Collectors.toCollection(TreeSet::new)));
@@ -192,8 +196,8 @@ public class PMDConfigPanel extends JPanel
 				(ScanScope)this.cbScope.getSelectedItem(),
 				ScanScope::getDefaultValue))
 			.withProjectRelativeFileExclusionsRaw(this.exclusionPanelManager.getPatterns())
-			.withLocations(new TreeSet<>(this.locationManager.locationModel().getLocations()))
-			.withActiveLocationIds(this.locationManager.locationModel().getActiveLocations().stream()
+			.withLocations(new TreeSet<>(this.rulefileLocationPanelManager.locationModel().getLocations()))
+			.withActiveLocationIds(this.rulefileLocationPanelManager.locationModel().getActiveLocations().stream()
 				.map(ConfigurationLocation::getId)
 				.collect(Collectors.toCollection(TreeSet::new)))
 			.withImportSettingFromMaven(this.chbxImportSettingsFromMaven.isSelected())
