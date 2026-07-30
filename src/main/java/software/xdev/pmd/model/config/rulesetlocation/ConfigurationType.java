@@ -28,12 +28,6 @@ public enum ConfigurationType
 			return null;
 		}
 		
-		final String processedType = typeAsString.toUpperCase().replace(' ', '_');
-		if("FILE".equals(processedType))
-		{
-			return LOCAL_FILE;
-		}
-		
-		return valueOf(processedType);
+		return valueOf(typeAsString);
 	}
 }
