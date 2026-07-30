@@ -185,22 +185,18 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 	
 	private int compareStrings(@Nullable final String pStr1, @Nullable final String pStr2)
 	{
-		int result = 0;
 		if(pStr1 != null)
 		{
 			if(pStr2 != null)
 			{
-				result = pStr1.compareTo(pStr2);
+				return pStr1.compareTo(pStr2);
 			}
-			else
-			{
-				result = -1;
-			}
+			return -1;
 		}
 		else if(pStr2 != null)
 		{
-			result = 1;
+			return 1;
 		}
-		return result;
+		return 0;
 	}
 }
