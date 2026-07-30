@@ -1,34 +1,28 @@
-package software.xdev.pmd.ui.config.project.components.rulefilelocation;
+package software.xdev.pmd.ui.config.project.components.rulesetlocation;
 
 import static java.util.function.Predicate.not;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.swing.table.AbstractTableModel;
-
 import org.jetbrains.annotations.NotNull;
 
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
+import software.xdev.pmd.ui.config.project.components.shared.LocationTableModel;
 
 
-/**
- * A table model for editing CheckStyle file locations.
- */
-public class LocationTableModel extends AbstractTableModel
+public class RSLocationTableModel extends LocationTableModel<ConfigurationLocation>
 {
 	private static final int COLUMN_ACTIVE = 0;
 	private static final int COLUMN_DESCRIPTION = 1;
 	private static final int COLUMN_LOCATION = 2;
 	private static final int NUMBER_OF_COLUMNS = 3;
 	
-	private final List<ConfigurationLocation> locations = new ArrayList<>();
 	private final SortedSet<ConfigurationLocation> activeLocations = new TreeSet<>();
 	
+	@Override
 	public void setLocations(final List<ConfigurationLocation> newLocations)
 	{
 		this.locations.clear();
@@ -43,15 +37,7 @@ public class LocationTableModel extends AbstractTableModel
 		this.fireTableDataChanged();
 	}
 	
-	public void addLocation(final ConfigurationLocation location)
-	{
-		if(location != null)
-		{
-			this.locations.add(location);
-			this.fireTableRowsInserted(this.locations.size() - 1, this.locations.size() - 1);
-		}
-	}
-	
+	@Override
 	public void removeLocationAt(final int index)
 	{
 		final ConfigurationLocation locationToRemove = this.locations.get(index);
@@ -64,11 +50,6 @@ public class LocationTableModel extends AbstractTableModel
 		this.locations.remove(index);
 		
 		this.fireTableRowsDeleted(index, index);
-	}
-	
-	public ConfigurationLocation getLocationAt(final int index)
-	{
-		return this.locations.get(index);
 	}
 	
 	public void setActiveLocations(@NotNull final SortedSet<ConfigurationLocation> activeLocations)
@@ -113,11 +94,6 @@ public class LocationTableModel extends AbstractTableModel
 	public SortedSet<ConfigurationLocation> getActiveLocations()
 	{
 		return this.activeLocations;
-	}
-	
-	public List<ConfigurationLocation> getLocations()
-	{
-		return Collections.unmodifiableList(this.locations);
 	}
 	
 	@Override

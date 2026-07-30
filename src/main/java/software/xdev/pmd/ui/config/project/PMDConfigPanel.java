@@ -27,12 +27,11 @@ import com.intellij.util.ui.JBUI;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
 import software.xdev.pmd.config.plugin.PatternContainer;
-import software.xdev.pmd.config.plugin.ThirdPartyClasspathConfigContainer;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 import software.xdev.pmd.model.scope.ScanScope;
 import software.xdev.pmd.ui.config.project.components.exclusion.FileMaskPanelManager;
-import software.xdev.pmd.ui.config.project.components.rulefilelocation.LocationPanelManager;
-import software.xdev.pmd.ui.config.project.components.thirdpartyclasspath.ThirdPartyClasspathPanelManager;
+import software.xdev.pmd.ui.config.project.components.rulesetlocation.RSLocationPanelManager;
+import software.xdev.pmd.ui.config.project.components.thirdpartyclasspath.TPCPLocationPanelManager;
 
 
 /**
@@ -50,7 +49,7 @@ public class PMDConfigPanel extends JPanel
 	private final JBCheckBox chbxUseCacheFile = new JBCheckBox("Use cache file");
 	private final JBCheckBox chbxImportSettingsFromMaven = new JBCheckBox("Import settings from Maven");
 	
-	private final LocationPanelManager rulefileLocationPanelManager;
+	private final RSLocationPanelManager rsLocationPanelManager;
 	
 	private final FileMaskPanelManager exclusionPanelManager = new FileMaskPanelManager(
 		"Exclusions",
@@ -71,7 +70,7 @@ public class PMDConfigPanel extends JPanel
 			</body></html>"""
 	);
 	
-	private final ThirdPartyClasspathPanelManager thirdPartyClasspathPanelManager;
+	private final TPCPLocationPanelManager tpcpLocationPanelManager;
 	
 	final Project project;
 	
@@ -81,8 +80,8 @@ public class PMDConfigPanel extends JPanel
 		
 		this.project = project;
 		
-		this.rulefileLocationPanelManager = new LocationPanelManager(project, this);
-		this.thirdPartyClasspathPanelManager = new ThirdPartyClasspathPanelManager(project, this);
+		this.rsLocationPanelManager = new RSLocationPanelManager(project, this);
+		this.tpcpLocationPanelManager = new TPCPLocationPanelManager(project, this);
 		
 		this.initialise();
 	}
@@ -123,7 +122,7 @@ public class PMDConfigPanel extends JPanel
 		
 		this.addPanel(
 			configFilePanel,
-			this.rulefileLocationPanelManager.buildPanel(),
+			this.rsLocationPanelManager.panel(),
 			3,
 			1.0,
 			300);
@@ -137,7 +136,7 @@ public class PMDConfigPanel extends JPanel
 		
 		this.addPanel(
 			configFilePanel,
-			this.thirdPartyClasspathPanelManager.buildPanel(),
+			this.tpcpLocationPanelManager.panel(),
 			5,
 			0.5,
 			150);
@@ -210,13 +209,12 @@ public class PMDConfigPanel extends JPanel
 		this.chbxShowSuppressedWarnings.setSelected(pluginConfig.showSuppressedWarnings());
 		this.chbxUseCacheFile.setSelected(pluginConfig.useCacheFile());
 		this.chbxImportSettingsFromMaven.setSelected(pluginConfig.importSettingsFromMaven());
-		this.rulefileLocationPanelManager.locationModel().setLocations(new ArrayList<>(pluginConfig.locations()));
-		this.rulefileLocationPanelManager.locationModel().setActiveLocations(pluginConfig.getActiveLocations());
+		this.rsLocationPanelManager.locationModel().setLocations(new ArrayList<>(pluginConfig.locations()));
+		this.rsLocationPanelManager.locationModel().setActiveLocations(pluginConfig.getActiveLocations());
 		this.exclusionPanelManager.update(pluginConfig.projectRelativeFileExclusions().stream()
 			.map(PatternContainer::patternString)
 			.collect(Collectors.toCollection(TreeSet::new)));
-		this.thirdPartyClasspathPanelManager.setThirdPartyClassPath(
-			pluginConfig.thirdPartyClasspath().absolutePathStrings());
+		this.tpcpLocationPanelManager.locationModel().setLocations(pluginConfig.thirdPartyCPLocations());
 	}
 	
 	public PluginConfiguration getPluginConfiguration()
@@ -229,14 +227,11 @@ public class PMDConfigPanel extends JPanel
 				(ScanScope)this.cbScope.getSelectedItem(),
 				ScanScope::getDefaultValue))
 			.withProjectRelativeFileExclusionsRaw(this.exclusionPanelManager.getPatterns())
-			.withLocations(new TreeSet<>(this.rulefileLocationPanelManager.locationModel().getLocations()))
-			.withActiveLocationIds(this.rulefileLocationPanelManager.locationModel().getActiveLocations().stream()
+			.withLocations(new TreeSet<>(this.rsLocationPanelManager.locationModel().getLocations()))
+			.withActiveLocationIds(this.rsLocationPanelManager.locationModel().getActiveLocations().stream()
 				.map(ConfigurationLocation::getId)
 				.collect(Collectors.toCollection(TreeSet::new)))
-			.withThirdPartyClasspath(
-				ThirdPartyClasspathConfigContainer.createFromUI(
-					this.project,
-					this.thirdPartyClasspathPanelManager.getThirdPartyClassPath()))
+			.withThirdPartyCPLocations(this.tpcpLocationPanelManager.locationModel().getLocations())
 			.withImportSettingFromMaven(this.chbxImportSettingsFromMaven.isSelected())
 			.build();
 	}

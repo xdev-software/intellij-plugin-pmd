@@ -24,7 +24,6 @@ import com.intellij.util.xmlb.annotations.XCollection;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
 import software.xdev.pmd.config.plugin.PatternContainer;
-import software.xdev.pmd.config.plugin.ThirdPartyClasspathConfigContainer;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocationFactory;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
@@ -53,8 +52,8 @@ public class ProjectSettingsState
 	List<String> activeLocationIds;
 	@MapAnnotation
 	List<ConfigurationLocationState> locations;
-	@XCollection
-	List<String> thirdPartyClasspaths;
+	@MapAnnotation
+	ThirdPartyCPState thirdPartyCPState;
 	@Tag
 	boolean importSettingsFromMaven;
 	
@@ -82,15 +81,18 @@ public class ProjectSettingsState
 				location.getDescription()
 			))
 			.toList();
-		projectSettings.thirdPartyClasspaths = useNullIfEmpty(
-			currentConfig.thirdPartyClasspath().classpaths(),
-			ArrayList::new);
+		projectSettings.thirdPartyCPState = ThirdPartyCPState.create(currentConfig.thirdPartyCPLocations());
 		projectSettings.importSettingsFromMaven = currentConfig.importSettingsFromMaven();
 		
 		return projectSettings;
 	}
 	
-	static <C extends Collection<?>, R> R useNullIfEmpty(
+	public static <C extends Collection<?>> C useNullIfEmpty(final C inputs)
+	{
+		return inputs.isEmpty() ? null : inputs;
+	}
+	
+	public static <C extends Collection<?>, R> R useNullIfEmpty(
 		final C inputs,
 		final Function<C, R> mapperIfPresent)
 	{
@@ -122,8 +124,9 @@ public class ProjectSettingsState
 			.withActiveLocationIds(new TreeSet<>(requireNonNullElseGet(
 				this.activeLocationIds,
 				ArrayList::new)))
-			.withThirdPartyClasspath(
-				ThirdPartyClasspathConfigContainer.createFromPersisted(project, this.thirdPartyClasspaths))
+			.withThirdPartyCPLocations(this.thirdPartyCPState != null
+				? this.thirdPartyCPState.populate(project)
+				: null)
 			.withImportSettingFromMaven(this.importSettingsFromMaven);
 	}
 	

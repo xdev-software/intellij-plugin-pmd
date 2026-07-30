@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.config.project.components.rulefilelocation;
+package software.xdev.pmd.ui.config.project.components.shared;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
@@ -23,24 +23,16 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.util.ui.JBUI;
 
-import software.xdev.pmd.analysis.ProjectScanClasspathManager;
-import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
-
-/**
- * Allows selection of the location of the file.
- */
 @SuppressWarnings("checkstyle:MagicNumber")
-public class LocationDialog extends DialogWrapper
+public abstract class LocationDialog<L, P extends JPanel> extends DialogWrapper
 {
-	private static final Logger LOG = Logger.getInstance(LocationDialog.class);
-	
 	private static final Insets COMPONENT_INSETS = JBUI.insets(4);
 	private static final int WIDTH = 500;
 	private static final int HEIGHT = 400;
 	
 	
-	private enum Step
+	protected enum Step
 	{
 		SELECT(false, true, false),
 		ERROR(true, false, false),
@@ -74,31 +66,40 @@ public class LocationDialog extends DialogWrapper
 	}
 	
 	
-	private final Project project;
+	protected Logger logger;
 	
-	private final JPanel centrePanel = new JPanel(new BorderLayout());
-	private final LocationPanel locationPanel;
-	private final ErrorPanel errorPanel = new ErrorPanel();
-	private final CompletePanel completePanel = new CompletePanel();
+	protected final Project project;
 	
-	private final JButton commitButton = new JButton(new NextAction());
-	private final JButton previousButton = new JButton(new PreviousAction());
+	protected final JPanel centrePanel = new JPanel(new BorderLayout());
+	protected final P locationPanel;
+	protected ErrorPanel errorPanel = new ErrorPanel();
+	protected final CompletePanel completePanel = new CompletePanel();
 	
-	private Step currentStep = Step.SELECT;
+	protected final JButton commitButton = new JButton(new NextAction());
+	protected final JButton previousButton = new JButton(new PreviousAction());
 	
-	private ConfigurationLocation configurationLocation;
+	protected Step currentStep = Step.SELECT;
 	
-	public LocationDialog(
+	protected L configurationLocation;
+	
+	protected LocationDialog(
 		@Nullable final Dialog parent,
-		@NotNull final Project project)
+		@NotNull final Project project,
+		@NotNull final P locationPanel)
 	{
 		super(project, parent, false, IdeModalityType.IDE);
 		
-		this.project = project;
+		this.logger = Logger.getInstance(this.getClass());
 		
-		this.locationPanel = new LocationPanel(project);
+		this.project = project;
+		this.locationPanel = locationPanel;
 		
 		this.initialiseComponents();
+	}
+	
+	protected void setErrorPanel(final ErrorPanel errorPanel)
+	{
+		this.errorPanel = errorPanel;
 	}
 	
 	@Override
@@ -107,7 +108,7 @@ public class LocationDialog extends DialogWrapper
 		return this.centrePanel;
 	}
 	
-	private void initialiseComponents()
+	protected void initialiseComponents()
 	{
 		this.setTitle("Add Configuration");
 		this.setSize(WIDTH, HEIGHT);
@@ -147,7 +148,7 @@ public class LocationDialog extends DialogWrapper
 		return bottomPanel;
 	}
 	
-	private JPanel panelForCurrentStep()
+	protected JPanel panelForCurrentStep()
 	{
 		return switch(this.currentStep)
 		{
@@ -162,12 +163,12 @@ public class LocationDialog extends DialogWrapper
 	 *
 	 * @return the location or null if no valid location entered.
 	 */
-	public ConfigurationLocation getConfigurationLocation()
+	public L getConfigurationLocation()
 	{
 		return this.configurationLocation;
 	}
 	
-	private void moveToStep(final Step newStep)
+	protected void moveToStep(final Step newStep)
 	{
 		this.centrePanel.remove(this.panelForCurrentStep());
 		this.currentStep = newStep;
@@ -184,24 +185,7 @@ public class LocationDialog extends DialogWrapper
 		this.centrePanel.repaint();
 	}
 	
-	private Step continueWithValidate(final ConfigurationLocation location)
-	{
-		this.configurationLocation = location;
-		
-		try
-		{
-			this.configurationLocation.validate(
-				this.project.getService(ProjectScanClasspathManager.class).getClassLoader());
-			return Step.COMPLETE;
-		}
-		catch(final Exception e)
-		{
-			this.errorPanel.setError(e);
-			return Step.ERROR;
-		}
-	}
-	
-	void onPrevious()
+	protected void onPrevious()
 	{
 		this.previousButton.setEnabled(false);
 		
@@ -217,37 +201,32 @@ public class LocationDialog extends DialogWrapper
 		}
 	}
 	
-	void onNext()
+	protected abstract L getLocationFromPanelAndValidate(P panel) throws Exception;
+	
+	protected void onNext()
 	{
 		this.commitButton.setEnabled(false);
 		
-		final ConfigurationLocation location;
 		switch(this.currentStep)
 		{
 			case SELECT:
 				try
 				{
-					location = this.locationPanel.getConfigurationLocation();
+					final L location = this.getLocationFromPanelAndValidate(this.locationPanel);
+					if(location == null)
+					{
+						return;
+					}
+					
+					this.configurationLocation = location;
+					this.moveToStep(Step.COMPLETE);
 				}
-				catch(final Exception ex)
+				catch(final Exception e)
 				{
-					this.showError("Failed to get configuration: " + ex.getMessage());
-					LOG.debug("Failed to get configuration", ex);
-					return;
-				}
-				if(location == null)
-				{
-					this.showError("No location has been entered");
-					return;
+					this.errorPanel.setError(e);
+					this.moveToStep(Step.ERROR);
 				}
 				
-				if(location.getDescription() == null || location.getDescription().isEmpty())
-				{
-					this.showError("No description has been entered");
-					return;
-				}
-				
-				this.moveToStep(this.continueWithValidate(location));
 				return;
 			
 			case COMPLETE:
@@ -260,7 +239,7 @@ public class LocationDialog extends DialogWrapper
 		}
 	}
 	
-	private void showError(final String formattedMessage)
+	protected void showError(final String formattedMessage)
 	{
 		Messages.showErrorDialog(
 			this.getContentPanel(),
@@ -269,7 +248,7 @@ public class LocationDialog extends DialogWrapper
 		this.commitButton.setEnabled(true);
 	}
 	
-	private final class NextAction extends AbstractAction
+	protected final class NextAction extends AbstractAction
 	{
 		@Override
 		public void actionPerformed(final ActionEvent event)
@@ -278,9 +257,10 @@ public class LocationDialog extends DialogWrapper
 		}
 	}
 	
-	private class PreviousAction extends AbstractAction
+	
+	protected class PreviousAction extends AbstractAction
 	{
-		PreviousAction()
+		protected PreviousAction()
 		{
 			this.putValue(Action.NAME, "Previous");
 			this.putValue(Action.SHORT_DESCRIPTION, "Move to the previous step of the wizard");

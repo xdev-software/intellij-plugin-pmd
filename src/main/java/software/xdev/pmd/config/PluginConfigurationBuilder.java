@@ -2,6 +2,7 @@ package software.xdev.pmd.config;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -13,10 +14,10 @@ import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.project.Project;
 
 import software.xdev.pmd.config.plugin.PatternContainer;
-import software.xdev.pmd.config.plugin.ThirdPartyClasspathConfigContainer;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocationFactory;
 import software.xdev.pmd.model.config.rulesetlocation.bundled.BundledConfig;
+import software.xdev.pmd.model.config.thirdpartycplocation.ThirdPartyCPLocation;
 import software.xdev.pmd.model.scope.ScanScope;
 
 
@@ -29,7 +30,7 @@ public final class PluginConfigurationBuilder
 	private SortedSet<PatternContainer> projectRelativeFileExclusions;
 	private SortedSet<ConfigurationLocation> locations;
 	private SortedSet<String> activeLocationIds;
-	private ThirdPartyClasspathConfigContainer thirdPartyClasspath;
+	private List<ThirdPartyCPLocation> thirdPartyCPLocations;
 	private boolean importSettingsFromMaven;
 	
 	public PluginConfigurationBuilder(final Project project)
@@ -43,7 +44,7 @@ public final class PluginConfigurationBuilder
 			.map(bc -> configurationLocationFactory(project).create(bc, project))
 			.collect(Collectors.toCollection(TreeSet::new));
 		this.activeLocationIds = null;
-		this.thirdPartyClasspath = null;
+		this.thirdPartyCPLocations = null;
 		this.importSettingsFromMaven = false;
 	}
 	
@@ -56,7 +57,7 @@ public final class PluginConfigurationBuilder
 		this.projectRelativeFileExclusions = copyFrom.projectRelativeFileExclusions();
 		this.locations = copyFrom.locations();
 		this.activeLocationIds = copyFrom.activeLocationIds();
-		this.thirdPartyClasspath = copyFrom.thirdPartyClasspath();
+		this.thirdPartyCPLocations = copyFrom.thirdPartyCPLocations();
 		this.importSettingsFromMaven = copyFrom.importSettingsFromMaven();
 	}
 	
@@ -130,10 +131,9 @@ public final class PluginConfigurationBuilder
 		return this;
 	}
 	
-	public PluginConfigurationBuilder withThirdPartyClasspath(
-		final ThirdPartyClasspathConfigContainer thirdPartyClasspath)
+	public PluginConfigurationBuilder withThirdPartyCPLocations(final List<ThirdPartyCPLocation> thirdPartyCPLocations)
 	{
-		this.thirdPartyClasspath = thirdPartyClasspath;
+		this.thirdPartyCPLocations = thirdPartyCPLocations;
 		return this;
 	}
 	
@@ -159,7 +159,7 @@ public final class PluginConfigurationBuilder
 				.filter(Objects::nonNull)
 				.collect(Collectors.toCollection(TreeSet::new))
 				: new TreeSet<>(),
-			Objects.requireNonNullElseGet(this.thirdPartyClasspath, ThirdPartyClasspathConfigContainer::createEmpty),
+			Collections.unmodifiableList(Objects.requireNonNullElseGet(this.thirdPartyCPLocations, List::of)),
 			this.importSettingsFromMaven,
 			new PluginConfiguration.Cache());
 	}

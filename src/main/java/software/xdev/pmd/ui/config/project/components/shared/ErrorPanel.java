@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.config.project.components.rulefilelocation;
+package software.xdev.pmd.ui.config.project.components.shared;
 
 import static javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS;
 import static javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS;
@@ -34,7 +34,7 @@ public class ErrorPanel extends JPanel
 	{
 		this.setBorder(JBUI.Borders.empty(8));
 		
-		final JLabel infoLabel = new JLabel("Loading the rule file caused an error:");
+		final JLabel infoLabel = new JLabel("Validation failed:");
 		infoLabel.setBorder(JBUI.Borders.emptyBottom(8));
 		this.add(infoLabel, BorderLayout.NORTH);
 		
@@ -51,21 +51,15 @@ public class ErrorPanel extends JPanel
 	public void setError(final Throwable t)
 	{
 		final StringWriter errorWriter = new StringWriter(256);
-		this.causeOf(t).printStackTrace(new PrintWriter(errorWriter));
+		this.extractCause(t).printStackTrace(new PrintWriter(errorWriter));
 		
 		this.errorField.setText(errorWriter.getBuffer().toString());
 		this.errorField.setCaretPosition(0);
 		this.invalidate();
 	}
 	
-	private Throwable causeOf(final Throwable t)
+	protected Throwable extractCause(final Throwable t)
 	{
-		if(t.getCause() != null
-			&& t.getCause() != t
-			&& !t.getClass().getPackage().getName().startsWith("net.sourceforge.pmd"))
-		{
-			return this.causeOf(t.getCause());
-		}
 		return t;
 	}
 }

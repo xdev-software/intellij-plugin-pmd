@@ -1,6 +1,7 @@
 package software.xdev.pmd.util.io;
 
 import java.io.File;
+import java.util.Objects;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -29,10 +30,7 @@ public class ProjectFilePaths
 	
 	public String makeProjectRelativePathAbsolute(final String path)
 	{
-		if(path == null || this.project.isDefault())
-		{
-			throw new IllegalArgumentException("Invalid path or project");
-		}
+		Objects.requireNonNull(path, "Invalid path");
 		
 		final VirtualFile projectDir = ProjectUtil.guessProjectDir(this.project);
 		if(projectDir == null)

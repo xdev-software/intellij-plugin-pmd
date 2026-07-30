@@ -1,4 +1,4 @@
-package software.xdev.pmd.ui.config.project.components.rulefilelocation;
+package software.xdev.pmd.ui.config.project.components.shared;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -21,7 +21,7 @@ public class CompletePanel extends JPanel
 	
 	private void init()
 	{
-		final JLabel infoLabel = new JLabel("The file has been validated and is ready to add");
+		final JLabel infoLabel = new JLabel("Validation successful and ready to add");
 		
 		this.setBorder(JBUI.Borders.empty(4));
 		

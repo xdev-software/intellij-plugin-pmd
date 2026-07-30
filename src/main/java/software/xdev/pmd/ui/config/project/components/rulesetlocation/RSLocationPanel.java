@@ -1,8 +1,8 @@
-package software.xdev.pmd.ui.config.project.components.rulefilelocation;
+package software.xdev.pmd.ui.config.project.components.rulesetlocation;
 
 import static software.xdev.pmd.model.config.rulesetlocation.ConfigurationType.LOCAL_FILE;
 import static software.xdev.pmd.model.config.rulesetlocation.ConfigurationType.PROJECT_RELATIVE;
-import static software.xdev.pmd.ui.config.project.components.rulefilelocation.LocationPanel.LocationType.FILE;
+import static software.xdev.pmd.ui.config.project.components.rulesetlocation.RSLocationPanel.LocationType.FILE;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -44,7 +44,7 @@ import software.xdev.pmd.util.io.ProjectFilePaths;
 
 
 @SuppressWarnings("checkstyle:MagicNumber")
-public class LocationPanel extends JPanel
+public class RSLocationPanel extends JPanel
 {
 	enum LocationType
 	{
@@ -62,7 +62,7 @@ public class LocationPanel extends JPanel
 	
 	private final Project project;
 	
-	public LocationPanel(final Project project)
+	public RSLocationPanel(final Project project)
 	{
 		super(new GridBagLayout());
 		
@@ -75,9 +75,10 @@ public class LocationPanel extends JPanel
 	{
 		this.relativeFileCheckbox.setText("Store relative to project location");
 		this.relativeFileCheckbox.setToolTipText("The file path should be stored as relative to the project location");
+		this.relativeFileCheckbox.setSelected(true);
 		
 		this.fileLocationRadio.setText("Use a local file");
-		this.fileLocationRadio.addActionListener(new RadioButtonActionListener());
+		this.fileLocationRadio.addActionListener(this.createRadioButtonListener(FILE));
 		
 		final ButtonGroup locationGroup = new ButtonGroup();
 		locationGroup.add(this.fileLocationRadio);
@@ -130,11 +131,18 @@ public class LocationPanel extends JPanel
 				GridBagConstraints.WEST, GridBagConstraints.VERTICAL, COMPONENT_INSETS, 0, 0));
 	}
 	
+	private ActionListener createRadioButtonListener(final LocationType locationType)
+	{
+		return e -> this.enabledLocation(locationType);
+	}
+	
 	private void enabledLocation(final LocationType locationType)
 	{
-		this.fileLocationField.setEnabled(locationType == FILE);
-		this.browseButton.setEnabled(locationType == FILE);
-		this.relativeFileCheckbox.setEnabled(locationType == FILE);
+		final boolean isFile = locationType == FILE;
+		
+		this.fileLocationField.setEnabled(isFile);
+		this.browseButton.setEnabled(isFile);
+		this.relativeFileCheckbox.setEnabled(isFile);
 	}
 	
 	private ConfigurationType typeOfFile()
@@ -251,7 +259,7 @@ public class LocationPanel extends JPanel
 			Optional<Path> fileLocationPath;
 			try
 			{
-				fileLocationPath = Optional.ofNullable(LocationPanel.this.getFileLocationPath(LOCAL_FILE));
+				fileLocationPath = Optional.ofNullable(RSLocationPanel.this.getFileLocationPath(LOCAL_FILE));
 			}
 			catch(final Exception ex)
 			{
@@ -259,32 +267,18 @@ public class LocationPanel extends JPanel
 			}
 			final VirtualFile toSelect = fileLocationPath
 				.map(LocalFileSystem.getInstance()::findFileByNioFile)
-				.orElseGet(() -> ProjectUtil.guessProjectDir(LocationPanel.this.project));
+				.orElseGet(() -> ProjectUtil.guessProjectDir(RSLocationPanel.this.project));
 			
 			final VirtualFile chosen = FileChooser.chooseFile(
 				FileChooserDescriptorFactory.createSingleFileDescriptor("xml"),
-				LocationPanel.this,
-				LocationPanel.this.project,
+				RSLocationPanel.this,
+				RSLocationPanel.this.project,
 				toSelect);
 			if(chosen != null)
 			{
 				final File newConfigFile = VfsUtilCore.virtualToIoFile(chosen);
-				LocationPanel.this.fileLocationField.setText(newConfigFile.getAbsolutePath());
+				RSLocationPanel.this.fileLocationField.setText(newConfigFile.getAbsolutePath());
 			}
-		}
-	}
-	
-	
-	private final class RadioButtonActionListener implements ActionListener
-	{
-		@Override
-		public void actionPerformed(final ActionEvent e)
-		{
-			if(LocationPanel.this.fileLocationRadio.isSelected())
-			{
-				LocationPanel.this.enabledLocation(FILE);
-			}
-			throw new IllegalStateException("Unknown radio button state");
 		}
 	}
 }

@@ -57,7 +57,7 @@ public class PluginConfigurationManager
 		this.lastPluginConfiguration = pluginConfig;
 		
 		// Update the classpath information
-		this.project.getService(ProjectScanClasspathManager.class).configure(pluginConfig.thirdPartyClasspath());
+		this.project.getService(ProjectScanClasspathManager.class).configure(pluginConfig.thirdPartyCPLocations());
 	}
 	
 	private ProjectConfigurationState projectConfigurationState()
