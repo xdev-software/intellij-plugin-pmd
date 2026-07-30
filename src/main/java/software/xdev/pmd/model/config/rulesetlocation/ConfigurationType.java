@@ -4,7 +4,7 @@ public enum ConfigurationType
 {
 	/**
 	 * one of the configurations bundled with the Checkstyle tool, chosen from the
-	 * {@link software.xdev.pmd.csapi.BundledConfig} enum
+	 * {@link software.xdev.pmd.model.config.rulesetlocation.bundled.BundledConfig} enum
 	 */
 	BUNDLED,
 	
