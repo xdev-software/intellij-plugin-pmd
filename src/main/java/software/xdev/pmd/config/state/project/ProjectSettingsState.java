@@ -91,15 +91,15 @@ public class ProjectSettingsState
 	}
 	
 	static <C extends Collection<?>, R> R useNullIfEmpty(
-		final C baseList,
+		final C inputs,
 		final Function<C, R> mapperIfPresent)
 	{
-		if(baseList.isEmpty())
+		if(inputs.isEmpty())
 		{
 			return null;
 		}
 		
-		return mapperIfPresent.apply(baseList);
+		return mapperIfPresent.apply(inputs);
 	}
 	
 	@SuppressWarnings("unused")
