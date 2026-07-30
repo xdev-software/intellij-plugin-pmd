@@ -16,7 +16,7 @@ import com.intellij.openapi.module.ModuleConfigurationEditor;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
 import software.xdev.pmd.config.state.module.ModuleConfigurationState;
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
 public class PMDModuleConfigurationEditor implements ModuleConfigurationEditor

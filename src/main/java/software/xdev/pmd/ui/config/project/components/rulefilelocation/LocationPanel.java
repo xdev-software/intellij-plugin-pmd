@@ -1,7 +1,7 @@
 package software.xdev.pmd.ui.config.project.components.rulefilelocation;
 
-import static software.xdev.pmd.model.config.ConfigurationType.LOCAL_FILE;
-import static software.xdev.pmd.model.config.ConfigurationType.PROJECT_RELATIVE;
+import static software.xdev.pmd.model.config.rulesetlocation.ConfigurationType.LOCAL_FILE;
+import static software.xdev.pmd.model.config.rulesetlocation.ConfigurationType.PROJECT_RELATIVE;
 import static software.xdev.pmd.ui.config.project.components.rulefilelocation.LocationPanel.LocationType.FILE;
 
 import java.awt.GridBagConstraints;
@@ -37,9 +37,9 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.JBUI;
 
-import software.xdev.pmd.model.config.ConfigurationLocation;
-import software.xdev.pmd.model.config.ConfigurationLocationFactory;
-import software.xdev.pmd.model.config.ConfigurationType;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocationFactory;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
 import software.xdev.pmd.util.io.ProjectFilePaths;
 
 
@@ -66,11 +66,7 @@ public class LocationPanel extends JPanel
 	{
 		super(new GridBagLayout());
 		
-		if(project == null)
-		{
-			throw new IllegalArgumentException("Project may not be null");
-		}
-		this.project = project;
+		this.project = Objects.requireNonNull(project);
 		
 		this.initialise();
 	}
@@ -279,9 +275,6 @@ public class LocationPanel extends JPanel
 	}
 	
 	
-	/**
-	 * Handles radio button selections.
-	 */
 	private final class RadioButtonActionListener implements ActionListener
 	{
 		@Override

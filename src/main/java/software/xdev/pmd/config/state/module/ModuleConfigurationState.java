@@ -21,7 +21,7 @@ import com.intellij.util.xmlb.annotations.Tag;
 import com.intellij.util.xmlb.annotations.XCollection;
 
 import software.xdev.pmd.config.PluginConfigurationManager;
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
 /**

@@ -32,10 +32,10 @@ import fleet.util.GlobKt;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
 import software.xdev.pmd.config.PluginConfigurationManager;
-import software.xdev.pmd.model.config.ConfigurationLocation;
-import software.xdev.pmd.model.config.bundled.BundledConfigurationLocation;
-import software.xdev.pmd.model.config.file.FileConfigurationLocation;
-import software.xdev.pmd.model.config.file.RelativeFileConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.bundled.BundledConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.file.FileConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.file.RelativeFileConfigurationLocation;
 import software.xdev.pmd.model.scope.ScanScope;
 
 

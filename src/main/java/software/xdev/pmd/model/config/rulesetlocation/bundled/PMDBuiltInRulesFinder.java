@@ -1,4 +1,4 @@
-package software.xdev.pmd.model.config.bundled;
+package software.xdev.pmd.model.config.rulesetlocation.bundled;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

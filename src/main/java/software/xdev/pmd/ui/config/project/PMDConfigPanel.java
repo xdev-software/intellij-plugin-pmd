@@ -28,7 +28,7 @@ import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
 import software.xdev.pmd.config.plugin.PatternContainer;
 import software.xdev.pmd.config.plugin.ThirdPartyClasspathConfigContainer;
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 import software.xdev.pmd.model.scope.ScanScope;
 import software.xdev.pmd.ui.config.project.components.exclusion.FileMaskPanelManager;
 import software.xdev.pmd.ui.config.project.components.rulefilelocation.LocationPanelManager;

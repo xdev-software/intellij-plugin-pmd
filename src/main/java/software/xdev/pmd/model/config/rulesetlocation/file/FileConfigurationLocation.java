@@ -1,4 +1,4 @@
-package software.xdev.pmd.model.config.file;
+package software.xdev.pmd.model.config.rulesetlocation.file;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -13,10 +13,10 @@ import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.project.Project;
 
 import net.sourceforge.pmd.lang.rule.RuleSet;
-import software.xdev.pmd.model.config.ConfigurationLocation;
-import software.xdev.pmd.model.config.ConfigurationType;
-import software.xdev.pmd.model.config.file.pmd.DefaultRuleSetLoaderCreator;
-import software.xdev.pmd.model.config.file.pmd.LoadFromStringRuleSetLoaderWorkaround;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
+import software.xdev.pmd.model.config.rulesetlocation.file.pmd.DefaultRuleSetLoaderCreator;
+import software.xdev.pmd.model.config.rulesetlocation.file.pmd.LoadFromStringRuleSetLoaderWorkaround;
 import software.xdev.pmd.util.io.ProjectFilePaths;
 
 

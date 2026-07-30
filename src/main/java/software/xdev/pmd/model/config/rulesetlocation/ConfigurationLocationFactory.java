@@ -1,4 +1,4 @@
-package software.xdev.pmd.model.config;
+package software.xdev.pmd.model.config.rulesetlocation;
 
 import java.util.Map;
 import java.util.Optional;
@@ -8,11 +8,11 @@ import org.jetbrains.annotations.NotNull;
 import com.intellij.openapi.project.Project;
 
 import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHashMap;
-import software.xdev.pmd.model.config.bundled.BundledConfig;
-import software.xdev.pmd.model.config.bundled.BundledConfigurationLocation;
-import software.xdev.pmd.model.config.bundled.UnknownBundledConfigurationLocation;
-import software.xdev.pmd.model.config.file.FileConfigurationLocation;
-import software.xdev.pmd.model.config.file.RelativeFileConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.bundled.BundledConfig;
+import software.xdev.pmd.model.config.rulesetlocation.bundled.BundledConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.bundled.UnknownBundledConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.file.FileConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.file.RelativeFileConfigurationLocation;
 
 
 public class ConfigurationLocationFactory

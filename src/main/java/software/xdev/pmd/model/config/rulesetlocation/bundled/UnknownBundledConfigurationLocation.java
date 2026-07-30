@@ -1,4 +1,4 @@
-package software.xdev.pmd.model.config.bundled;
+package software.xdev.pmd.model.config.rulesetlocation.bundled;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

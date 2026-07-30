@@ -49,7 +49,7 @@ import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
 import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHashMap;
 import software.xdev.pmd.langversion.ManagedLanguageVersionResolver;
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
 public class PMDAnalyzer implements Disposable

@@ -1,4 +1,4 @@
-package software.xdev.pmd.model.config;
+package software.xdev.pmd.model.config.rulesetlocation;
 
 import java.util.Comparator;
 import java.util.Objects;
@@ -10,7 +10,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 
 import net.sourceforge.pmd.lang.rule.RuleSet;
-import software.xdev.pmd.model.config.bundled.BundledConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.bundled.BundledConfigurationLocation;
 
 
 /**

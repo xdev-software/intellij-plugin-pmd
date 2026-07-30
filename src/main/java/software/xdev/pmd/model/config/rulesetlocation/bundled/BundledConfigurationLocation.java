@@ -1,4 +1,4 @@
-package software.xdev.pmd.model.config.bundled;
+package software.xdev.pmd.model.config.rulesetlocation.bundled;
 
 import java.util.Objects;
 
@@ -8,9 +8,9 @@ import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.project.Project;
 
 import net.sourceforge.pmd.lang.rule.RuleSet;
-import software.xdev.pmd.model.config.ConfigurationLocation;
-import software.xdev.pmd.model.config.ConfigurationType;
-import software.xdev.pmd.model.config.file.pmd.DefaultRuleSetLoaderCreator;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
+import software.xdev.pmd.model.config.rulesetlocation.file.pmd.DefaultRuleSetLoaderCreator;
 
 
 public class BundledConfigurationLocation extends ConfigurationLocation

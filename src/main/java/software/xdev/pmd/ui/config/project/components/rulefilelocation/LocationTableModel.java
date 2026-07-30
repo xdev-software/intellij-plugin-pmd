@@ -13,7 +13,7 @@ import javax.swing.table.AbstractTableModel;
 
 import org.jetbrains.annotations.NotNull;
 
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
 /**

@@ -24,7 +24,7 @@ import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 import software.xdev.pmd.ui.config.project.PMDConfigPanel;
 import software.xdev.pmd.ui.config.project.components.SubPMDConfigPanelManager;
 

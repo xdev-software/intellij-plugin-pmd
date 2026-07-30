@@ -24,7 +24,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.util.ui.JBUI;
 
 import software.xdev.pmd.analysis.ProjectScanClasspathManager;
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
 /**

@@ -1,4 +1,4 @@
-package software.xdev.pmd.model.config.file.pmd;
+package software.xdev.pmd.model.config.rulesetlocation.file.pmd;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

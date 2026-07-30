@@ -1,11 +1,11 @@
-package software.xdev.pmd.model.config.file;
+package software.xdev.pmd.model.config.rulesetlocation.file;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.components.PathMacroManager;
 import com.intellij.openapi.project.Project;
 
-import software.xdev.pmd.model.config.ConfigurationType;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
 
 
 /**

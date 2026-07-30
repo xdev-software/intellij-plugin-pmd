@@ -25,10 +25,10 @@ import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
 import software.xdev.pmd.config.plugin.PatternContainer;
 import software.xdev.pmd.config.plugin.ThirdPartyClasspathConfigContainer;
-import software.xdev.pmd.model.config.ConfigurationLocation;
-import software.xdev.pmd.model.config.ConfigurationLocationFactory;
-import software.xdev.pmd.model.config.ConfigurationType;
-import software.xdev.pmd.model.config.bundled.BundledConfig;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocationFactory;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
+import software.xdev.pmd.model.config.rulesetlocation.bundled.BundledConfig;
 import software.xdev.pmd.model.scope.ScanScope;
 
 

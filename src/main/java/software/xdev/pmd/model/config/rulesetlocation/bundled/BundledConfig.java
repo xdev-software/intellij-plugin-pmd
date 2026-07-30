@@ -1,4 +1,4 @@
-package software.xdev.pmd.model.config.bundled;
+package software.xdev.pmd.model.config.rulesetlocation.bundled;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.application.ApplicationManager;
 
 import software.xdev.pmd.langversion.LanguageVersionResolverService;
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
 public final class BundledConfig

@@ -14,7 +14,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 
 import software.xdev.pmd.config.state.module.ModuleConfigurationState;
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
 public class ConfigurationLocationSource
