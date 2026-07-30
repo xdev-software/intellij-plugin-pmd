@@ -43,11 +43,6 @@ public abstract class ConfigurationLocation implements Comparable<ConfigurationL
 		this.logger = Logger.getInstance(this.getClass());
 	}
 	
-	public boolean canBeResolvedInDefaultProject()
-	{
-		return true;
-	}
-	
 	protected final Project getProject()
 	{
 		return this.project;

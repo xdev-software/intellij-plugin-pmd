@@ -23,12 +23,6 @@ public class RelativeFileConfigurationLocation extends FileConfigurationLocation
 		super(project, id, ConfigurationType.PROJECT_RELATIVE);
 	}
 	
-	@Override
-	public boolean canBeResolvedInDefaultProject()
-	{
-		return false;
-	}
-	
 	@SuppressWarnings("checkstyle:FinalParameters")
 	@Override
 	public void setLocation(String location)

@@ -201,12 +201,6 @@ public class LocationDialog extends DialogWrapper
 		}
 	}
 	
-	private Step continueWithoutValidate(final ConfigurationLocation location)
-	{
-		this.configurationLocation = location;
-		return Step.COMPLETE;
-	}
-	
 	void onPrevious()
 	{
 		this.previousButton.setEnabled(false);
@@ -253,13 +247,7 @@ public class LocationDialog extends DialogWrapper
 					return;
 				}
 				
-				if(!this.project.isDefault() || location.canBeResolvedInDefaultProject())
-				{
-					this.moveToStep(this.continueWithValidate(location));
-					return;
-				}
-				
-				this.moveToStep(this.continueWithoutValidate(location));
+				this.moveToStep(this.continueWithValidate(location));
 				return;
 			
 			case COMPLETE:
