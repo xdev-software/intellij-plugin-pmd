@@ -107,7 +107,7 @@ public final class DefaultRuleSetLoaderCreator
 			// noop
 		}
 		
-		public void addErrorsAsSuppressedAndClear(final Exception ex)
+		void addErrorsAsSuppressedAndClear(final Exception ex)
 		{
 			this.errors.forEach(ex::addSuppressed);
 			this.errors.clear();

@@ -20,6 +20,7 @@ public class TPCPLocationTableModel extends LocationTableModel<ThirdPartyCPLocat
 		}
 		catch(final IndexOutOfBoundsException ignored)
 		{
+			// Ignore
 		}
 	}
 	
