@@ -23,9 +23,8 @@ import org.jetbrains.idea.maven.model.MavenId;
 import org.jetbrains.idea.maven.model.MavenPlugin;
 import org.jetbrains.idea.maven.model.MavenProfile;
 import org.jetbrains.idea.maven.project.MavenProject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 
 import fleet.util.GlobKt;
@@ -36,13 +35,15 @@ import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 import software.xdev.pmd.model.config.rulesetlocation.bundled.BundledConfigurationLocation;
 import software.xdev.pmd.model.config.rulesetlocation.file.FileConfigurationLocation;
 import software.xdev.pmd.model.config.rulesetlocation.file.RelativeFileConfigurationLocation;
+import software.xdev.pmd.model.config.thirdpartycplocation.ThirdPartyCPLocation;
+import software.xdev.pmd.model.config.thirdpartycplocation.maven.MavenThirdPartyCPLocationFactory;
 import software.xdev.pmd.model.scope.ScanScope;
 
 
 @SuppressWarnings("UnstableApiUsage")
 public class PMDMavenAfterImportConfigurator implements MavenAfterImportConfigurator
 {
-	private static final Logger LOG = LoggerFactory.getLogger(PMDMavenAfterImportConfigurator.class);
+	private static final Logger LOG = Logger.getInstance(PMDMavenAfterImportConfigurator.class);
 	
 	private static final List<MavenId> PMD_PLUGIN_MAVEN_IDS = List.of(
 		new MavenId("org.apache.maven.plugins", "maven-pmd-plugin", null));
@@ -79,7 +80,7 @@ public class PMDMavenAfterImportConfigurator implements MavenAfterImportConfigur
 		
 		final PluginConfigurationBuilder builder = new PluginConfigurationBuilder(currentConfig);
 		
-		this.configureFromMaven(project, configElement, currentConfig, builder);
+		this.configureFromMaven(project, mavenPlugin, configElement, currentConfig, builder);
 		
 		final PluginConfiguration newConfig = builder.build();
 		if(currentConfig.isIdentical(newConfig))
@@ -94,6 +95,7 @@ public class PMDMavenAfterImportConfigurator implements MavenAfterImportConfigur
 	
 	private void configureFromMaven(
 		final Project project,
+		final MavenPlugin mavenPlugin,
 		final Element configElement,
 		final PluginConfiguration currentConfig,
 		final PluginConfigurationBuilder builder)
@@ -104,7 +106,7 @@ public class PMDMavenAfterImportConfigurator implements MavenAfterImportConfigur
 		
 		this.configureExclusions(configElement, builder);
 		
-		// TODO Configure dependencies
+		this.configureThirdPartyCPLocations(project, mavenPlugin, builder);
 	}
 	
 	private void configureScanScope(final Element configElement, final PluginConfigurationBuilder builder)
@@ -162,27 +164,6 @@ public class PMDMavenAfterImportConfigurator implements MavenAfterImportConfigur
 			.withActiveLocationIds(new TreeSet<>(mavenLocations.stream().map(ConfigurationLocation::getId).toList()));
 	}
 	
-	@SuppressWarnings("PMD.AvoidStringBuilderOrBuffer")
-	private void configureExclusions(final Element configElement, final PluginConfigurationBuilder builder)
-	{
-		// https://maven.apache.org/plugins/maven-pmd-plugin/pmd-mojo.html#excludes
-		builder.withProjectRelativeFileExclusionsRaw(getChildrenTexts(configElement, "excludes")
-			// The paths in the plugin are module based
-			.map(s -> {
-				if(!s.startsWith("**/"))
-				{
-					return "**/" + s;
-				}
-				return s;
-			})
-			.map(text -> {
-				final StringBuilder sb = new StringBuilder(text.length() * 2);
-				GlobKt.convertGlobToRegEx(text, new ArrayList<>(), sb);
-				return sb.toString();
-			})
-			.toList());
-	}
-	
 	private ConfigurationLocation createFileBasedConfigurationLocation(final Project project, final String s)
 	{
 		final boolean absolutePath;
@@ -204,6 +185,66 @@ public class PMDMavenAfterImportConfigurator implements MavenAfterImportConfigur
 		configurationLocation.setDescription(s);
 		
 		return configurationLocation;
+	}
+	
+	@SuppressWarnings("PMD.AvoidStringBuilderOrBuffer")
+	private void configureExclusions(final Element configElement, final PluginConfigurationBuilder builder)
+	{
+		// https://maven.apache.org/plugins/maven-pmd-plugin/pmd-mojo.html#excludes
+		builder.withProjectRelativeFileExclusionsRaw(getChildrenTexts(configElement, "excludes")
+			// The paths in the plugin are module based
+			.map(s -> {
+				if(!s.startsWith("**/"))
+				{
+					return "**/" + s;
+				}
+				return s;
+			})
+			.map(text -> {
+				final StringBuilder sb = new StringBuilder(text.length() * 2);
+				GlobKt.convertGlobToRegEx(text, new ArrayList<>(), sb);
+				return sb.toString();
+			})
+			.toList());
+	}
+	
+	private void configureThirdPartyCPLocations(
+		final Project project,
+		final MavenPlugin mavenPlugin,
+		final PluginConfigurationBuilder builder)
+	{
+		final List<MavenId> relevantDeps = mavenPlugin.getDependencies()
+			.stream()
+			// These modules are already bundled
+			.filter(dep -> !"net.sourceforge.pmd".equals(dep.getGroupId()))
+			.toList();
+		if(relevantDeps.isEmpty())
+		{
+			builder.withThirdPartyCPLocations(List.of());
+			return;
+		}
+		
+		final MavenThirdPartyCPLocationFactory factory = project.getService(MavenThirdPartyCPLocationFactory.class);
+		builder.withThirdPartyCPLocations(
+			relevantDeps.stream()
+				.map(id -> new software.xdev.pmd.maven.MavenId(
+					id.getGroupId(),
+					id.getArtifactId(),
+					id.getVersion()))
+				.map(id -> {
+					try
+					{
+						return factory.fromUI(id);
+					}
+					catch(final Exception ex)
+					{
+						LOG.debug("Maven 3rd party CP import of " + id + " failed", ex);
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.map(ThirdPartyCPLocation.class::cast)
+				.toList());
 	}
 	
 	record MavenProjectAndPlugin(
