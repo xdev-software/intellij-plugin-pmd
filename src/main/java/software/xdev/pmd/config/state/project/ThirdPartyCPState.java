@@ -1,9 +1,9 @@
 package software.xdev.pmd.config.state.project;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,7 +35,7 @@ public class ThirdPartyCPState
 	private static final Logger LOG = Logger.getInstance(ThirdPartyCPState.class);
 	
 	@XCollection
-	LinkedHashSet<String> activeIds;
+	List<String> activeIds;
 	
 	@MapAnnotation
 	List<MavenThirdPartyCPLocationState> maven;
@@ -52,6 +52,18 @@ public class ThirdPartyCPState
 		// for serialization
 	}
 	
+	public ThirdPartyCPState(
+		final List<String> activeIds,
+		final List<MavenThirdPartyCPLocationState> maven,
+		final List<FileThirdPartyCPLocationState> absoluteFile,
+		final List<FileThirdPartyCPLocationState> relativeFile)
+	{
+		this.activeIds = activeIds;
+		this.maven = maven;
+		this.absoluteFile = absoluteFile;
+		this.relativeFile = relativeFile;
+	}
+	
 	public static ThirdPartyCPState create(
 		final List<ThirdPartyCPLocation> thirdPartyCPLocations)
 	{
@@ -60,34 +72,31 @@ public class ThirdPartyCPState
 			return null;
 		}
 		
-		final ThirdPartyCPState state = new ThirdPartyCPState();
-		state.activeIds = thirdPartyCPLocations.stream()
-			.map(ThirdPartyCPLocation::id)
-			.collect(Collectors.toCollection(LinkedHashSet::new));
-		
 		final Map<Class<? extends ThirdPartyCPLocation>, List<ThirdPartyCPLocation>> groupedByClazz =
 			thirdPartyCPLocations.stream().collect(Collectors.groupingBy(ThirdPartyCPLocation::getClass));
 		
-		state.maven = create(
-			groupedByClazz,
-			MavenThirdPartyCPLocation.class,
-			loc -> new MavenThirdPartyCPLocationState(
-				loc.id(),
-				loc.mavenId().groupId(),
-				loc.mavenId().artifactId(),
-				loc.mavenId().version()));
-		
-		state.absoluteFile = create(
-			groupedByClazz,
-			AbsoluteFileThirdPartyCPLocation.class,
-			loc -> new FileThirdPartyCPLocationState(loc.id(), loc.location()));
-		
-		state.relativeFile = create(
-			groupedByClazz,
-			RelativeFileThirdPartyCPLocation.class,
-			loc -> new FileThirdPartyCPLocationState(loc.id(), loc.location()));
-		
-		return state;
+		return new ThirdPartyCPState(
+			thirdPartyCPLocations.stream()
+				.map(ThirdPartyCPLocation::id)
+				.distinct()
+				.toList(),
+			create(
+				groupedByClazz,
+				MavenThirdPartyCPLocation.class,
+				loc -> new MavenThirdPartyCPLocationState(
+					loc.id(),
+					loc.mavenId().groupId(),
+					loc.mavenId().artifactId(),
+					loc.mavenId().version())),
+			create(
+				groupedByClazz,
+				AbsoluteFileThirdPartyCPLocation.class,
+				loc -> new FileThirdPartyCPLocationState(loc.id(), loc.location())),
+			create(
+				groupedByClazz,
+				RelativeFileThirdPartyCPLocation.class,
+				loc -> new FileThirdPartyCPLocationState(loc.id(), loc.location()))
+		);
 	}
 	
 	@Nullable
@@ -114,10 +123,19 @@ public class ThirdPartyCPState
 	
 	public List<ThirdPartyCPLocation> populate(@NotNull final Project project)
 	{
+		if(this.activeIds == null || this.activeIds.isEmpty())
+		{
+			return List.of();
+		}
+		
+		final Set<String> activeIdsFastAccess = Set.copyOf(this.activeIds);
+		
 		final Map<String, ThirdPartyCPLocation> availableLocations = Stream.of(
-				this.populateLocations(MavenThirdPartyCPLocationFactory.class, project, this.maven),
-				this.populateLocations(AbsoluteFileThirdPartyCPLocationFactory.class, project, this.absoluteFile),
-				this.populateLocations(RelativeFileThirdPartyCPLocationFactory.class, project, this.relativeFile))
+				new LocationPopulator<>(MavenThirdPartyCPLocationFactory.class, this.maven),
+				new LocationPopulator<>(AbsoluteFileThirdPartyCPLocationFactory.class, this.absoluteFile),
+				new LocationPopulator<>(RelativeFileThirdPartyCPLocationFactory.class, this.relativeFile))
+			.map(p ->
+				p.populate(activeIdsFastAccess, project))
 			.flatMap(List::stream)
 			.collect(Collectors.toMap(ThirdPartyCPLocation::id, Function.identity()));
 		
@@ -126,35 +144,37 @@ public class ThirdPartyCPState
 			.toList();
 	}
 	
-	private <
+	public record LocationPopulator<
 		L extends ThirdPartyCPLocation,
 		S extends ThirdPartyCPLocationState,
-		F extends ThirdPartyCPLocationFactory<L, S, ?>>
-	List<ThirdPartyCPLocation> populateLocations(
-		final Class<F> factoryClazz,
-		final Project project,
-		final List<S> persistedStates
-	)
+		F extends ThirdPartyCPLocationFactory<L, S, ?>>(
+		Class<F> factoryClazz,
+		List<S> persistedStates)
 	{
-		if(persistedStates == null || persistedStates.isEmpty())
+		public List<ThirdPartyCPLocation> populate(
+			final Set<String> activeIds,
+			final Project project)
 		{
-			return List.of();
+			if(this.persistedStates == null || this.persistedStates.isEmpty())
+			{
+				return List.of();
+			}
+			final F factory = project.getService(this.factoryClazz);
+			return this.persistedStates.stream()
+				.filter(s -> activeIds.contains(s.id()))
+				.map(s -> {
+					try
+					{
+						return (ThirdPartyCPLocation)factory.fromPersisted(s);
+					}
+					catch(final Exception ex)
+					{
+						LOG.error("Encountered problem while populating location[id=" + s.id() + "]", ex);
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.toList();
 		}
-		final F factory = project.getService(factoryClazz);
-		return persistedStates.stream()
-			.filter(s -> this.activeIds.contains(s.id()))
-			.map(s -> {
-				try
-				{
-					return (ThirdPartyCPLocation)factory.fromPersisted(s);
-				}
-				catch(final Exception ex)
-				{
-					LOG.error("Encountered problem while populating location[id=" + s.id() + "]", ex);
-					return null;
-				}
-			})
-			.filter(Objects::nonNull)
-			.toList();
 	}
 }
