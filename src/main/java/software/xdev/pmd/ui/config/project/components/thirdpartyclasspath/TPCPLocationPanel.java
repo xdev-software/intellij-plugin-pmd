@@ -32,10 +32,10 @@ import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.JBUI;
 
+import software.xdev.pmd.maven.MavenId;
 import software.xdev.pmd.model.config.thirdpartycplocation.ThirdPartyCPLocation;
 import software.xdev.pmd.model.config.thirdpartycplocation.file.absolute.AbsoluteFileThirdPartyCPLocationFactory;
 import software.xdev.pmd.model.config.thirdpartycplocation.file.relative.RelativeFileThirdPartyCPLocationFactory;
-import software.xdev.pmd.model.config.thirdpartycplocation.maven.MavenId;
 import software.xdev.pmd.model.config.thirdpartycplocation.maven.MavenThirdPartyCPLocationFactory;
 
 
@@ -177,7 +177,7 @@ public class TPCPLocationPanel extends JPanel
 			&& this.isNotBlank(this.txtMavenArtifactArtifactId.getText())
 			&& this.isNotBlank(this.txtMavenArtifactVersion.getText()))
 		{
-			this.project.getService(MavenThirdPartyCPLocationFactory.class)
+			return this.project.getService(MavenThirdPartyCPLocationFactory.class)
 				.fromUI(new MavenId(
 					this.txtMavenArtifactGroupId.getText(),
 					this.txtMavenArtifactArtifactId.getText(),

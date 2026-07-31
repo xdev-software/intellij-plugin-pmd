@@ -17,7 +17,7 @@ public class TPCPLocationPanelManager
 	extends LocationPanelManager<TPCPLocationTableModel, TPCPLocationDialog, ThirdPartyCPLocation>
 {
 	private static final int TYPE_COL_MIN_WIDTH = 50;
-	private static final int TYPE_COL_MAX_WIDTH = 100;
+	private static final int TYPE_COL_MAX_WIDTH = 150;
 	
 	public TPCPLocationPanelManager(final Project project, final PMDConfigPanel pmdConfigPanel)
 	{
@@ -46,6 +46,8 @@ public class TPCPLocationPanelManager
 	private void tryMove(final int direction)
 	{
 		final int selectedRowIndex = this.locationTable.getSelectedRow();
-		this.locationModel.trySwap(selectedRowIndex, selectedRowIndex + direction);
+		final int otherIndex = selectedRowIndex + direction;
+		this.locationModel.trySwap(selectedRowIndex, otherIndex);
+		this.locationTable.setRowSelectionInterval(otherIndex, otherIndex);
 	}
 }

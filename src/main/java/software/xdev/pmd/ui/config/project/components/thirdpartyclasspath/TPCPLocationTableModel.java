@@ -12,15 +12,16 @@ public class TPCPLocationTableModel extends LocationTableModel<ThirdPartyCPLocat
 	private static final int COLUMN_LOCATION = 1;
 	private static final int NUMBER_OF_COLUMNS = 2;
 	
-	public void trySwap(final int index, final int otherIndex)
+	public boolean trySwap(final int index, final int otherIndex)
 	{
 		try
 		{
 			Collections.swap(this.locations, index, otherIndex);
+			return true;
 		}
 		catch(final IndexOutOfBoundsException ignored)
 		{
-			// Ignore
+			return false;
 		}
 	}
 	

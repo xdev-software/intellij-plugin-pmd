@@ -1,4 +1,4 @@
-package software.xdev.pmd.maven;
+package software.xdev.pmd.maven.ideamaven;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -103,6 +103,8 @@ public class PMDMavenAfterImportConfigurator implements MavenAfterImportConfigur
 		this.configureLocations(project, configElement, currentConfig, builder);
 		
 		this.configureExclusions(configElement, builder);
+		
+		// TODO Configure dependencies
 	}
 	
 	private void configureScanScope(final Element configElement, final PluginConfigurationBuilder builder)

@@ -1,4 +1,4 @@
-package software.xdev.pmd.model.config.thirdpartycplocation.maven;
+package software.xdev.pmd.maven;
 
 import java.nio.CharBuffer;
 import java.util.Objects;

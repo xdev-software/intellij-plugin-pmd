@@ -5,6 +5,8 @@ import java.nio.file.Path;
 import com.intellij.openapi.project.Project;
 
 import software.xdev.pmd.config.state.project.thirdpartycp.MavenThirdPartyCPLocationState;
+import software.xdev.pmd.maven.MavenId;
+import software.xdev.pmd.maven.resolve.MavenArtifactResolver;
 import software.xdev.pmd.model.config.thirdpartycplocation.ThirdPartyCPLocationFactory;
 
 
@@ -45,7 +47,6 @@ public class MavenThirdPartyCPLocationFactory
 	
 	protected Path resolveMavenArtifactId(final MavenId mavenId)
 	{
-		// TODO
-		return null;
+		return this.project.getService(MavenArtifactResolver.class).ensureResolved(mavenId);
 	}
 }

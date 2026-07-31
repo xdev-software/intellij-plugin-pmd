@@ -3,6 +3,7 @@ package software.xdev.pmd.model.config.thirdpartycplocation.maven;
 import java.net.URL;
 import java.util.Objects;
 
+import software.xdev.pmd.maven.MavenId;
 import software.xdev.pmd.model.config.thirdpartycplocation.ThirdPartyCPLocation;
 import software.xdev.pmd.model.config.thirdpartycplocation.ThirdPartyCPLocationType;
 

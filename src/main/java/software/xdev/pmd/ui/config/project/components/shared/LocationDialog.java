@@ -215,6 +215,7 @@ public abstract class LocationDialog<L, P extends JPanel> extends DialogWrapper
 					final L location = this.getLocationFromPanelAndValidate(this.locationPanel);
 					if(location == null)
 					{
+						this.commitButton.setEnabled(true);
 						return;
 					}
 					

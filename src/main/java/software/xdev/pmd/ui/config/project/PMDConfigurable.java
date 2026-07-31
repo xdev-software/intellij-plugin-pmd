@@ -37,12 +37,6 @@ public class PMDConfigurable implements Configurable
 	}
 	
 	@Override
-	public String getHelpTopic()
-	{
-		return null;
-	}
-	
-	@Override
 	public JComponent createComponent()
 	{
 		if(this.configPanel == null)
@@ -91,11 +85,5 @@ public class PMDConfigurable implements Configurable
 		}
 		
 		this.configPanel.showPluginConfiguration(this.pluginConfigurationManager.getCurrent());
-	}
-	
-	@Override
-	public void disposeUIResources()
-	{
-		// do nothing
 	}
 }
