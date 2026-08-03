@@ -21,12 +21,9 @@ import com.intellij.util.xmlb.annotations.Tag;
 import com.intellij.util.xmlb.annotations.XCollection;
 
 import software.xdev.pmd.config.PluginConfigurationManager;
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
-/**
- * A manager for CheckStyle module configuration.
- */
 @State(
 	name = ModuleConfigurationState.ID_MODULE_PLUGIN,
 	storages = {@Storage(StoragePathMacros.MODULE_FILE)}

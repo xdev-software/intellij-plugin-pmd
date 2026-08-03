@@ -1,3 +1,18 @@
+# 2.0.0
+* Add support 3rd Party Rules #10
+  * Allows to use custom PMD rules shipped in JAR files
+  * JARs can be located from project-relative files, absolute files or maven artifacts
+  * Maven artifacts
+    * Are downloaded and loaded automatically if not present
+    * The download tries to use the configured Maven mirror or can be completely overwritten in the settings
+* Make it possible to add (project-wide) exclusions #58
+* Add support for importing settings from Maven PMD plugin (best-effort)
+* Add shortcuts for jumping to previous/next result/violation
+* Add a "scan entire project" button #59
+* Only show "Enable automatic build" hint on startup when projects have PMD enabled
+* Refactor location store
+* Order bundled locations at the end
+
 # 1.1.4
 * Prevent rare NPE in module configuration UI #107
 

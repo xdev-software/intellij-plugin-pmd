@@ -9,15 +9,11 @@ import com.intellij.psi.PsiFile;
 
 import net.sourceforge.pmd.lang.Language;
 import net.sourceforge.pmd.lang.LanguageVersion;
+import software.xdev.pmd.util.ep.HasOrder;
 
 
-public interface LanguageVersionResolver
+public interface LanguageVersionResolver extends HasOrder
 {
-	default int order()
-	{
-		return 1000;
-	}
-	
 	@NotNull
 	Set<Language> supportedLanguages();
 	

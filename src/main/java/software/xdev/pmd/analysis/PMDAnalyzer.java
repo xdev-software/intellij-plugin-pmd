@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
 
+import com.intellij.concurrency.virtualThreads.IntelliJVirtualThreads;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.diagnostic.Logger;
@@ -43,28 +44,31 @@ import net.sourceforge.pmd.lang.rule.RuleSet;
 import net.sourceforge.pmd.reporting.FileAnalysisListener;
 import net.sourceforge.pmd.reporting.GlobalAnalysisListener;
 import net.sourceforge.pmd.reporting.Report;
+import software.xdev.pmd.analysis.validate.PsiFileValidator;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
 import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHashMap;
 import software.xdev.pmd.langversion.ManagedLanguageVersionResolver;
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
 public class PMDAnalyzer implements Disposable
 {
 	private static final Logger LOG = Logger.getInstance(PMDAnalyzer.class);
 	
-	private static final ExecutorService RULESET_LOADER_SERVICE = Executors.newThreadPerTaskExecutor(Thread.ofVirtual()
-		.name("RuleSetLoader", 0)
-		.factory());
+	@SuppressWarnings("UnstableApiUsage")
+	private static final ExecutorService RULESET_LOADER_SERVICE = Executors.newThreadPerTaskExecutor(
+		IntelliJVirtualThreads.ofVirtual()
+			.name("PMDX-RuleSetLoader-", 0)
+			.factory());
 	
 	private final Project project;
 	
 	private final Map<Optional<Module>, ReentrantLock> locks = new ConcurrentHashMap<>();
 	private final Map<Optional<Module>, CacheFile> cacheFiles = new ConcurrentHashMap<>();
 	// Reuse classloader when path is the same
-	private final Map<Set<String>, ClassLoader> cachedSdkLibAuxClassLoader =
-		new ConcurrentReferenceHashMap<>();
+	private final Map<ClassLoader, Map<Set<String>, ClassLoader>> baseClassLoaderCachedSdkLibAuxClassLoaders =
+		new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.WEAK);
 	
 	public PMDAnalyzer(final Project project)
 	{
@@ -132,11 +136,14 @@ public class PMDAnalyzer implements Disposable
 	{
 		final long startMs = System.currentTimeMillis();
 		
+		final ClassLoader baseClassLoader =
+			this.project.getService(ProjectScanClasspathManager.class).getClassLoader();
+		
 		// Load ruleset - if required - async in background
 		final CompletableFuture<List<RuleSet>> cfLoadRuleSetsAsync =
 			CompletableFuture.supplyAsync(
 				() -> configurationLocations.stream()
-					.map(ConfigurationLocation::getOrRefreshCachedRuleSet)
+					.map(configLoc -> configLoc.getOrRefreshCachedRuleSet(baseClassLoader))
 					.filter(Objects::nonNull)
 					.toList(),
 				RULESET_LOADER_SERVICE);
@@ -170,7 +177,7 @@ public class PMDAnalyzer implements Disposable
 			.map(List::of)
 			.orElseGet(() -> List.of(ModuleManager.getInstance(this.project).getModules()));
 		
-		pmdConfig.setClassLoader(this.classLoaderFor(modules));
+		pmdConfig.setClassLoader(this.classLoaderFor(modules, baseClassLoader));
 		
 		if(pluginConfiguration.showSuppressedWarnings())
 		{
@@ -267,12 +274,14 @@ public class PMDAnalyzer implements Disposable
 		final int totalFiles = filesToScan.size();
 		final AtomicInteger counter = new AtomicInteger(0);
 		
+		final PsiFileValidator psiFileValidator = this.project.getService(PsiFileValidator.class);
+		
 		final List<PsiFile> files = ReadAction.computeBlocking(() -> filesToScan.stream()
 			.filter(file -> {
 				progressIndicator.setFraction((double)counter.incrementAndGet() / totalFiles);
 				progressIndicator.setText2(file != null ? file.getName() : null);
 				
-				return PsiFileValidator.isScannable(
+				return psiFileValidator.isScannable(
 					file,
 					optModule,
 					pluginConfiguration);
@@ -318,7 +327,9 @@ public class PMDAnalyzer implements Disposable
 	}
 	
 	@NotNull
-	private ClasspathClassLoader classLoaderFor(final List<Module> modules)
+	private ClasspathClassLoader classLoaderFor(
+		final List<Module> modules,
+		final ClassLoader baseClassLoader)
 	{
 		final Set<String> fullClassPaths = this.classPathFor(modules, UnaryOperator.identity());
 		final Set<String> appClassPaths = this.classPathFor(modules, o -> o.withoutSdk().withoutLibraries());
@@ -326,9 +337,14 @@ public class PMDAnalyzer implements Disposable
 			.filter(s -> !appClassPaths.contains(s))
 			.collect(Collectors.toSet());
 		
+		final Map<Set<String>, ClassLoader> cachedSdkLibAuxClassLoaders =
+			this.baseClassLoaderCachedSdkLibAuxClassLoaders.computeIfAbsent(
+				baseClassLoader,
+				ignored -> new ConcurrentReferenceHashMap<>());
+		
 		return this.createClasspathClassLoader(
 			appClassPaths,
-			this.cachedSdkLibAuxClassLoader.computeIfAbsent(
+			cachedSdkLibAuxClassLoaders.computeIfAbsent(
 				sdkLibClassPaths,
 				paths -> this.createClasspathClassLoader(paths, PMDConfiguration.class.getClassLoader())));
 	}

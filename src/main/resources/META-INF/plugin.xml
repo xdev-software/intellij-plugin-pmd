@@ -20,24 +20,42 @@
 	<depends>com.intellij.modules.platform</depends>
 	<depends optional="true" config-file="plugin-java.xml">com.intellij.modules.java</depends>
 	<depends optional="true" config-file="plugin-kotlin.xml">org.jetbrains.kotlin</depends>
+	<depends optional="true" config-file="plugin-maven.xml">org.jetbrains.idea.maven</depends>
 
 	<extensions defaultExtensionNs="com.intellij">
 		<projectService serviceImplementation="software.xdev.pmd.analysis.PMDAnalyzer"/>
-		<projectService serviceImplementation="software.xdev.pmd.model.config.ConfigurationLocationFactory"/>
+		<projectService serviceImplementation="software.xdev.pmd.analysis.validate.PsiFileValidator"/>
+		<projectService serviceImplementation="software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocationFactory"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.ConfigurationLocationSource"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.PluginConfigurationManager"/>
+		<projectService serviceImplementation="software.xdev.pmd.analysis.ProjectScanClasspathManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.currentfile.CurrentFileAnalysisManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.state.project.ProjectConfigurationState"/>
+		<projectService
+				serviceImplementation="software.xdev.pmd.model.config.thirdpartycplocation.file.absolute.AbsoluteFileThirdPartyCPLocationFactory"/>
+		<projectService
+				serviceImplementation="software.xdev.pmd.model.config.thirdpartycplocation.file.relative.RelativeFileThirdPartyCPLocationFactory"/>
+		<projectService
+				serviceImplementation="software.xdev.pmd.model.config.thirdpartycplocation.maven.MavenThirdPartyCPLocationFactory"/>
 		<projectService serviceImplementation="software.xdev.pmd.markdown.RuleDescriptionDocMarkdownToHtmlService"/>
+		<projectService serviceImplementation="software.xdev.pmd.maven.resolve.MavenArtifactResolver"/>
+		<projectService serviceImplementation="software.xdev.pmd.maven.resolve.mirror.MavenMirrorUrlResolverService"/>
 		<projectService serviceImplementation="software.xdev.pmd.ui.toolwindow.analysis.report.ReportViewManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.util.io.ProjectFilePaths"/>
 		<projectService serviceImplementation="software.xdev.pmd.util.pmd.PMDLanguageFileTypeMapper"/>
+
+		<applicationService
+				serviceImplementation="software.xdev.pmd.config.state.application.ApplicationConfigurationState"/>
 
 		<postStartupActivity implementation="software.xdev.pmd.startup.PMDStartupConfiguration"/>
 
 		<projectConfigurable instance="software.xdev.pmd.ui.config.project.PMDConfigurable"
 							 parentId="tools"
 							 displayName="PMD"/>
+
+		<applicationConfigurable instance="software.xdev.pmd.ui.config.application.PMDApplicationConfigurable"
+		                         parentId="tools"
+		                         displayName="PMD Global Settings"/>
 
 		<moduleConfigurationEditorProvider
 				implementation="software.xdev.pmd.ui.config.module.PMDModuleConfigurationEditorProvider"/>
@@ -64,7 +82,7 @@
 				language="kotlin"
 				implementationClass="software.xdev.pmd.annotator.PMDExternalLanguageAnnotator"/>
 
-		<applicationService serviceImplementation="software.xdev.pmd.action.ActionFilesAnalyzer"/>
+		<applicationService serviceImplementation="software.xdev.pmd.action.analysis.ActionFilesAnalyzer"/>
 		<applicationService serviceImplementation="software.xdev.pmd.langversion.LanguageVersionResolverService"/>
 	</extensions>
 
@@ -79,12 +97,45 @@
 					text="Run Analysis"
 					icon="AllIcons.Actions.Find"/>
 		</group>
+
+
+		<action id="PreviousResultAction"
+		        class="software.xdev.pmd.action.analysispanel.JumpToPrevAnalysisPanelAction"
+		        text="Previous PMD Result (ToolWindow Only)"
+		        description="Navigate to previous PMD result (ToolWindow only)"
+		        use-shortcut-of="PreviousOccurence"
+		        popup="false">
+			<keyboard-shortcut first-keystroke="ctrl alt NUMPAD8" keymap="$default"/>
+		</action>
+
+		<action id="NextResultAction"
+		        class="software.xdev.pmd.action.analysispanel.JumpToNextAnalysisPanelAction"
+		        text="Next PMD Result (ToolWindow Only)"
+		        description="Navigate to next PMD result (ToolWindow only)"
+		        use-shortcut-of="NextOccurence"
+		        popup="false">
+			<keyboard-shortcut first-keystroke="ctrl alt NUMPAD2" keymap="$default"/>
+		</action>
+
+		<action id="PreviousResultGlobalAction"
+		        class="software.xdev.pmd.action.analysispanel.JumpToPrevGlobalAnalysisPanelAction"
+		        text="Previous PMD Result (Globally Active)"
+		        description="Navigate to previous PMD result (globally active)"
+		        popup="false">
+			<keyboard-shortcut first-keystroke="ctrl alt shift NUMPAD8" keymap="$default"/>
+			<keyboard-shortcut first-keystroke="ctrl alt NUMPAD9" keymap="$default"/>
+		</action>
+
+		<action id="NextResultGlobalAction"
+		        class="software.xdev.pmd.action.analysispanel.JumpToNextGlobalAnalysisPanelAction"
+		        text="Next PMD Result (Globally Active)"
+		        description="Navigate to next PMD result (globally active)"
+		        popup="false">
+			<keyboard-shortcut first-keystroke="ctrl alt shift NUMPAD2" keymap="$default"/>
+			<keyboard-shortcut first-keystroke="ctrl alt NUMPAD3" keymap="$default"/>
+		</action>
 	</actions>
 
-	<!-- Not detected when inside plugin-kotlin.xml -->
-	<extensions defaultExtensionNs="org.jetbrains.kotlin">
-		<supportsKotlinPluginMode supportsK2="true"/>
-	</extensions>
 	<extensionPoints>
 		<extensionPoint
 				name="languageResolver"
@@ -93,6 +144,10 @@
 		<extensionPoint
 				name="languageVersionResolver"
 				interface="software.xdev.pmd.langversion.LanguageVersionResolver"
+				dynamic="true"/>
+		<extensionPoint
+				name="mavenMirrorUrlResolver"
+				interface="software.xdev.pmd.maven.resolve.mirror.MavenMirrorUrlResolver"
 				dynamic="true"/>
 	</extensionPoints>
 </idea-plugin>

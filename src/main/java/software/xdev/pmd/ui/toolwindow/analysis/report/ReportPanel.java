@@ -9,7 +9,8 @@ import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 
-import software.xdev.pmd.action.ActionFilesAnalyzer;
+import software.xdev.pmd.action.analysis.ActionFilesAnalyzer;
+import software.xdev.pmd.action.analysis.ReplayableAnalysisInfo;
 import software.xdev.pmd.currentfile.CombinedPMDAnalysisResult;
 import software.xdev.pmd.ui.toolwindow.analysis.AnalysisPanel;
 import software.xdev.pmd.ui.toolwindow.nodehierarchy.TreeNodeHierarchyFactories;
@@ -20,14 +21,14 @@ public class ReportPanel extends AnalysisPanel
 	public ReportPanel(
 		final Project project,
 		final CombinedPMDAnalysisResult result,
-		final AnActionEvent triggeringEvent)
+		final ReplayableAnalysisInfo replayableAnalysisInfo)
 	{
 		super(project, TreeNodeHierarchyFactories.BY_RULE);
 		
-		if(triggeringEvent != null)
+		if(replayableAnalysisInfo != null)
 		{
 			this.toolbarActionGroup.add(new Separator());
-			this.toolbarActionGroup.add(new ReRunAction(triggeringEvent));
+			this.toolbarActionGroup.add(new ReRunAction(replayableAnalysisInfo));
 		}
 		
 		this.updateTree(result);
@@ -35,12 +36,12 @@ public class ReportPanel extends AnalysisPanel
 	
 	static class ReRunAction extends AnAction
 	{
-		private final AnActionEvent triggeringEvent;
+		private final ReplayableAnalysisInfo replayableAnalysisInfo;
 		
-		ReRunAction(final AnActionEvent triggeringEvent)
+		ReRunAction(final ReplayableAnalysisInfo replayableAnalysisInfo)
 		{
 			super("Rerun", "Rerun analysis", AllIcons.Actions.Rerun);
-			this.triggeringEvent = triggeringEvent;
+			this.replayableAnalysisInfo = replayableAnalysisInfo;
 		}
 		
 		@Override
@@ -48,7 +49,7 @@ public class ReportPanel extends AnalysisPanel
 		{
 			ApplicationManager.getApplication()
 				.getService(ActionFilesAnalyzer.class)
-				.analyzeFromAction(this.triggeringEvent);
+				.analyze(this.replayableAnalysisInfo);
 		}
 	}
 }

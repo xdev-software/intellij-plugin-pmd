@@ -17,6 +17,7 @@ import com.intellij.openapi.startup.ProjectActivity;
 
 import kotlin.Unit;
 import kotlin.coroutines.Continuation;
+import software.xdev.pmd.config.PluginConfigurationManager;
 import software.xdev.pmd.util.Notifications;
 
 
@@ -39,6 +40,12 @@ public class JavaCompilerAutoMakeStartupHint implements ProjectActivity
 			}
 		}
 		
+		// Do not show the warning when PMD is disabled
+		if(project.getService(PluginConfigurationManager.class).getCurrent().getActiveLocations().isEmpty())
+		{
+			return null;
+		}
+		
 		final CompilerWorkspaceConfiguration compilerWorkspaceConfig =
 			CompilerWorkspaceConfiguration.getInstance(project);
 		
@@ -54,7 +61,7 @@ public class JavaCompilerAutoMakeStartupHint implements ProjectActivity
 					!compilerWorkspaceConfig.allowAutoMakeWhileRunningApplication(),
 					"'Allow auto-make to start even if developed application is currently running' is disabled. "
 						+ " The classpath will not be updated when the app is running.",
-					"Enabled 'Allow auto-make to start even if developed application is currently running'",
+					"Enable 'Allow auto-make to start even if developed application is currently running'",
 					() -> AdvancedSettings.setBoolean("compiler.automake.allow.when.app.running", true)
 				))
 			.filter(Fix::required)

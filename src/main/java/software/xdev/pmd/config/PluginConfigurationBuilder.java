@@ -1,6 +1,8 @@
 package software.xdev.pmd.config;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -11,9 +13,11 @@ import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.project.Project;
 
-import software.xdev.pmd.model.config.ConfigurationLocation;
-import software.xdev.pmd.model.config.ConfigurationLocationFactory;
-import software.xdev.pmd.model.config.bundled.BundledConfig;
+import software.xdev.pmd.config.plugin.PatternContainer;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocationFactory;
+import software.xdev.pmd.model.config.rulesetlocation.bundled.BundledConfig;
+import software.xdev.pmd.model.config.thirdpartycplocation.ThirdPartyCPLocation;
 import software.xdev.pmd.model.scope.ScanScope;
 
 
@@ -23,19 +27,25 @@ public final class PluginConfigurationBuilder
 	private boolean showSuppressedWarnings;
 	private boolean useCacheFile;
 	private ScanScope scanScope;
+	private SortedSet<PatternContainer> projectRelativeFileExclusions;
 	private SortedSet<ConfigurationLocation> locations;
 	private SortedSet<String> activeLocationIds;
+	private List<ThirdPartyCPLocation> thirdPartyCPLocations;
+	private boolean importSettingsFromMaven;
 	
 	public PluginConfigurationBuilder(final Project project)
 	{
 		this.showSuppressedWarnings = true;
 		this.useCacheFile = true;
 		this.scanScope = ScanScope.getDefaultValue();
+		this.projectRelativeFileExclusions = null;
 		this.locations = BundledConfig.getAllBundledConfigs()
 			.stream()
 			.map(bc -> configurationLocationFactory(project).create(bc, project))
 			.collect(Collectors.toCollection(TreeSet::new));
-		this.activeLocationIds = Collections.emptySortedSet();
+		this.activeLocationIds = null;
+		this.thirdPartyCPLocations = null;
+		this.importSettingsFromMaven = false;
 	}
 	
 	public PluginConfigurationBuilder(final PluginConfiguration copyFrom)
@@ -44,8 +54,11 @@ public final class PluginConfigurationBuilder
 		this.showSuppressedWarnings = copyFrom.showSuppressedWarnings();
 		this.useCacheFile = copyFrom.useCacheFile();
 		this.scanScope = copyFrom.scanScope();
+		this.projectRelativeFileExclusions = copyFrom.projectRelativeFileExclusions();
 		this.locations = copyFrom.locations();
 		this.activeLocationIds = copyFrom.activeLocationIds();
+		this.thirdPartyCPLocations = copyFrom.thirdPartyCPLocations();
+		this.importSettingsFromMaven = copyFrom.importSettingsFromMaven();
 	}
 	
 	public static PluginConfiguration copy(@NotNull final PluginConfiguration source)
@@ -80,6 +93,32 @@ public final class PluginConfigurationBuilder
 		return this;
 	}
 	
+	public PluginConfigurationBuilder withScanScope(@NotNull final ScanScope newScanScope)
+	{
+		this.scanScope = newScanScope;
+		return this;
+	}
+	
+	public PluginConfigurationBuilder withProjectRelativeFileExclusionsRaw(
+		final Collection<String> projectRelativeFileExclusions)
+	{
+		if(projectRelativeFileExclusions == null)
+		{
+			return this.withProjectRelativeFileExclusions(null);
+		}
+		return this.withProjectRelativeFileExclusions(projectRelativeFileExclusions.stream()
+			.map(PatternContainer::tryCreate)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toCollection(TreeSet::new)));
+	}
+	
+	public PluginConfigurationBuilder withProjectRelativeFileExclusions(
+		final SortedSet<PatternContainer> projectRelativeFileExclusions)
+	{
+		this.projectRelativeFileExclusions = projectRelativeFileExclusions;
+		return this;
+	}
+	
 	public PluginConfigurationBuilder withActiveLocationIds(@NotNull final SortedSet<String> newActiveLocationIds)
 	{
 		this.activeLocationIds = newActiveLocationIds;
@@ -92,9 +131,15 @@ public final class PluginConfigurationBuilder
 		return this;
 	}
 	
-	public PluginConfigurationBuilder withScanScope(@NotNull final ScanScope newScanScope)
+	public PluginConfigurationBuilder withThirdPartyCPLocations(final List<ThirdPartyCPLocation> thirdPartyCPLocations)
 	{
-		this.scanScope = newScanScope;
+		this.thirdPartyCPLocations = thirdPartyCPLocations;
+		return this;
+	}
+	
+	public PluginConfigurationBuilder withImportSettingFromMaven(final boolean importSettingsFromMaven)
+	{
+		this.importSettingsFromMaven = importSettingsFromMaven;
 		return this;
 	}
 	
@@ -105,12 +150,17 @@ public final class PluginConfigurationBuilder
 			this.showSuppressedWarnings,
 			this.useCacheFile,
 			this.scanScope,
+			Collections.unmodifiableSortedSet(Objects.requireNonNullElseGet(
+				this.projectRelativeFileExclusions,
+				TreeSet::new)),
 			Collections.unmodifiableSortedSet(Objects.requireNonNullElseGet(this.locations, TreeSet::new)),
 			this.activeLocationIds != null
 				? this.activeLocationIds.stream()
 				.filter(Objects::nonNull)
 				.collect(Collectors.toCollection(TreeSet::new))
 				: new TreeSet<>(),
+			Collections.unmodifiableList(Objects.requireNonNullElseGet(this.thirdPartyCPLocations, List::of)),
+			this.importSettingsFromMaven,
 			new PluginConfiguration.Cache());
 	}
 	
