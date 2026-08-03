@@ -12,7 +12,7 @@ import com.intellij.util.xmlb.annotations.Tag;
 
 @State(
 	name = "PMD-X-Application",
-	storages = {@Storage(value = "pmd-x-app.xml", roamingType = RoamingType.DISABLED)}
+	storages = {@Storage(value = "pmd-x-app.xml", roamingType = RoamingType.LOCAL)}
 )
 public class ApplicationConfigurationState
 	implements PersistentStateComponent<ApplicationConfigurationState.ApplicationSettings>

@@ -47,8 +47,8 @@ public class PMDApplicationConfigurable implements Configurable
 		this.reset();
 		
 		final JTextArea taDesc = new JTextArea("""
-			This URL will be used to download maven artifact versions instead of https://repo.maven.apache.org/maven2/.
-			It takes precedence over a mirror auto-detected from Mavens settings.xml.
+			This URL will be used to download maven artifacts instead of https://repo.maven.apache.org/maven2/.
+			It takes precedence over a mirror auto-detected from settings.xml.
 			Only needed if no usable settings.xml is present or a setup that is not detected properly.
 			""");
 		taDesc.setFont(UIManager.getFont("Label.font"));
@@ -60,7 +60,7 @@ public class PMDApplicationConfigurable implements Configurable
 		return FormBuilder.createFormBuilder()
 			.addComponent(taDesc)
 			.addLabeledComponent(
-				"Artifact download mirror override:",
+				"Artifact download override:",
 				this.txtArtifactRepositoryBaseUrlOverride)
 			.addComponentFillVertically(new JPanel(), 0)
 			.getPanel();
