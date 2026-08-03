@@ -12,9 +12,9 @@ A plugin for IntelliJ that provides code analysis and highlighting with <a href=
 * Run bulk analysis of files by right clicking the project menu <br/> <img src="./assets/run-bulk-analysis.avif"> <br/> <img src="./assets/toolwindow-report.avif">
 * Currently Java and Kotlin are supported, Language versions are automatically detected
 * Include / exclude files with regex support
-* Use JARs for custom 3rd party rules
-  * Can be automatically downloaded from Maven
-* Configuration import from Maven projects (best-effort)
+* Use JARs for custom 3rd party rules <br/> <img src="./assets/custom-rule.avif">
+  * JARs can automatically be downloaded from Maven Central
+* Configuration can be imported from Maven projects (best-effort)
 
 ## Usage
 1. Install the plugin and open a project
