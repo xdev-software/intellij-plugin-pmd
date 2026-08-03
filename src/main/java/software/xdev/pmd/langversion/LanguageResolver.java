@@ -6,15 +6,11 @@ import org.jetbrains.annotations.Nullable;
 import com.intellij.psi.PsiFile;
 
 import net.sourceforge.pmd.lang.Language;
+import software.xdev.pmd.util.ep.HasOrder;
 
 
-public interface LanguageResolver
+public interface LanguageResolver extends HasOrder
 {
-	default int order()
-	{
-		return 1000;
-	}
-	
 	boolean isFileSupported(@NotNull PsiFile file);
 	
 	@Nullable
