@@ -46,24 +46,28 @@ public class PMDApplicationConfigurable implements Configurable
 		
 		this.reset();
 		
-		final JTextArea taDesc = new JTextArea("""
-			This URL will be used to download maven artifacts instead of https://repo.maven.apache.org/maven2/.
-			It takes precedence over a mirror auto-detected from settings.xml.
-			Only needed if no usable settings.xml is present or a setup that is not detected properly.
-			""");
-		taDesc.setFont(UIManager.getFont("Label.font"));
-		taDesc.setEditable(false);
-		taDesc.setOpaque(false);
-		taDesc.setWrapStyleWord(true);
-		taDesc.setLineWrap(true);
-		
 		return FormBuilder.createFormBuilder()
-			.addComponent(taDesc)
+			.addComponent(this.createInfoBoxTa("""
+				This URL will be used to download maven artifacts instead of https://repo.maven.apache.org/maven2/.
+				It takes precedence over a mirror auto-detected from settings.xml.
+				Only needed if no usable settings.xml is present or a setup that is not detected properly.
+				"""))
 			.addLabeledComponent(
 				"Artifact download override:",
 				this.txtArtifactRepositoryBaseUrlOverride)
 			.addComponentFillVertically(new JPanel(), 0)
 			.getPanel();
+	}
+	
+	private JTextArea createInfoBoxTa(final String text)
+	{
+		final JTextArea ta = new JTextArea(text);
+		ta.setFont(UIManager.getFont("Label.font"));
+		ta.setEditable(false);
+		ta.setOpaque(false);
+		ta.setWrapStyleWord(true);
+		ta.setLineWrap(true);
+		return ta;
 	}
 	
 	@Override

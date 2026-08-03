@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.RoamingType;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.annotations.Tag;
@@ -12,7 +11,7 @@ import com.intellij.util.xmlb.annotations.Tag;
 
 @State(
 	name = "PMD-X-Application",
-	storages = {@Storage(value = "pmd-x-app.xml", roamingType = RoamingType.LOCAL)}
+	storages = {@Storage(value = "pmd-x-app.xml")}
 )
 public class ApplicationConfigurationState
 	implements PersistentStateComponent<ApplicationConfigurationState.ApplicationSettings>
