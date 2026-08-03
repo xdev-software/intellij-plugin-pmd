@@ -33,6 +33,7 @@ public class IDEAMavenMirrorUrlResolver implements MavenMirrorUrlResolver
 			// Somehow some static methods of MavenUtil were converted to instance methods
 			// in https://github.com/JetBrains/intellij-community/commit/cb47b90276da8ac0e9d51b635ee44596f42711f2
 			// therefore making them no longer accessible because the class is now private
+			// Problem reported in https://youtrack.jetbrains.com/issue/IDEA-392283
 			.map(path -> getMirroredUrl(path, DEFAULT_CENTRAL_REPOSITORY_URL, "central"))
 			.filter(s -> !DEFAULT_CENTRAL_REPOSITORY_URL.equals(s));
 	}
