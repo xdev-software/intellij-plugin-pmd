@@ -99,7 +99,7 @@
 		</group>
 
 
-		<action id="PreviousResultAction"
+		<action id="PreviousPMDResultAction"
 		        class="software.xdev.pmd.action.analysispanel.JumpToPrevAnalysisPanelAction"
 		        text="Previous PMD Result (ToolWindow Only)"
 		        description="Navigate to previous PMD result (ToolWindow only)"
@@ -108,7 +108,7 @@
 			<keyboard-shortcut first-keystroke="ctrl alt NUMPAD8" keymap="$default"/>
 		</action>
 
-		<action id="NextResultAction"
+		<action id="NextPMDResultAction"
 		        class="software.xdev.pmd.action.analysispanel.JumpToNextAnalysisPanelAction"
 		        text="Next PMD Result (ToolWindow Only)"
 		        description="Navigate to next PMD result (ToolWindow only)"
@@ -117,7 +117,7 @@
 			<keyboard-shortcut first-keystroke="ctrl alt NUMPAD2" keymap="$default"/>
 		</action>
 
-		<action id="PreviousResultGlobalAction"
+		<action id="PreviousPMDResultGlobalAction"
 		        class="software.xdev.pmd.action.analysispanel.JumpToPrevGlobalAnalysisPanelAction"
 		        text="Previous PMD Result (Globally Active)"
 		        description="Navigate to previous PMD result (globally active)"
@@ -126,7 +126,7 @@
 			<keyboard-shortcut first-keystroke="ctrl alt NUMPAD9" keymap="$default"/>
 		</action>
 
-		<action id="NextResultGlobalAction"
+		<action id="NextPMDResultGlobalAction"
 		        class="software.xdev.pmd.action.analysispanel.JumpToNextGlobalAnalysisPanelAction"
 		        text="Next PMD Result (Globally Active)"
 		        description="Navigate to next PMD result (globally active)"
