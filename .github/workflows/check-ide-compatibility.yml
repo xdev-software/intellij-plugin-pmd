@@ -9,6 +9,9 @@ jobs:
   check-ide-compatibility:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: read
+      issues: write
     steps:
     - name: Free up disk space
       run: |
@@ -39,6 +42,11 @@ jobs:
           echo "Clearing $p"
           sudo rm -rf $p || true
         done
+        sudo df -h
+
+        echo "Clearing docker images"
+        docker system prune -af || true
+
         sudo df -h
 
     - uses: actions/checkout@v7
