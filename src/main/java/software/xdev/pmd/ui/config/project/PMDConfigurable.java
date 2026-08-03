@@ -1,7 +1,6 @@
 package software.xdev.pmd.ui.config.project;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,9 +24,7 @@ public class PMDConfigurable implements Configurable
 	PMDConfigurable(@NotNull final Project project)
 	{
 		this.pluginConfigurationManager = project.getService(PluginConfigurationManager.class);
-		
-		// Default project (start screen) is not supported!
-		this.configPanel = !project.isDefault() ? new PMDConfigPanel(project) : null;
+		this.configPanel = new PMDConfigPanel(project);
 	}
 	
 	@Override
@@ -39,11 +36,6 @@ public class PMDConfigurable implements Configurable
 	@Override
 	public JComponent createComponent()
 	{
-		if(this.configPanel == null)
-		{
-			return new JLabel("Project configuration not available");
-		}
-		
 		this.reset();
 		return this.configPanel;
 	}

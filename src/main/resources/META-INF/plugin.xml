@@ -50,6 +50,7 @@
 		<postStartupActivity implementation="software.xdev.pmd.startup.PMDStartupConfiguration"/>
 
 		<projectConfigurable instance="software.xdev.pmd.ui.config.project.PMDConfigurable"
+		                     nonDefaultProject="true"
 							 parentId="tools"
 							 displayName="PMD"/>
 
