@@ -1,0 +1,66 @@
+# 2.0.1
+* Fix Action-ID overlap with other plugins
+
+# 2.0.0
+* Add support 3rd Party Rules #10
+  * Allows to use custom PMD rules shipped in JAR files
+  * JARs can be located from project-relative files, absolute files or maven artifacts
+  * Maven artifacts
+    * Are downloaded and loaded automatically if not present
+    * The download tries to use the configured Maven mirror or can be completely overwritten in the settings
+* Make it possible to add (project-wide) exclusions #58
+* Add support for importing settings from Maven PMD plugin (best-effort)
+* Add shortcuts for jumping to previous/next result/violation
+* Add a "scan entire project" button #59
+* Only show "Enable automatic build" hint on startup when projects have PMD enabled
+* Refactor location store
+* Order bundled locations at the end
+
+# 1.1.4
+* Prevent rare NPE in module configuration UI #107
+
+# 1.1.3
+* Updated PMD to 7.26.0
+
+# 1.1.2
+* Fixed rare `InvalidVirtualFileAccessException` that might happen when switching projects as a invalid file could get selected #87
+* Update PMD to 7.25.0
+
+# 1.1.1
+* Improve performance by using `ConcurrentReferenceHashMap` instead of `synchronized`
+
+# 1.1.0
+* Update PMD to 7.24.0
+* Dropped support for IntelliJ IDEA < 261 to fix deprecations
+
+# 1.0.8
+* Correctly handle missing/removal of built-in configuration
+* Fix crash on non Java-IDEs #67
+
+# 1.0.7
+* Update PMD to 7.23.0
+
+# 1.0.6
+* Correctly handle control flow exceptions in "doAnnotate"
+
+# 1.0.5
+* Update PMD to 7.22.0
+
+# 1.0.4
+* Update PMD to 7.21.0
+
+# 1.0.3
+* Update PMD to 7.20.0
+
+# 1.0.2
+* Update PMD to 7.19.0
+
+# 1.0.1
+* Workaround inaccurate analysis due to outdated classpath #6
+* Add some additional details why an analysis was not executed
+
+# 1.0.0
+_Initial release_
+
+* Bundled PMD version: 7.18.0
+* Support for Java and Kotlin
