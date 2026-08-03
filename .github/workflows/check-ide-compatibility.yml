@@ -44,11 +44,6 @@ jobs:
         done
         sudo df -h
 
-        echo "Clearing docker images"
-        docker system prune -af || true
-
-        sudo df -h
-
     - uses: actions/checkout@v7
 
     - name: Set up JDK
