@@ -8,10 +8,6 @@ import com.intellij.openapi.project.Project;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
 
 
-/**
- * A configuration file on a mounted file system which will always be referred to by a path relative to the project
- * path.
- */
 public class RelativeFileConfigurationLocation extends FileConfigurationLocation
 {
 	private static final String LEGACY_IDEA_PROJECT_DIR = "$PROJECT_DIR$";

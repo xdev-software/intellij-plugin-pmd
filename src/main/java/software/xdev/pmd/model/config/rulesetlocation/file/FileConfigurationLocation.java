@@ -20,9 +20,6 @@ import software.xdev.pmd.model.config.rulesetlocation.file.pmd.LoadFromStringRul
 import software.xdev.pmd.util.io.ProjectFilePaths;
 
 
-/**
- * A configuration file on a mounted file system.
- */
 public class FileConfigurationLocation extends ConfigurationLocation
 {
 	protected long nextReloadRuleSetMs;
@@ -103,7 +100,7 @@ public class FileConfigurationLocation extends ConfigurationLocation
 	{
 		this.nextReloadRuleSetMs = System.currentTimeMillis() + 10 * 1000;
 		
-		// Do this here due to IOEx
+		// Do this here due to IOEx in Lambda
 		final String rulesetXmlContent = new String(Files.readAllBytes(this.locationPath));
 		final RuleSet ruleSet = DefaultRuleSetLoaderCreator.createAndLoad(rsl ->
 			LoadFromStringRuleSetLoaderWorkaround.loadFromString(
