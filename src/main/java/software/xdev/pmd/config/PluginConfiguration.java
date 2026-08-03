@@ -1,6 +1,7 @@
 package software.xdev.pmd.config;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
@@ -11,7 +12,9 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.config.plugin.PatternContainer;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
+import software.xdev.pmd.model.config.thirdpartycplocation.ThirdPartyCPLocation;
 import software.xdev.pmd.model.scope.ScanScope;
 
 
@@ -27,6 +30,7 @@ public record PluginConfiguration(
 	SortedSet<PatternContainer> projectRelativeFileExclusions,
 	SortedSet<ConfigurationLocation> locations,
 	SortedSet<String> activeLocationIds,
+	List<ThirdPartyCPLocation> thirdPartyCPLocations,
 	boolean importSettingsFromMaven,
 	Cache cache
 )

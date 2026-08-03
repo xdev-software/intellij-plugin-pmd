@@ -18,35 +18,19 @@ import com.intellij.psi.PsiFile;
 
 import net.sourceforge.pmd.lang.Language;
 import net.sourceforge.pmd.lang.LanguageVersion;
+import software.xdev.pmd.util.ep.CachedOrderedExtensionPointContainer;
 
 
 public class LanguageVersionResolverService
 {
-	private final ExtensionPointName<LanguageResolver> epLang =
-		ExtensionPointName.create("software.xdev.pmd.languageResolver");
+	private final CachedOrderedExtensionPointContainer<LanguageResolver> langContainer
+		= new CachedOrderedExtensionPointContainer<>("languageResolver");
 	
 	private final ExtensionPointName<LanguageVersionResolver> epVersion =
 		ExtensionPointName.create("software.xdev.pmd.languageVersionResolver");
 	
-	private List<LanguageResolver> lastSeenLangExtensions;
-	private List<LanguageResolver> cachedOrderedLangResolvers;
-	
 	private List<LanguageVersionResolver> lastSeenVersionExtensions;
 	private Map<Language, List<LanguageVersionResolver>> cachedOrderedVersionResolvers;
-	
-	private List<LanguageResolver> orderedLangResolvers()
-	{
-		final List<LanguageResolver> extensions = this.epLang.getExtensionList();
-		if(this.cachedOrderedLangResolvers == null || extensions != this.lastSeenLangExtensions)
-		{
-			this.cachedOrderedLangResolvers = extensions
-				.stream()
-				.sorted(Comparator.comparingInt(LanguageResolver::order))
-				.toList();
-			this.lastSeenLangExtensions = extensions;
-		}
-		return this.cachedOrderedLangResolvers;
-	}
 	
 	private Map<Language, List<LanguageVersionResolver>> orderedVersionResolvers()
 	{
@@ -74,7 +58,7 @@ public class LanguageVersionResolverService
 	
 	public Optional<Language> resolveLanguage(@NotNull final PsiFile file)
 	{
-		return this.orderedLangResolvers()
+		return this.langContainer.orderedEps()
 			.stream()
 			.map(r -> r.resolveLanguage(file))
 			.filter(Objects::nonNull)
@@ -108,6 +92,6 @@ public class LanguageVersionResolverService
 	
 	public boolean isFileSupportedByAnyResolver(final PsiFile file)
 	{
-		return this.orderedLangResolvers().stream().anyMatch(r -> r.isFileSupported(file));
+		return this.langContainer.orderedEps().stream().anyMatch(r -> r.isFileSupported(file));
 	}
 }

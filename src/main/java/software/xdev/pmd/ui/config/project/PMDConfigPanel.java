@@ -1,7 +1,6 @@
 package software.xdev.pmd.ui.config.project;
 
 import java.awt.BorderLayout;
-import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -14,34 +13,25 @@ import java.util.stream.Collectors;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import javax.swing.table.TableColumn;
 
 import org.jetbrains.annotations.NotNull;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.openapi.ui.Messages;
-import com.intellij.ui.AnActionButton;
-import com.intellij.ui.AnActionButtonRunnable;
-import com.intellij.ui.AnActionButtonUpdater;
-import com.intellij.ui.TitledSeparator;
-import com.intellij.ui.ToolbarDecorator;
 import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.panels.HorizontalLayout;
-import com.intellij.ui.table.JBTable;
 import com.intellij.util.ui.JBUI;
 
-import software.xdev.pmd.config.PatternContainer;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.config.plugin.PatternContainer;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 import software.xdev.pmd.model.scope.ScanScope;
+import software.xdev.pmd.ui.config.project.components.exclusion.FileMaskPanelManager;
+import software.xdev.pmd.ui.config.project.components.rulesetlocation.RSLocationPanelManager;
+import software.xdev.pmd.ui.config.project.components.thirdpartyclasspath.TPCPLocationPanelManager;
 
 
 /**
@@ -51,11 +41,6 @@ import software.xdev.pmd.model.scope.ScanScope;
 public class PMDConfigPanel extends JPanel
 {
 	private static final Insets COMPONENT_INSETS = JBUI.insets(4);
-	private static final int ACTIVE_COL_MIN_WIDTH = 40;
-	private static final int ACTIVE_COL_MAX_WIDTH = 55;
-	private static final int DESC_COL_MIN_WIDTH = 100;
-	private static final int DESC_COL_MAX_WIDTH = 200;
-	private static final Dimension DECORATOR_DIMENSIONS = new Dimension(300, 50);
 	
 	private final JLabel lblScopeDropdown = new JLabel("Scan Scope:");
 	private final ComboBox<ScanScope> cbScope = new ComboBox<>(ScanScope.values());
@@ -64,10 +49,9 @@ public class PMDConfigPanel extends JPanel
 	private final JBCheckBox chbxUseCacheFile = new JBCheckBox("Use cache file");
 	private final JBCheckBox chbxImportSettingsFromMaven = new JBCheckBox("Import settings from Maven");
 	
-	private final LocationTableModel locationModel = new LocationTableModel();
-	private final JBTable locationTable = new JBTable(this.locationModel);
+	private final RSLocationPanelManager rsLocationPanelManager;
 	
-	private final FileMaskPanelContainer exclusionPanelContainer = new FileMaskPanelContainer(
+	private final FileMaskPanelManager exclusionPanelManager = new FileMaskPanelManager(
 		"Exclusions",
 		"Nothing excluded",
 		"Add exclusion",
@@ -86,13 +70,18 @@ public class PMDConfigPanel extends JPanel
 			</body></html>"""
 	);
 	
-	private final Project project;
+	private final TPCPLocationPanelManager tpcpLocationPanelManager;
+	
+	final Project project;
 	
 	public PMDConfigPanel(@NotNull final Project project)
 	{
 		super(new BorderLayout());
 		
 		this.project = project;
+		
+		this.rsLocationPanelManager = new RSLocationPanelManager(project, this);
+		this.tpcpLocationPanelManager = new TPCPLocationPanelManager(project, this);
 		
 		this.initialise();
 	}
@@ -131,13 +120,26 @@ public class PMDConfigPanel extends JPanel
 					+ "It's recommended to only enable this when importing changed configuration."),
 			this.createDefaultGridBagConstraints(0, 2, 2));
 		
-		configFilePanel.add(
-			this.buildRuleFilePanel(),
-			this.createFullWidthGridBagConstraints(3, 1.0));
+		this.addPanel(
+			configFilePanel,
+			this.rsLocationPanelManager.panel(),
+			3,
+			1.0,
+			250);
 		
-		configFilePanel.add(
-			this.exclusionPanelContainer.getPanel(),
-			this.createFullWidthGridBagConstraints(4, 0.1));
+		this.addPanel(
+			configFilePanel,
+			this.exclusionPanelManager.getPanel(),
+			4,
+			0.1,
+			130);
+		
+		this.addPanel(
+			configFilePanel,
+			this.tpcpLocationPanelManager.panel(),
+			5,
+			0.1,
+			140);
 		
 		return configFilePanel;
 	}
@@ -186,47 +188,18 @@ public class PMDConfigPanel extends JPanel
 			0);
 	}
 	
-	private JPanel buildRuleFilePanel()
+	private void addPanel(
+		final JPanel panel,
+		final JPanel panelToAdd,
+		final int gridY,
+		final double weighty,
+		final int preferredHeight
+	)
 	{
-		this.setColumnWith(this.locationTable, 0, ACTIVE_COL_MIN_WIDTH, ACTIVE_COL_MAX_WIDTH, ACTIVE_COL_MAX_WIDTH);
-		this.setColumnWith(this.locationTable, 1, DESC_COL_MIN_WIDTH, DESC_COL_MAX_WIDTH, DESC_COL_MAX_WIDTH);
-		this.locationTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
-		this.locationTable.setStriped(true);
-		this.locationTable.getTableHeader().setReorderingAllowed(false);
-		
-		final ToolbarDecorator tableDecorator = ToolbarDecorator.createDecorator(this.locationTable);
-		tableDecorator.setAddAction(new AddLocationAction());
-		tableDecorator.setRemoveAction(new RemoveLocationAction());
-		tableDecorator.setEditActionUpdater(new EnableWhenSelected());
-		tableDecorator.setRemoveActionUpdater(new EnableWhenSelectedAndRemovable());
-		tableDecorator.setPreferredSize(DECORATOR_DIMENSIONS);
-		
-		final JPanel container = new JPanel(new BorderLayout());
-		container.add(new TitledSeparator("Configuration File"), BorderLayout.NORTH);
-		container.add(tableDecorator.createPanel(), BorderLayout.CENTER);
-		final JLabel infoLabel = new JLabel(
-			"The active rules file may be overridden, or deactivated, by module settings.",
-			AllIcons.General.Information, SwingConstants.LEFT);
-		infoLabel.setBorder(JBUI.Borders.empty(8, 0, 4, 0));
-		container.add(infoLabel, BorderLayout.SOUTH);
-		return container;
-	}
-	
-	private void setColumnWith(
-		final JTable table,
-		final int columnIndex,
-		final int minSize,
-		final int preferredSize,
-		final Integer maxSize)
-	{
-		final TableColumn column = table.getColumnModel().getColumn(columnIndex);
-		column.setMinWidth(minSize);
-		column.setWidth(preferredSize);
-		column.setPreferredWidth(preferredSize);
-		if(maxSize != null)
-		{
-			column.setMaxWidth(maxSize);
-		}
+		panelToAdd.setPreferredSize(new Dimension(Integer.MAX_VALUE, preferredHeight));
+		panel.add(
+			panelToAdd,
+			this.createFullWidthGridBagConstraints(gridY, weighty));
 	}
 	
 	public void showPluginConfiguration(@NotNull final PluginConfiguration pluginConfig)
@@ -236,11 +209,12 @@ public class PMDConfigPanel extends JPanel
 		this.chbxShowSuppressedWarnings.setSelected(pluginConfig.showSuppressedWarnings());
 		this.chbxUseCacheFile.setSelected(pluginConfig.useCacheFile());
 		this.chbxImportSettingsFromMaven.setSelected(pluginConfig.importSettingsFromMaven());
-		this.locationModel.setLocations(new ArrayList<>(pluginConfig.locations()));
-		this.locationModel.setActiveLocations(pluginConfig.getActiveLocations());
-		this.exclusionPanelContainer.update(pluginConfig.projectRelativeFileExclusions().stream()
+		this.rsLocationPanelManager.locationModel().setLocations(new ArrayList<>(pluginConfig.locations()));
+		this.rsLocationPanelManager.locationModel().setActiveLocations(pluginConfig.getActiveLocations());
+		this.exclusionPanelManager.update(pluginConfig.projectRelativeFileExclusions().stream()
 			.map(PatternContainer::patternString)
 			.collect(Collectors.toCollection(TreeSet::new)));
+		this.tpcpLocationPanelManager.locationModel().setLocations(pluginConfig.thirdPartyCPLocations());
 	}
 	
 	public PluginConfiguration getPluginConfiguration()
@@ -252,88 +226,13 @@ public class PMDConfigPanel extends JPanel
 			.withScanScope(Objects.requireNonNullElseGet(
 				(ScanScope)this.cbScope.getSelectedItem(),
 				ScanScope::getDefaultValue))
-			.withProjectRelativeFileExclusionsRaw(this.exclusionPanelContainer.getPatterns())
-			.withLocations(new TreeSet<>(this.locationModel.getLocations()))
-			.withActiveLocationIds(this.locationModel.getActiveLocations().stream()
+			.withProjectRelativeFileExclusionsRaw(this.exclusionPanelManager.getPatterns())
+			.withLocations(new TreeSet<>(this.rsLocationPanelManager.locationModel().getLocations()))
+			.withActiveLocationIds(this.rsLocationPanelManager.locationModel().getActiveLocations().stream()
 				.map(ConfigurationLocation::getId)
 				.collect(Collectors.toCollection(TreeSet::new)))
+			.withThirdPartyCPLocations(this.tpcpLocationPanelManager.locationModel().getLocations())
 			.withImportSettingFromMaven(this.chbxImportSettingsFromMaven.isSelected())
 			.build();
-	}
-	
-	/**
-	 * Process the addition of a configuration location.
-	 */
-	private final class AddLocationAction implements AnActionButtonRunnable
-	{
-		@Override
-		public void run(final AnActionButton anActionButton)
-		{
-			final LocationDialog dialogue = new LocationDialog(
-				PMDConfigPanel.this.parentDialogue(),
-				PMDConfigPanel.this.project);
-			
-			if(dialogue.showAndGet())
-			{
-				final ConfigurationLocation newLocation = dialogue.getConfigurationLocation();
-				if(PMDConfigPanel.this.locationModel.getLocations().contains(newLocation))
-				{
-					Messages.showWarningDialog(
-						PMDConfigPanel.this.project,
-						"This location has already been added",
-						"Duplicate Location");
-				}
-				else
-				{
-					PMDConfigPanel.this.locationModel.addLocation(dialogue.getConfigurationLocation());
-				}
-			}
-		}
-	}
-	
-	private Dialog parentDialogue()
-	{
-		return (Dialog)SwingUtilities.getAncestorOfClass(Dialog.class, PMDConfigPanel.this);
-	}
-	
-	/**
-	 * Process the removal of a configuration location.
-	 */
-	private final class RemoveLocationAction implements AnActionButtonRunnable
-	{
-		@Override
-		public void run(final AnActionButton anActionButton)
-		{
-			final int selectedIndex = PMDConfigPanel.this.locationTable.getSelectedRow();
-			if(selectedIndex == -1)
-			{
-				return;
-			}
-			
-			PMDConfigPanel.this.locationModel.removeLocationAt(selectedIndex);
-		}
-	}
-	
-	
-	private final class EnableWhenSelectedAndRemovable implements AnActionButtonUpdater
-	{
-		@Override
-		public boolean isEnabled(@NotNull final AnActionEvent e)
-		{
-			final int selectedItem = PMDConfigPanel.this.locationTable.getSelectedRow();
-			return selectedItem >= 0 && PMDConfigPanel.this.locationModel.getLocationAt(selectedItem)
-				.isRemovable();
-		}
-	}
-	
-	
-	private final class EnableWhenSelected implements AnActionButtonUpdater
-	{
-		@Override
-		public boolean isEnabled(@NotNull final AnActionEvent e)
-		{
-			final int selectedItem = PMDConfigPanel.this.locationTable.getSelectedRow();
-			return selectedItem >= 0;
-		}
 	}
 }

@@ -1,6 +1,7 @@
 package software.xdev.pmd.ui.config.project;
 
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +26,8 @@ public class PMDConfigurable implements Configurable
 	{
 		this.pluginConfigurationManager = project.getService(PluginConfigurationManager.class);
 		
-		this.configPanel = new PMDConfigPanel(project);
+		// Default project (start screen) is not supported!
+		this.configPanel = !project.isDefault() ? new PMDConfigPanel(project) : null;
 	}
 	
 	@Override
@@ -35,14 +37,13 @@ public class PMDConfigurable implements Configurable
 	}
 	
 	@Override
-	public String getHelpTopic()
-	{
-		return null;
-	}
-	
-	@Override
 	public JComponent createComponent()
 	{
+		if(this.configPanel == null)
+		{
+			return new JLabel("Project configuration not available");
+		}
+		
 		this.reset();
 		return this.configPanel;
 	}
@@ -55,6 +56,11 @@ public class PMDConfigurable implements Configurable
 	@Override
 	public boolean isModified()
 	{
+		if(this.configPanel == null)
+		{
+			return false;
+		}
+		
 		return !this.pluginConfigurationManager.getCurrent() // Old
 			.isIdentical(this.getConfigPanelPluginConfig()); // New
 	}
@@ -62,19 +68,22 @@ public class PMDConfigurable implements Configurable
 	@Override
 	public void apply()
 	{
+		if(this.configPanel == null)
+		{
+			return;
+		}
+		
 		this.pluginConfigurationManager.setCurrent(this.getConfigPanelPluginConfig());
 	}
 	
 	@Override
 	public void reset()
 	{
-		final PluginConfiguration pluginConfig = this.pluginConfigurationManager.getCurrent();
-		this.configPanel.showPluginConfiguration(pluginConfig);
-	}
-	
-	@Override
-	public void disposeUIResources()
-	{
-		// do nothing
+		if(this.configPanel == null)
+		{
+			return;
+		}
+		
+		this.configPanel.showPluginConfiguration(this.pluginConfigurationManager.getCurrent());
 	}
 }

@@ -3,9 +3,11 @@ package software.xdev.pmd.config.state.project;
 import static java.util.Objects.requireNonNullElseGet;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.jetbrains.annotations.NotNull;
@@ -19,13 +21,13 @@ import com.intellij.util.xmlb.annotations.MapAnnotation;
 import com.intellij.util.xmlb.annotations.Tag;
 import com.intellij.util.xmlb.annotations.XCollection;
 
-import software.xdev.pmd.config.PatternContainer;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
-import software.xdev.pmd.model.config.ConfigurationLocation;
-import software.xdev.pmd.model.config.ConfigurationLocationFactory;
-import software.xdev.pmd.model.config.ConfigurationType;
-import software.xdev.pmd.model.config.bundled.BundledConfig;
+import software.xdev.pmd.config.plugin.PatternContainer;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocationFactory;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
+import software.xdev.pmd.model.config.rulesetlocation.bundled.BundledConfig;
 import software.xdev.pmd.model.scope.ScanScope;
 
 
@@ -50,6 +52,8 @@ public class ProjectSettingsState
 	List<String> activeLocationIds;
 	@MapAnnotation
 	List<ConfigurationLocationState> locations;
+	@MapAnnotation
+	ThirdPartyCPState thirdPartyCPState;
 	@Tag
 	boolean importSettingsFromMaven;
 	
@@ -63,21 +67,41 @@ public class ProjectSettingsState
 		projectSettings.showSuppressedWarnings = currentConfig.showSuppressedWarnings();
 		projectSettings.useCacheFile = currentConfig.useCacheFile();
 		projectSettings.scanScope = currentConfig.scanScope().name();
-		projectSettings.projectRelativeFileExclusions = currentConfig.projectRelativeFileExclusions().stream()
-			.map(PatternContainer::patternString)
-			.toList();
+		projectSettings.projectRelativeFileExclusions = useNullIfEmpty(
+			currentConfig.projectRelativeFileExclusions(),
+			l -> l.stream()
+				.map(PatternContainer::patternString)
+				.toList());
 		projectSettings.activeLocationIds = new ArrayList<>(currentConfig.activeLocationIds());
 		projectSettings.locations = currentConfig.locations().stream()
 			.map(location -> new ConfigurationLocationState(
 				location.getId(),
 				location.getType().name(),
-				location.getRawLocation(),
+				location.getLocation(),
 				location.getDescription()
 			))
 			.toList();
+		projectSettings.thirdPartyCPState = ThirdPartyCPState.create(currentConfig.thirdPartyCPLocations());
 		projectSettings.importSettingsFromMaven = currentConfig.importSettingsFromMaven();
 		
 		return projectSettings;
+	}
+	
+	public static <C extends Collection<?>> C useNullIfEmpty(final C inputs)
+	{
+		return inputs.isEmpty() ? null : inputs;
+	}
+	
+	public static <C extends Collection<?>, R> R useNullIfEmpty(
+		final C inputs,
+		final Function<C, R> mapperIfPresent)
+	{
+		if(inputs.isEmpty())
+		{
+			return null;
+		}
+		
+		return mapperIfPresent.apply(inputs);
 	}
 	
 	@SuppressWarnings("unused")
@@ -100,6 +124,9 @@ public class ProjectSettingsState
 			.withActiveLocationIds(new TreeSet<>(requireNonNullElseGet(
 				this.activeLocationIds,
 				ArrayList::new)))
+			.withThirdPartyCPLocations(this.thirdPartyCPState != null
+				? this.thirdPartyCPState.populate(project)
+				: null)
 			.withImportSettingFromMaven(this.importSettingsFromMaven);
 	}
 	

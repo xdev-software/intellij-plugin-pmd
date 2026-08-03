@@ -49,7 +49,7 @@ import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
 import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHashMap;
 import software.xdev.pmd.langversion.ManagedLanguageVersionResolver;
-import software.xdev.pmd.model.config.ConfigurationLocation;
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
 public class PMDAnalyzer implements Disposable
@@ -66,8 +66,8 @@ public class PMDAnalyzer implements Disposable
 	private final Map<Optional<Module>, ReentrantLock> locks = new ConcurrentHashMap<>();
 	private final Map<Optional<Module>, CacheFile> cacheFiles = new ConcurrentHashMap<>();
 	// Reuse classloader when path is the same
-	private final Map<Set<String>, ClassLoader> cachedSdkLibAuxClassLoader =
-		new ConcurrentReferenceHashMap<>();
+	private final Map<ClassLoader, Map<Set<String>, ClassLoader>> baseClassLoaderCachedSdkLibAuxClassLoaders =
+		new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.WEAK);
 	
 	public PMDAnalyzer(final Project project)
 	{
@@ -135,11 +135,14 @@ public class PMDAnalyzer implements Disposable
 	{
 		final long startMs = System.currentTimeMillis();
 		
+		final ClassLoader baseClassLoader =
+			this.project.getService(ProjectScanClasspathManager.class).getClassLoader();
+		
 		// Load ruleset - if required - async in background
 		final CompletableFuture<List<RuleSet>> cfLoadRuleSetsAsync =
 			CompletableFuture.supplyAsync(
 				() -> configurationLocations.stream()
-					.map(ConfigurationLocation::getOrRefreshCachedRuleSet)
+					.map(configLoc -> configLoc.getOrRefreshCachedRuleSet(baseClassLoader))
 					.filter(Objects::nonNull)
 					.toList(),
 				RULESET_LOADER_SERVICE);
@@ -173,7 +176,7 @@ public class PMDAnalyzer implements Disposable
 			.map(List::of)
 			.orElseGet(() -> List.of(ModuleManager.getInstance(this.project).getModules()));
 		
-		pmdConfig.setClassLoader(this.classLoaderFor(modules));
+		pmdConfig.setClassLoader(this.classLoaderFor(modules, baseClassLoader));
 		
 		if(pluginConfiguration.showSuppressedWarnings())
 		{
@@ -323,7 +326,9 @@ public class PMDAnalyzer implements Disposable
 	}
 	
 	@NotNull
-	private ClasspathClassLoader classLoaderFor(final List<Module> modules)
+	private ClasspathClassLoader classLoaderFor(
+		final List<Module> modules,
+		final ClassLoader baseClassLoader)
 	{
 		final Set<String> fullClassPaths = this.classPathFor(modules, UnaryOperator.identity());
 		final Set<String> appClassPaths = this.classPathFor(modules, o -> o.withoutSdk().withoutLibraries());
@@ -331,9 +336,14 @@ public class PMDAnalyzer implements Disposable
 			.filter(s -> !appClassPaths.contains(s))
 			.collect(Collectors.toSet());
 		
+		final Map<Set<String>, ClassLoader> cachedSdkLibAuxClassLoaders =
+			this.baseClassLoaderCachedSdkLibAuxClassLoaders.computeIfAbsent(
+				baseClassLoader,
+				ignored -> new ConcurrentReferenceHashMap<>());
+		
 		return this.createClasspathClassLoader(
 			appClassPaths,
-			this.cachedSdkLibAuxClassLoader.computeIfAbsent(
+			cachedSdkLibAuxClassLoaders.computeIfAbsent(
 				sdkLibClassPaths,
 				paths -> this.createClasspathClassLoader(paths, PMDConfiguration.class.getClassLoader())));
 	}
