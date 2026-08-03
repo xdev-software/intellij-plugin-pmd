@@ -125,21 +125,21 @@ public class PMDConfigPanel extends JPanel
 			this.rsLocationPanelManager.panel(),
 			3,
 			1.0,
-			300);
+			250);
 		
 		this.addPanel(
 			configFilePanel,
 			this.exclusionPanelManager.getPanel(),
 			4,
 			0.1,
-			150);
+			130);
 		
 		this.addPanel(
 			configFilePanel,
 			this.tpcpLocationPanelManager.panel(),
 			5,
-			0.5,
-			150);
+			0.1,
+			140);
 		
 		return configFilePanel;
 	}
