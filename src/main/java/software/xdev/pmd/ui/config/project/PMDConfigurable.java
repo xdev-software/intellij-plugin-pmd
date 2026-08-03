@@ -12,10 +12,6 @@ import software.xdev.pmd.config.PluginConfigurationBuilder;
 import software.xdev.pmd.config.PluginConfigurationManager;
 
 
-/**
- * The "configurable component" required by IntelliJ IDEA to provide a Swing form for inclusion into the 'Settings'
- * dialog. Registered in {@code plugin.xml} as a {@code projectConfigurable} extension.
- */
 public class PMDConfigurable implements Configurable
 {
 	private final PMDConfigPanel configPanel;
