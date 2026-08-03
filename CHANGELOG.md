@@ -15,6 +15,7 @@
 * Only show "Enable automatic build" hint on startup when projects have PMD enabled
 * Refactor location store
 * Order bundled locations at the end
+* IntelliJ IDEA 2026.2+ is now required
 
 # 1.1.4
 * Prevent rare NPE in module configuration UI #107
