@@ -1,3 +1,6 @@
+# 2.0.1
+* Fix Action-ID overlap with other plugins
+
 # 2.0.0
 * Add support 3rd Party Rules #10
   * Allows to use custom PMD rules shipped in JAR files
