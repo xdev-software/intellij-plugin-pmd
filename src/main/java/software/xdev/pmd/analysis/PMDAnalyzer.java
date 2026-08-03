@@ -56,6 +56,7 @@ public class PMDAnalyzer implements Disposable
 {
 	private static final Logger LOG = Logger.getInstance(PMDAnalyzer.class);
 	
+	@SuppressWarnings("UnstableApiUsage")
 	private static final ExecutorService RULESET_LOADER_SERVICE = Executors.newThreadPerTaskExecutor(
 		IntelliJVirtualThreads.ofVirtual()
 			.name("PMDX-RuleSetLoader-", 0)

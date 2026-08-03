@@ -47,6 +47,7 @@ import software.xdev.pmd.ui.toolwindow.analysis.report.ReportViewManager;
 
 public class ActionFilesAnalyzer
 {
+	@SuppressWarnings("UnstableApiUsage")
 	private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(
 		Math.max(Runtime.getRuntime().availableProcessors() - 1, 2),
 		IntelliJVirtualThreads.ofVirtual()
