@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +39,6 @@ import com.intellij.util.PathsList;
 
 import net.sourceforge.pmd.PMDConfiguration;
 import net.sourceforge.pmd.PmdAnalysis;
-import net.sourceforge.pmd.internal.util.ClasspathClassLoader;
 import net.sourceforge.pmd.lang.Language;
 import net.sourceforge.pmd.lang.LanguageVersion;
 import net.sourceforge.pmd.lang.document.TextFile;
@@ -70,23 +70,6 @@ public class PMDAnalyzer implements Disposable
 	private final Map<Optional<Module>, CacheFile> cacheFiles = new ConcurrentHashMap<>();
 	
 	private final Map<Set<String>, Set<String>> cachedComputedPMDSDKClassPaths = new ConcurrentReferenceHashMap<>();
-	// NOTE: Classloading/caching in modules uses layers (for caching):
-	// * SDK/JDK
-	// * Libs
-	// * App-Classes (can't be cached)
-	private final Map<Set<String>, SdkClassLoaderCache> cachedSdkLibAuxClassLoaders =
-		new ConcurrentReferenceHashMap<>();
-	
-	
-	record SdkClassLoaderCache(
-		ClassLoader classLoader,
-		Map<Set<String>, ClassLoader> libClassLoaders)
-	{
-		SdkClassLoaderCache(final ClassLoader cl)
-		{
-			this(cl, new ConcurrentHashMap<>());
-		}
-	}
 	
 	public PMDAnalyzer(final Project project)
 	{
@@ -187,14 +170,14 @@ public class PMDAnalyzer implements Disposable
 		progressIndicator.checkCanceled();
 		progressIndicator.setText("Preparing configuration");
 		
-		final PMDConfiguration pmdConfig = new NonCrashingPMDConfiguration();
+		final PMDConfiguration pmdConfig = new PMDConfiguration();
 		pmdConfig.setDefaultLanguageVersions(highestLanguageVersionAndFiles.keySet().stream().toList());
 		
 		final List<Module> modules = optModule
 			.map(List::of)
 			.orElseGet(() -> List.of(ModuleManager.getInstance(this.project).getModules()));
 		
-		pmdConfig.setClassLoader(this.classLoaderFor(modules));
+		pmdConfig.setAuxClasspath(this.auxClassPath(modules));
 		
 		if(pluginConfiguration.showSuppressedWarnings())
 		{
@@ -343,8 +326,7 @@ public class PMDAnalyzer implements Disposable
 					.collect(Collectors.toSet())));
 	}
 	
-	@NotNull
-	private ClasspathClassLoader classLoaderFor(final List<Module> modules)
+	private String auxClassPath(final List<Module> modules)
 	{
 		final Set<String> nonSDKPaths = this.classPathFor(modules, OrderEnumerator::withoutSdk);
 		final Set<String> appOnlyClassPaths = this.classPathFor(modules, o -> o.withoutSdk().withoutLibraries());
@@ -352,25 +334,16 @@ public class PMDAnalyzer implements Disposable
 			.filter(s -> !appOnlyClassPaths.contains(s))
 			.collect(Collectors.toCollection(LinkedHashSet::new));
 		
-		// SDK
 		final Set<String> sdkClassPathsIDE = this.classPathFor(modules, OrderEnumerator::sdkOnly);
 		final Set<String> sdkClassPathsForPmd =
 			this.cachedComputedPMDSDKClassPaths.computeIfAbsent(sdkClassPathsIDE, this::computePMDSdkClassPaths);
 		
-		final SdkClassLoaderCache sdkClassLoaderData = this.cachedSdkLibAuxClassLoaders.computeIfAbsent(
-			sdkClassPathsForPmd,
-			sdkPaths -> new SdkClassLoaderCache(this.createClasspathClassLoader(
-				sdkPaths,
-				// Emergency fallback - Should never be needed
-				PMDConfiguration.class.getClassLoader())));
-		
-		// App-Only
-		return this.createClasspathClassLoader(
-			appOnlyClassPaths,
-			// Lib
-			sdkClassLoaderData.libClassLoaders().computeIfAbsent(
+		return Stream.of(
+				appOnlyClassPaths,
 				libClassPaths,
-				libPaths -> this.createClasspathClassLoader(libPaths, sdkClassLoaderData.classLoader())));
+				sdkClassPathsForPmd)
+			.flatMap(Set::stream)
+			.collect(Collectors.joining(File.pathSeparator));
 	}
 	
 	private Set<String> computePMDSdkClassPaths(final Set<String> sdkClassPathsIDE)
@@ -407,20 +380,6 @@ public class PMDAnalyzer implements Disposable
 			.map(PathsList::getPathList)
 			.flatMap(Collection::stream)
 			.collect(Collectors.toCollection(LinkedHashSet::new));
-	}
-	
-	private ClasspathClassLoader createClasspathClassLoader(
-		final Set<String> classPaths,
-		final ClassLoader parentLoader)
-	{
-		try
-		{
-			return new ClasspathClassLoader(String.join(File.pathSeparator, classPaths), parentLoader);
-		}
-		catch(final IOException e)
-		{
-			throw new UncheckedIOException(e);
-		}
 	}
 	
 	@Override
