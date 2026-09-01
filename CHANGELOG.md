@@ -1,3 +1,7 @@
+# 2.1.0
+* Updated PMD to 7.27.0
+* Adopted class loading changes and improved performance
+
 # 2.0.1
 * Fix Action-ID overlap with other plugins
 
@@ -15,6 +19,7 @@
 * Only show "Enable automatic build" hint on startup when projects have PMD enabled
 * Refactor location store
 * Order bundled locations at the end
+* IntelliJ IDEA 2026.2+ is now required
 
 # 1.1.4
 * Prevent rare NPE in module configuration UI #107

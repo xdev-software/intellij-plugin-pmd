@@ -1,7 +1,6 @@
 package software.xdev.pmd.ui.config.project;
 
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -13,10 +12,6 @@ import software.xdev.pmd.config.PluginConfigurationBuilder;
 import software.xdev.pmd.config.PluginConfigurationManager;
 
 
-/**
- * The "configurable component" required by IntelliJ IDEA to provide a Swing form for inclusion into the 'Settings'
- * dialog. Registered in {@code plugin.xml} as a {@code projectConfigurable} extension.
- */
 public class PMDConfigurable implements Configurable
 {
 	private final PMDConfigPanel configPanel;
@@ -25,9 +20,7 @@ public class PMDConfigurable implements Configurable
 	PMDConfigurable(@NotNull final Project project)
 	{
 		this.pluginConfigurationManager = project.getService(PluginConfigurationManager.class);
-		
-		// Default project (start screen) is not supported!
-		this.configPanel = !project.isDefault() ? new PMDConfigPanel(project) : null;
+		this.configPanel = new PMDConfigPanel(project);
 	}
 	
 	@Override
@@ -39,11 +32,6 @@ public class PMDConfigurable implements Configurable
 	@Override
 	public JComponent createComponent()
 	{
-		if(this.configPanel == null)
-		{
-			return new JLabel("Project configuration not available");
-		}
-		
 		this.reset();
 		return this.configPanel;
 	}

@@ -7,10 +7,9 @@ package net.sourceforge.pmd.cache.internal;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -30,13 +29,13 @@ import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHa
 /**
  * Fork/Override of upstream to fix some performance problems. See IMPROVED comments for details
  * <p>
- * Based on PMD 7.17.0
+ * Based on PMD 7.27.0
  */
 @SuppressWarnings("all")
 public class ZipFileFingerprinter implements ClasspathEntryFingerprinter
 {
 	// IMPROVED
-	private static final Map<String, UrlCachedPayload> FILE_CRC_CHECKSUMS_CACHE = new ConcurrentReferenceHashMap<>();
+	private static final Map<Path, UrlCachedPayload> FILE_CRC_CHECKSUMS_CACHE = new ConcurrentReferenceHashMap<>();
 	
 	record UrlCachedPayload(
 		long length,
@@ -74,15 +73,14 @@ public class ZipFileFingerprinter implements ClasspathEntryFingerprinter
 	}
 	
 	@Override
-	public void fingerprint(final URL entry, final Checksum checksum) throws IOException
+	public void fingerprint(final Path entry, final Checksum checksum) throws IOException
 	{
 		try
 		{
 			// IMPROVEMENT: USE CACHE IF POSSIBLE
-			final String cacheKey = entry.toString();
-			UrlCachedPayload cache = FILE_CRC_CHECKSUMS_CACHE.get(cacheKey);
+			UrlCachedPayload cache = FILE_CRC_CHECKSUMS_CACHE.get(entry);
 			
-			final File file = new File(entry.toURI());
+			final File file = entry.toFile();
 			final long length = file.length();
 			final long lastModified = file.lastModified();
 			
@@ -121,7 +119,7 @@ public class ZipFileFingerprinter implements ClasspathEntryFingerprinter
 					lastModified,
 					buffer.array(),
 					meaningfulEntries.size());
-				FILE_CRC_CHECKSUMS_CACHE.put(cacheKey, cache);
+				FILE_CRC_CHECKSUMS_CACHE.put(entry, cache);
 				
 				cache.updateCheckSum(checksum);
 			}
@@ -129,11 +127,6 @@ public class ZipFileFingerprinter implements ClasspathEntryFingerprinter
 		catch(final FileNotFoundException | NoSuchFileException ignored)
 		{
 			LOG.warn("Classpath entry {} doesn't exist, ignoring it", entry);
-		}
-		catch(final URISyntaxException e)
-		{
-			// Should never happen?
-			LOG.warn("Malformed classpath entry doesn't refer to zip in filesystem.", e);
 		}
 	}
 	

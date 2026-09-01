@@ -7,9 +7,9 @@ plugins {
 }
 
 ext {
-    checkstyleVersion = '13.9.0'
+    checkstyleVersion = '14.1.0'
 
-    pmdVersion = '7.26.0'
+    pmdVersion = '7.27.0'
 }
 
 def properties(String key) {
@@ -48,12 +48,18 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 
 // Add dependencies to test, junit5 api (annotations) and engine (runtime)
 dependencies {
-    intellijPlatform {
-        create(properties("platformType"), properties("platformVersion"))
-        bundledPlugins(properties("platformBundledPlugins").map { it.split(",").collect { it.trim() }.findAll { !it.empty } })
-        plugins(properties("platformPlugins").map { it.split(",").collect { it.trim() }.findAll { !it.empty } })
-        pluginVerifier()
-        zipSigner()
+    // Downloading 3GB of IntelliJ is not needed for CheckStyle
+    if (!project.hasProperty("checkstyleEnabled")) {
+        intellijPlatform {
+            create(properties("platformType"), properties("platformVersion")) {
+                // PMD 7.27: This will otherwise crash because PMD assumes all files are ZIP files
+                useInstaller = !project.hasProperty("pmdEnabled")
+            }
+            bundledPlugins(properties("platformBundledPlugins").map { it.split(",").collect { it.trim() }.findAll { !it.empty } })
+            plugins(properties("platformPlugins").map { it.split(",").collect { it.trim() }.findAll { !it.empty } })
+            pluginVerifier()
+            zipSigner()
+        }
     }
     checkstyle "com.puppycrawl.tools:checkstyle:${checkstyleVersion}"
     pmd "net.sourceforge.pmd:pmd-ant:${pmdVersion}",
@@ -72,7 +78,7 @@ dependencies {
         }
     }
 
-    testImplementation platform('org.junit:junit-bom:6.1.2'),
+    testImplementation platform('org.junit:junit-bom:6.1.3'),
             'org.junit.jupiter:junit-jupiter',
             'org.junit.jupiter:junit-jupiter-engine',
             'org.assertj:assertj-core:3.27.7'
@@ -150,8 +156,8 @@ tasks.withType(Pmd).configureEach {
 // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.compile.JavaCompile.html
 tasks.withType(JavaCompile).configureEach {
     // JAVA compatibility
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 compileJava.options.encoding = 'UTF-8'

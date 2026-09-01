@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import com.intellij.openapi.project.Project;
 
-import software.xdev.pmd.analysis.ProjectScanClasspathManager;
+import software.xdev.pmd.analysis.ProjectRulesetClasspathManager;
 import software.xdev.pmd.config.state.project.ProjectConfigurationState;
 import software.xdev.pmd.config.state.project.ProjectSettingsState;
 
@@ -57,7 +57,7 @@ public class PluginConfigurationManager
 		this.lastPluginConfiguration = pluginConfig;
 		
 		// Update the classpath information
-		this.project.getService(ProjectScanClasspathManager.class).configure(pluginConfig.thirdPartyCPLocations());
+		this.project.getService(ProjectRulesetClasspathManager.class).configure(pluginConfig.thirdPartyCPLocations());
 	}
 	
 	private ProjectConfigurationState projectConfigurationState()

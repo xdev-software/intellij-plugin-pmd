@@ -6,6 +6,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -15,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.UnaryOperator;
@@ -36,7 +38,6 @@ import com.intellij.util.PathsList;
 
 import net.sourceforge.pmd.PMDConfiguration;
 import net.sourceforge.pmd.PmdAnalysis;
-import net.sourceforge.pmd.internal.util.ClasspathClassLoader;
 import net.sourceforge.pmd.lang.Language;
 import net.sourceforge.pmd.lang.LanguageVersion;
 import net.sourceforge.pmd.lang.document.TextFile;
@@ -44,6 +45,8 @@ import net.sourceforge.pmd.lang.rule.RuleSet;
 import net.sourceforge.pmd.reporting.FileAnalysisListener;
 import net.sourceforge.pmd.reporting.GlobalAnalysisListener;
 import net.sourceforge.pmd.reporting.Report;
+import software.xdev.pmd.analysis.classloading.FastClasspathClassLoader;
+import software.xdev.pmd.analysis.pmd.NonCrashingPMDConfiguration;
 import software.xdev.pmd.analysis.validate.PsiFileValidator;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
@@ -52,6 +55,7 @@ import software.xdev.pmd.langversion.ManagedLanguageVersionResolver;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
+@SuppressWarnings("deprecation")
 public class PMDAnalyzer implements Disposable
 {
 	private static final Logger LOG = Logger.getInstance(PMDAnalyzer.class);
@@ -66,9 +70,25 @@ public class PMDAnalyzer implements Disposable
 	
 	private final Map<Optional<Module>, ReentrantLock> locks = new ConcurrentHashMap<>();
 	private final Map<Optional<Module>, CacheFile> cacheFiles = new ConcurrentHashMap<>();
-	// Reuse classloader when path is the same
-	private final Map<ClassLoader, Map<Set<String>, ClassLoader>> baseClassLoaderCachedSdkLibAuxClassLoaders =
-		new ConcurrentReferenceHashMap<>(ConcurrentReferenceHashMap.ReferenceType.WEAK);
+	
+	private final Map<Set<String>, Set<String>> cachedComputedPMDSDKClassPaths = new ConcurrentReferenceHashMap<>();
+	// NOTE: Classloading/caching in modules uses layers (for caching):
+	// * SDK/JDK
+	// * Libs
+	// * App-Classes (can't be cached)
+	private final Map<Set<String>, SdkClassLoaderCache> cachedSdkLibAuxClassLoaders =
+		new ConcurrentReferenceHashMap<>();
+	
+	
+	record SdkClassLoaderCache(
+		ClassLoader classLoader,
+		Map<Set<String>, ClassLoader> libClassLoaders)
+	{
+		SdkClassLoaderCache(final ClassLoader cl)
+		{
+			this(cl, new ConcurrentHashMap<>());
+		}
+	}
 	
 	public PMDAnalyzer(final Project project)
 	{
@@ -136,17 +156,16 @@ public class PMDAnalyzer implements Disposable
 	{
 		final long startMs = System.currentTimeMillis();
 		
-		final ClassLoader baseClassLoader =
-			this.project.getService(ProjectScanClasspathManager.class).getClassLoader();
+		final ClassLoader baseRulesetClassLoader =
+			this.project.getService(ProjectRulesetClasspathManager.class).getClassLoader();
 		
-		// Load ruleset - if required - async in background
-		final CompletableFuture<List<RuleSet>> cfLoadRuleSetsAsync =
-			CompletableFuture.supplyAsync(
+		// Load ruleset (if required) & async in background
+		final CompletableFuture<List<RuleSet>> cfLoadRuleSetsAsync = CompletableFuture.supplyAsync(
 				() -> configurationLocations.stream()
-					.map(configLoc -> configLoc.getOrRefreshCachedRuleSet(baseClassLoader))
+					.map(configLoc -> configLoc.getOrRefreshCachedRuleSet(baseRulesetClassLoader))
 					.filter(Objects::nonNull)
 					.toList(),
-				RULESET_LOADER_SERVICE);
+			RULESET_LOADER_SERVICE);
 		
 		final PluginConfiguration pluginConfiguration =
 			this.project.getService(PluginConfigurationManager.class).getCurrent();
@@ -170,14 +189,16 @@ public class PMDAnalyzer implements Disposable
 		progressIndicator.checkCanceled();
 		progressIndicator.setText("Preparing configuration");
 		
-		final PMDConfiguration pmdConfig = new PMDConfiguration();
+		final PMDConfiguration pmdConfig = new NonCrashingPMDConfiguration();
 		pmdConfig.setDefaultLanguageVersions(highestLanguageVersionAndFiles.keySet().stream().toList());
 		
 		final List<Module> modules = optModule
 			.map(List::of)
 			.orElseGet(() -> List.of(ModuleManager.getInstance(this.project).getModules()));
 		
-		pmdConfig.setClassLoader(this.classLoaderFor(modules, baseClassLoader));
+		// Compared to pmdConfig#setAuxClasspath this is around ~50% faster because
+		// we can cache the individual class loaders for Libs and SDK while PMD will always re-create them
+		pmdConfig.setClassLoader(this.classLoaderFor(modules));
 		
 		if(pluginConfiguration.showSuppressedWarnings())
 		{
@@ -327,26 +348,67 @@ public class PMDAnalyzer implements Disposable
 	}
 	
 	@NotNull
-	private ClasspathClassLoader classLoaderFor(
-		final List<Module> modules,
-		final ClassLoader baseClassLoader)
+	private ClassLoader classLoaderFor(final List<Module> modules)
 	{
-		final Set<String> fullClassPaths = this.classPathFor(modules, UnaryOperator.identity());
-		final Set<String> appClassPaths = this.classPathFor(modules, o -> o.withoutSdk().withoutLibraries());
-		final Set<String> sdkLibClassPaths = fullClassPaths.stream()
-			.filter(s -> !appClassPaths.contains(s))
-			.collect(Collectors.toSet());
+		final Set<String> nonSDKPaths = this.classPathFor(modules, OrderEnumerator::withoutSdk);
+		final Set<String> appOnlyClassPaths = this.classPathFor(modules, o -> o.withoutSdk().withoutLibraries());
+		final Set<String> libClassPaths = nonSDKPaths.stream()
+			.filter(s -> !appOnlyClassPaths.contains(s))
+			.collect(Collectors.toCollection(LinkedHashSet::new));
 		
-		final Map<Set<String>, ClassLoader> cachedSdkLibAuxClassLoaders =
-			this.baseClassLoaderCachedSdkLibAuxClassLoaders.computeIfAbsent(
-				baseClassLoader,
-				ignored -> new ConcurrentReferenceHashMap<>());
+		// SDK
+		final Set<String> sdkClassPathsIDE = this.classPathFor(modules, OrderEnumerator::sdkOnly);
+		final Set<String> sdkClassPathsForPmd =
+			this.cachedComputedPMDSDKClassPaths.computeIfAbsent(sdkClassPathsIDE, this::computePMDSdkClassPaths);
 		
+		final SdkClassLoaderCache sdkClassLoaderData = this.cachedSdkLibAuxClassLoaders.computeIfAbsent(
+			sdkClassPathsForPmd,
+			sdkPaths -> new SdkClassLoaderCache(this.createClasspathClassLoader(
+				sdkPaths,
+				null)));
+		
+		// App-Only
 		return this.createClasspathClassLoader(
-			appClassPaths,
-			cachedSdkLibAuxClassLoaders.computeIfAbsent(
-				sdkLibClassPaths,
-				paths -> this.createClasspathClassLoader(paths, PMDConfiguration.class.getClassLoader())));
+			appOnlyClassPaths,
+			// Lib
+			sdkClassLoaderData.libClassLoaders().computeIfAbsent(
+				libClassPaths,
+				libPaths -> this.createClasspathClassLoader(
+					libPaths,
+					sdkClassLoaderData.classLoader())));
+	}
+	
+	private Set<String> computePMDSdkClassPaths(final Set<String> sdkClassPathsIDE)
+	{
+		// The IDE returned paths look like this:
+		// C:\.jdks\java25!\java.base
+		// C:\.jdks\java25!\java.sql
+		// ...
+		
+		// These need to be deduplicated to read
+		// C:\.jdks\java25\lib\jrt-fs.jar
+		// or PMD will not detect it
+		
+		// If there are multiple JDKs one MUST be picked
+		
+		final String javaBaseEnding = "!" + File.separator + "java.base";
+		final List<String> sdkBasePaths = sdkClassPathsIDE.stream()
+			.filter(s -> s.endsWith(javaBaseEnding))
+			.map(s -> s.substring(0, s.indexOf('!')))
+			.toList();
+		
+		final AtomicBoolean alreadyReplacedBasePath = new AtomicBoolean(false);
+		return sdkClassPathsIDE.stream()
+			.map(s -> sdkBasePaths.stream()
+				.filter(basePath -> s.startsWith(basePath + "!"))
+				.findFirst()
+				.map(basePath -> alreadyReplacedBasePath.compareAndSet(false, true)
+					? Optional.of(basePath + File.separator + "lib" + File.separator + "jrt-fs.jar")
+					: Optional.<String>empty())
+				.orElseGet(() -> Optional.of(s)))
+			.filter(Optional::isPresent)
+			.map(Optional::orElseThrow)
+			.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 	
 	private Set<String> classPathFor(
@@ -360,16 +422,16 @@ public class PMDAnalyzer implements Disposable
 			.map(OrderEnumerator::getPathsList)
 			.map(PathsList::getPathList)
 			.flatMap(Collection::stream)
-			.collect(Collectors.toSet());
+			.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 	
-	private ClasspathClassLoader createClasspathClassLoader(
+	private ClassLoader createClasspathClassLoader(
 		final Set<String> classPaths,
 		final ClassLoader parentLoader)
 	{
 		try
 		{
-			return new ClasspathClassLoader(String.join(File.pathSeparator, classPaths), parentLoader);
+			return new FastClasspathClassLoader(classPaths, parentLoader);
 		}
 		catch(final IOException e)
 		{

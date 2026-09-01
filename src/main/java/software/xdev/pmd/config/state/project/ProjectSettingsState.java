@@ -87,11 +87,6 @@ public class ProjectSettingsState
 		return projectSettings;
 	}
 	
-	public static <C extends Collection<?>> C useNullIfEmpty(final C inputs)
-	{
-		return inputs.isEmpty() ? null : inputs;
-	}
-	
 	public static <C extends Collection<?>, R> R useNullIfEmpty(
 		final C inputs,
 		final Function<C, R> mapperIfPresent)

@@ -12,10 +12,10 @@ import com.intellij.openapi.diagnostic.Logger;
 import software.xdev.pmd.model.config.thirdpartycplocation.ThirdPartyCPLocation;
 
 
-public class ProjectScanClasspathManager implements Disposable
+public class ProjectRulesetClasspathManager implements Disposable
 {
-	private static final ClassLoader DEFAULT_CL = ProjectScanClasspathManager.class.getClassLoader();
-	private static final Logger LOG = Logger.getInstance(ProjectScanClasspathManager.class);
+	private static final ClassLoader DEFAULT_CL = ProjectRulesetClasspathManager.class.getClassLoader();
+	private static final Logger LOG = Logger.getInstance(ProjectRulesetClasspathManager.class);
 	
 	private List<ThirdPartyCPLocation> cachedKey;
 	private URLClassLoader classLoader;
