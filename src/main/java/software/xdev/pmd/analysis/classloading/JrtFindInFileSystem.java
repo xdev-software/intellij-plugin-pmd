@@ -1,4 +1,4 @@
-package software.xdev.pmd.analysis.pmd;
+package software.xdev.pmd.analysis.classloading;
 
 import java.nio.file.Path;
 

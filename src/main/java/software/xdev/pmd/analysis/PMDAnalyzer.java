@@ -45,7 +45,7 @@ import net.sourceforge.pmd.lang.rule.RuleSet;
 import net.sourceforge.pmd.reporting.FileAnalysisListener;
 import net.sourceforge.pmd.reporting.GlobalAnalysisListener;
 import net.sourceforge.pmd.reporting.Report;
-import software.xdev.pmd.analysis.pmd.FastClasspathClassLoader;
+import software.xdev.pmd.analysis.classloading.FastClasspathClassLoader;
 import software.xdev.pmd.analysis.pmd.NonCrashingPMDConfiguration;
 import software.xdev.pmd.analysis.validate.PsiFileValidator;
 import software.xdev.pmd.config.PluginConfiguration;
