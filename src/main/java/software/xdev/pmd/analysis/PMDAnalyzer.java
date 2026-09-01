@@ -38,7 +38,6 @@ import com.intellij.util.PathsList;
 
 import net.sourceforge.pmd.PMDConfiguration;
 import net.sourceforge.pmd.PmdAnalysis;
-import net.sourceforge.pmd.internal.util.ClasspathClassLoader;
 import net.sourceforge.pmd.lang.Language;
 import net.sourceforge.pmd.lang.LanguageVersion;
 import net.sourceforge.pmd.lang.document.TextFile;
@@ -46,6 +45,8 @@ import net.sourceforge.pmd.lang.rule.RuleSet;
 import net.sourceforge.pmd.reporting.FileAnalysisListener;
 import net.sourceforge.pmd.reporting.GlobalAnalysisListener;
 import net.sourceforge.pmd.reporting.Report;
+import software.xdev.pmd.analysis.pmd.FastClasspathClassLoader;
+import software.xdev.pmd.analysis.pmd.NonCrashingPMDConfiguration;
 import software.xdev.pmd.analysis.validate.PsiFileValidator;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationManager;
@@ -54,6 +55,7 @@ import software.xdev.pmd.langversion.ManagedLanguageVersionResolver;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 
 
+@SuppressWarnings("deprecation")
 public class PMDAnalyzer implements Disposable
 {
 	private static final Logger LOG = Logger.getInstance(PMDAnalyzer.class);
@@ -194,6 +196,8 @@ public class PMDAnalyzer implements Disposable
 			.map(List::of)
 			.orElseGet(() -> List.of(ModuleManager.getInstance(this.project).getModules()));
 		
+		// Compared to pmdConfig#setAuxClasspath this is around ~50% faster because
+		// we can cache the individual class loaders for Libs and SDK while PMD will always re-create them
 		pmdConfig.setClassLoader(this.classLoaderFor(modules));
 		
 		if(pluginConfiguration.showSuppressedWarnings())
@@ -344,7 +348,7 @@ public class PMDAnalyzer implements Disposable
 	}
 	
 	@NotNull
-	private ClasspathClassLoader classLoaderFor(final List<Module> modules)
+	private ClassLoader classLoaderFor(final List<Module> modules)
 	{
 		final Set<String> nonSDKPaths = this.classPathFor(modules, OrderEnumerator::withoutSdk);
 		final Set<String> appOnlyClassPaths = this.classPathFor(modules, o -> o.withoutSdk().withoutLibraries());
@@ -361,8 +365,7 @@ public class PMDAnalyzer implements Disposable
 			sdkClassPathsForPmd,
 			sdkPaths -> new SdkClassLoaderCache(this.createClasspathClassLoader(
 				sdkPaths,
-				// Emergency fallback - Should never be needed
-				PMDConfiguration.class.getClassLoader())));
+				null)));
 		
 		// App-Only
 		return this.createClasspathClassLoader(
@@ -370,11 +373,24 @@ public class PMDAnalyzer implements Disposable
 			// Lib
 			sdkClassLoaderData.libClassLoaders().computeIfAbsent(
 				libClassPaths,
-				libPaths -> this.createClasspathClassLoader(libPaths, sdkClassLoaderData.classLoader())));
+				libPaths -> this.createClasspathClassLoader(
+					libPaths,
+					sdkClassLoaderData.classLoader())));
 	}
 	
 	private Set<String> computePMDSdkClassPaths(final Set<String> sdkClassPathsIDE)
 	{
+		// The IDE returned paths look like this:
+		// C:\.jdks\java25!\java.base
+		// C:\.jdks\java25!\java.sql
+		// ...
+		
+		// These need to be deduplicated to read
+		// C:\.jdks\java25\lib\jrt-fs.jar
+		// or PMD will not detect it
+		
+		// If there are multiple JDKs one MUST be picked
+		
 		final String javaBaseEnding = "!" + File.separator + "java.base";
 		final List<String> sdkBasePaths = sdkClassPathsIDE.stream()
 			.filter(s -> s.endsWith(javaBaseEnding))
@@ -409,13 +425,13 @@ public class PMDAnalyzer implements Disposable
 			.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 	
-	private ClasspathClassLoader createClasspathClassLoader(
+	private ClassLoader createClasspathClassLoader(
 		final Set<String> classPaths,
 		final ClassLoader parentLoader)
 	{
 		try
 		{
-			return new ClasspathClassLoader(String.join(File.pathSeparator, classPaths), parentLoader);
+			return new FastClasspathClassLoader(classPaths, parentLoader);
 		}
 		catch(final IOException e)
 		{

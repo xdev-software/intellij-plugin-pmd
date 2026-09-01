@@ -1,4 +1,4 @@
-package software.xdev.pmd.analysis;
+package software.xdev.pmd.analysis.pmd;
 
 import net.sourceforge.pmd.PMDConfiguration;
 
