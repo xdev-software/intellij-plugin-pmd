@@ -16,7 +16,7 @@ import net.sourceforge.pmd.lang.rule.RuleSet;
 import net.sourceforge.pmd.lang.rule.RuleSetLoader;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
-import software.xdev.pmd.model.config.rulesetlocation.file.pmd.DefaultRuleSetLoaderCreator;
+import software.xdev.pmd.model.config.rulesetlocation.file.pmd.DefaultRuleSetLoad;
 import software.xdev.pmd.util.io.ProjectFilePaths;
 
 
@@ -102,7 +102,7 @@ public class FileConfigurationLocation extends ConfigurationLocation
 		
 		// Do this here due to IOEx in Lambda
 		final String rulesetXmlContent = new String(Files.readAllBytes(this.locationPath));
-		final RuleSet ruleSet = DefaultRuleSetLoaderCreator.load(
+		final RuleSet ruleSet = DefaultRuleSetLoad.load(
 			new RuleSetLoader().loadResourcesWith(classLoader),
 			rsl -> rsl.loadFromString(this.getLocation(), rulesetXmlContent));
 		this.lastModifiedFileTime = this.lastModifiedTimeFromLocation();

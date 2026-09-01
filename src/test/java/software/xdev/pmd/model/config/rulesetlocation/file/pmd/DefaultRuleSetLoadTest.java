@@ -6,14 +6,14 @@ import org.junit.jupiter.api.Test;
 import net.sourceforge.pmd.lang.rule.RuleSetLoader;
 
 
-class DefaultRuleSetLoaderCreatorTest
+class DefaultRuleSetLoadTest
 {
 	@Test
 	void checkReflection()
 	{
-		Assertions.assertDoesNotThrow(DefaultRuleSetLoaderCreator::initReflection);
+		Assertions.assertDoesNotThrow(DefaultRuleSetLoad::initReflection);
 		
-		Assertions.assertDoesNotThrow(() -> DefaultRuleSetLoaderCreator.load(
+		Assertions.assertDoesNotThrow(() -> DefaultRuleSetLoad.load(
 			new RuleSetLoader(),
 			rsl -> rsl.loadFromResource("category/java/security.xml")));
 	}

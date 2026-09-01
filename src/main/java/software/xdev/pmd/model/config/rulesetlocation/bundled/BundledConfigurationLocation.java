@@ -11,7 +11,7 @@ import net.sourceforge.pmd.lang.rule.RuleSet;
 import net.sourceforge.pmd.lang.rule.RuleSetLoader;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
-import software.xdev.pmd.model.config.rulesetlocation.file.pmd.DefaultRuleSetLoaderCreator;
+import software.xdev.pmd.model.config.rulesetlocation.file.pmd.DefaultRuleSetLoad;
 
 
 public class BundledConfigurationLocation extends ConfigurationLocation
@@ -68,7 +68,7 @@ public class BundledConfigurationLocation extends ConfigurationLocation
 	@Override
 	protected synchronized RuleSet loadRuleSet(final ClassLoader ignored)
 	{
-		return DefaultRuleSetLoaderCreator.load(
+		return DefaultRuleSetLoad.load(
 			new RuleSetLoader(),
 			rsl -> rsl.loadFromResource(this.getBundledConfig().getLocation()));
 	}
