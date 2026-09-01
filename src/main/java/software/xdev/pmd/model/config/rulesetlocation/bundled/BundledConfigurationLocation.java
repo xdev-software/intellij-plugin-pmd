@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import com.intellij.openapi.project.Project;
 
 import net.sourceforge.pmd.lang.rule.RuleSet;
+import net.sourceforge.pmd.lang.rule.RuleSetLoader;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
 import software.xdev.pmd.model.config.rulesetlocation.file.pmd.DefaultRuleSetLoaderCreator;
@@ -67,8 +68,9 @@ public class BundledConfigurationLocation extends ConfigurationLocation
 	@Override
 	protected synchronized RuleSet loadRuleSet(final ClassLoader ignored)
 	{
-		return DefaultRuleSetLoaderCreator.createAndLoad(rsl -> rsl
-			.loadFromResource(this.getBundledConfig().getLocation()));
+		return DefaultRuleSetLoaderCreator.load(
+			new RuleSetLoader(),
+			rsl -> rsl.loadFromResource(this.getBundledConfig().getLocation()));
 	}
 	
 	@Override

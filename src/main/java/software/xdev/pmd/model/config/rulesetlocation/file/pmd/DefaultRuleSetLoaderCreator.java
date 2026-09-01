@@ -44,11 +44,11 @@ public final class DefaultRuleSetLoaderCreator
 		}
 	}
 	
-	public static RuleSet createAndLoad(final Function<RuleSetLoader, RuleSet> loadFunc)
+	public static RuleSet load(
+		final RuleSetLoader ruleSetLoader,
+		final Function<RuleSetLoader, RuleSet> loadFunc)
 	{
 		initReflection();
-		
-		final RuleSetLoader ruleSetLoader = new RuleSetLoader();
 		
 		final Optional<ErrorStoringPmdReporter> optErrorStoringPmdReporter = Optional.ofNullable(mWithReporter)
 			.map(m -> {
