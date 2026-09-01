@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.intellij.openapi.project.Project;
 
-import software.xdev.pmd.analysis.ProjectScanClasspathManager;
+import software.xdev.pmd.analysis.ProjectRulesetClasspathManager;
 import software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocation;
 import software.xdev.pmd.ui.config.project.components.shared.LocationDialog;
 
@@ -50,7 +50,7 @@ public class RSLocationDialog
 			return null;
 		}
 		
-		location.validate(this.project.getService(ProjectScanClasspathManager.class).getClassLoader());
+		location.validate(this.project.getService(ProjectRulesetClasspathManager.class).getClassLoader());
 		
 		return location;
 	}

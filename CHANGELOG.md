@@ -1,3 +1,7 @@
+# 2.1.0
+* Updated PMD to 7.27.0
+* Adopted class loading changes and improved performance
+
 # 2.0.1
 * Fix Action-ID overlap with other plugins
 

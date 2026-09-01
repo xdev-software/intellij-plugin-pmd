@@ -18,9 +18,9 @@ import net.sourceforge.pmd.util.log.internal.MessageReporterBase;
 
 
 // Workaround for: https://github.com/pmd/pmd/issues/6912
-public final class DefaultRuleSetLoaderCreator
+public final class DefaultRuleSetLoad
 {
-	private static final Logger LOG = Logger.getInstance(DefaultRuleSetLoaderCreator.class);
+	private static final Logger LOG = Logger.getInstance(DefaultRuleSetLoad.class);
 	
 	private static boolean reflectionInitialized;
 	private static Method mWithReporter;
@@ -44,11 +44,11 @@ public final class DefaultRuleSetLoaderCreator
 		}
 	}
 	
-	public static RuleSet createAndLoad(final Function<RuleSetLoader, RuleSet> loadFunc)
+	public static RuleSet load(
+		final RuleSetLoader ruleSetLoader,
+		final Function<RuleSetLoader, RuleSet> loadFunc)
 	{
 		initReflection();
-		
-		final RuleSetLoader ruleSetLoader = new RuleSetLoader();
 		
 		final Optional<ErrorStoringPmdReporter> optErrorStoringPmdReporter = Optional.ofNullable(mWithReporter)
 			.map(m -> {
@@ -76,7 +76,7 @@ public final class DefaultRuleSetLoaderCreator
 		}
 	}
 	
-	private DefaultRuleSetLoaderCreator()
+	private DefaultRuleSetLoad()
 	{
 	}
 	

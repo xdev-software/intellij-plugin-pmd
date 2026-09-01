@@ -28,7 +28,7 @@
 		<projectService serviceImplementation="software.xdev.pmd.model.config.rulesetlocation.ConfigurationLocationFactory"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.ConfigurationLocationSource"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.PluginConfigurationManager"/>
-		<projectService serviceImplementation="software.xdev.pmd.analysis.ProjectScanClasspathManager"/>
+		<projectService serviceImplementation="software.xdev.pmd.analysis.ProjectRulesetClasspathManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.currentfile.CurrentFileAnalysisManager"/>
 		<projectService serviceImplementation="software.xdev.pmd.config.state.project.ProjectConfigurationState"/>
 		<projectService
