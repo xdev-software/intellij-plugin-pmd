@@ -48,6 +48,7 @@ import org.jetbrains.intellij.platform.gradle.IntelliJPlatformType
 
 // Add dependencies to test, junit5 api (annotations) and engine (runtime)
 dependencies {
+    // Downloading 3GB of IntelliJ is not needed for CheckStyle
     if (!project.hasProperty("checkstyleEnabled")) {
         intellijPlatform {
             create(properties("platformType"), properties("platformVersion")) {
