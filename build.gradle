@@ -66,7 +66,7 @@ dependencies {
             "net.sourceforge.pmd:pmd-java:${pmdVersion}"
 
     // https://discuss.gradle.org/t/multiple-excludes-for-multiple-dependencies/11573
-    ['pmd-core', 'pmd-java', 'pmd-kotlin'].each {
+    ['pmd-core', 'pmd-java'].each {
         implementation("net.sourceforge.pmd:$it:${pmdVersion}") {
             // Prevent conflict with IntelliJ's slf4j which results in a LinkageError
             exclude group: 'org.slf4j', module: 'slf4j-api'
