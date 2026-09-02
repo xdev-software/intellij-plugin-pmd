@@ -10,7 +10,7 @@ A plugin for IntelliJ that provides code analysis and highlighting with <a href=
 * Optimized for real-time analysis and zero configuration project setups that just require you to checkout the code
 * Real-time analysis and highlighting of currently edited file
 * Run bulk analysis of files by right clicking the project menu <br/> <img src="./assets/run-bulk-analysis.avif"> <br/> <img src="./assets/toolwindow-report.avif">
-* Currently Java and Kotlin are supported, Language versions are automatically detected
+* Currently Java is supported, Language versions are automatically detected
 * Exclude files with regex support
 * Use JARs for custom 3rd party rules <br/> <img src="./assets/custom-rule.avif">
   * JARs can automatically be downloaded from Maven Central

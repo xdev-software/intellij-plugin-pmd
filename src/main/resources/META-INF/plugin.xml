@@ -78,9 +78,6 @@
 		<externalAnnotator
 				language="JAVA"
 				implementationClass="software.xdev.pmd.annotator.PMDExternalLanguageAnnotator"/>
-		<externalAnnotator
-				language="kotlin"
-				implementationClass="software.xdev.pmd.annotator.PMDExternalLanguageAnnotator"/>
 
 		<applicationService serviceImplementation="software.xdev.pmd.action.analysis.ActionFilesAnalyzer"/>
 		<applicationService serviceImplementation="software.xdev.pmd.langversion.LanguageVersionResolverService"/>
