@@ -14,9 +14,11 @@ import com.intellij.psi.PsiFile;
 
 import net.sourceforge.pmd.lang.document.FileId;
 import net.sourceforge.pmd.lang.rule.Rule;
+import net.sourceforge.pmd.lang.rule.RuleReference;
 import net.sourceforge.pmd.reporting.Report;
 import net.sourceforge.pmd.reporting.RuleViolation;
 import software.xdev.pmd.currentfile.CombinedPMDAnalysisResult;
+import software.xdev.pmd.external.org.springframework.util.ConcurrentReferenceHashMap;
 import software.xdev.pmd.ui.toolwindow.node.BaseNode;
 import software.xdev.pmd.ui.toolwindow.node.ErrorSummaryNode;
 import software.xdev.pmd.ui.toolwindow.node.FileOverviewNode;
@@ -31,6 +33,7 @@ import software.xdev.pmd.ui.toolwindow.node.ViolationRuleNode;
 public class TreeNodeHierarchyByRuleBuilder extends AbstractTreeNodeHierarchyByBuilder
 {
 	private final Map<PsiFile, FileOverviewNode> fileErrorNodes = new HashMap<>();
+	private final Map<Rule, Rule> unwrappedRuleCache = new ConcurrentReferenceHashMap<>();
 	
 	public TreeNodeHierarchyByRuleBuilder(final CombinedPMDAnalysisResult result)
 	{
@@ -61,6 +64,7 @@ public class TreeNodeHierarchyByRuleBuilder extends AbstractTreeNodeHierarchyByB
 			SuppressedViolationRuleNode::new);
 	}
 	
+	@SuppressWarnings("java:S119")
 	private <V, RVN extends BaseNode, VN extends BaseNode> Map<RVN, Map<FileOverviewNode, List<VN>>>
 	abstractComputeViolations(
 		final List<V> resultViolations,
@@ -71,7 +75,7 @@ public class TreeNodeHierarchyByRuleBuilder extends AbstractTreeNodeHierarchyByB
 		final Map<Rule, Map<FileId, List<V>>> condensedStructure =
 			resultViolations
 				.stream()
-				.collect(Collectors.groupingBy(v -> extractRuleViolation.apply(v).getRule()))
+				.collect(Collectors.groupingBy(v -> this.unwrapRule(extractRuleViolation.apply(v).getRule())))
 				.entrySet()
 				.stream()
 				.collect(Collectors.toMap(
@@ -116,6 +120,23 @@ public class TreeNodeHierarchyByRuleBuilder extends AbstractTreeNodeHierarchyByB
 			values.keySet().forEach(ruleNode::add));
 		
 		return structure;
+	}
+	
+	// Unwrapping is required because RuleReferences don't have a hashCode/equals,
+	// which will result in duplicate rules being displayed
+	private Rule unwrapRule(final Rule rule)
+	{
+		return this.unwrappedRuleCache.computeIfAbsent(rule, this::computeUnwrappedRule);
+	}
+	
+	private Rule computeUnwrappedRule(final Rule rule)
+	{
+		Rule currentRule = rule;
+		for(int i = 0; currentRule instanceof final RuleReference ref && i < 100; i++)
+		{
+			currentRule = ref.getRule();
+		}
+		return currentRule;
 	}
 	
 	@Override

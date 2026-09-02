@@ -308,6 +308,12 @@ public class SaxonXPathRuleQuery
 		return NAME_POOL;
 	}
 	
+	// IMPROVED: No reflection needed
+	public XPathHandler getxPathHandler()
+	{
+		return xPathHandler;
+	}
+	
 	final class StaticContextWithProperties extends IndependentContext
 	{
 		private final Map<StructuredQName, PropertyDescriptor<?>> propertiesByName = new HashMap<>();
