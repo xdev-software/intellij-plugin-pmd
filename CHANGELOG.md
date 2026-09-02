@@ -1,3 +1,6 @@
+# 2.1.1
+* Prevent rule crashes in multi-threading scenarios
+
 # 2.1.0
 * Updated PMD to 7.27.0
 * Adopted class loading changes and improved performance
