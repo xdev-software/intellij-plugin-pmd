@@ -1,5 +1,9 @@
-# 2.1.1
+# 2.2.0
 * Prevent rule crashes in multi-threading scenarios
+* Drop support for Kotlin
+  * pmd-kotlin 7.27 embeds the entire kotlin compiler therefore increasing total plugin size by 7x
+  * There are currently 3(!) PMD Kotlin rules - this is in no way appropriate when compared to the above size increase
+  * Support might be reintroduced at a later point #139
 
 # 2.1.0
 * Updated PMD to 7.27.0
