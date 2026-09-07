@@ -1,8 +1,9 @@
 package software.xdev.pmd.maven.ideamaven;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,21 +15,33 @@ class GlobToRegexTest
 {
 	@ParameterizedTest
 	@MethodSource
-	void checkConversion(final String glob, final String expectedRegex)
+	void checkConversion(final String glob, final Set<String> expectedRegexes)
 	{
-		assertEquals(expectedRegex, GlobToRegex.toRegex(glob));
+		assertTrue(expectedRegexes.contains(GlobToRegex.toRegex(glob)));
 	}
 	
 	static Stream<Arguments> checkConversion()
 	{
 		return Map.ofEntries(
-				Map.entry("**", ".*"),
-				Map.entry("abc", "abc"),
-				Map.entry("*/abc", "[^/]*/abc"),
-				Map.entry("**/abc", "(?:.*/)?abc"),
-				Map.entry("abc/**", "abc/.*"),
-				Map.entry("abc/*", "abc/[^/]*"),
-				Map.entry("abc/**/*_.java", "abc/(?:.*/)?[^/]*_\\.java")
+				Map.entry("**", Set.of(".*")),
+				Map.entry("abc", Set.of("abc")),
+				Map.entry("*/abc", Set.of("[^/]*/abc")),
+				Map.entry(
+					"**/abc",
+					Set.of(
+						".*/abc", // 262
+						"(?:.*/)?abc" // 263
+					)
+				),
+				Map.entry("abc/**", Set.of("abc/.*")),
+				Map.entry("abc/*", Set.of("abc/[^/]*")),
+				Map.entry(
+					"abc/**/*_.java",
+					Set.of(
+						"abc(?:/|/.*/)[^/]*_\\.java", // 262
+						"abc/(?:.*/)?[^/]*_\\.java" // 263
+					)
+				)
 			)
 			.entrySet()
 			.stream()
