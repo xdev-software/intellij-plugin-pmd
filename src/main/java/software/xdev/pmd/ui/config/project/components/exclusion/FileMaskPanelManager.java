@@ -108,7 +108,7 @@ public class FileMaskPanelManager
 	@NotNull
 	private AnActionButtonRunnable getRemoveActionButtonRunnable()
 	{
-		return actionButton -> {
+		return _ -> {
 			for(final String selectedValue : this.patternList.getSelectedValuesList())
 			{
 				this.patterns.remove(selectedValue);
@@ -120,7 +120,7 @@ public class FileMaskPanelManager
 	@NotNull
 	private AnActionButtonRunnable getAddActionButtonRunnable(final String textAddTitle, final String textAddMessage)
 	{
-		return actionButton -> {
+		return _ -> {
 			final String pattern = Messages.showInputDialog(
 				textAddMessage, textAddTitle, null, null, this.getInputValidator());
 			if(pattern != null && this.patterns.add(pattern))

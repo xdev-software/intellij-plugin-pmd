@@ -29,7 +29,7 @@ public record PatternContainer(
 		{
 			return new PatternContainer(PATTERN_COMPILE_CACHE.computeIfAbsent(pattern, Pattern::compile));
 		}
-		catch(final PatternSyntaxException pse)
+		catch(final PatternSyntaxException _)
 		{
 			return null;
 		}

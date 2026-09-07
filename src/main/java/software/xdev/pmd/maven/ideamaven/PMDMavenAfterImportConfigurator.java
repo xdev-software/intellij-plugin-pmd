@@ -1,7 +1,6 @@
 package software.xdev.pmd.maven.ideamaven;
 
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,7 +26,6 @@ import org.jetbrains.idea.maven.project.MavenProject;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 
-import fleet.util.GlobKt;
 import software.xdev.pmd.config.PluginConfiguration;
 import software.xdev.pmd.config.PluginConfigurationBuilder;
 import software.xdev.pmd.config.PluginConfigurationManager;
@@ -171,7 +169,7 @@ public class PMDMavenAfterImportConfigurator implements MavenAfterImportConfigur
 		{
 			absolutePath = Paths.get(s).isAbsolute();
 		}
-		catch(final Exception ex)
+		catch(final Exception _)
 		{
 			// Ignore invalid paths
 			return null;
@@ -187,7 +185,6 @@ public class PMDMavenAfterImportConfigurator implements MavenAfterImportConfigur
 		return configurationLocation;
 	}
 	
-	@SuppressWarnings("PMD.AvoidStringBuilderOrBuffer")
 	private void configureExclusions(final Element configElement, final PluginConfigurationBuilder builder)
 	{
 		// https://maven.apache.org/plugins/maven-pmd-plugin/pmd-mojo.html#excludes
@@ -200,11 +197,7 @@ public class PMDMavenAfterImportConfigurator implements MavenAfterImportConfigur
 				}
 				return s;
 			})
-			.map(text -> {
-				final StringBuilder sb = new StringBuilder(text.length() * 2);
-				GlobKt.convertGlobToRegEx(text, new ArrayList<>(), sb);
-				return sb.toString();
-			})
+			.map(GlobToRegex::toRegex)
 			.toList());
 	}
 	
