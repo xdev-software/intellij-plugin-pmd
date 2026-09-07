@@ -141,7 +141,7 @@ public class PsiFileValidator implements Disposable
 				
 				return pluginConfig.projectRelativeFileExclusions()
 					.stream()
-					.anyMatch(c -> c.pattern().matcher(determinedPath).find());
+					.anyMatch(c -> c.pattern().matcher(determinedPath).matches());
 			}
 		);
 	}
