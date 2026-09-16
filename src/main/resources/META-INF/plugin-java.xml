@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<idea-plugin>
+	<extensions defaultExtensionNs="software.xdev.pmd">
+		<languageResolver
+				implementation="software.xdev.pmd.langversion.JavaLanguageAndVersionResolver"/>
+
+		<languageVersionResolver
+				implementation="software.xdev.pmd.langversion.JavaLanguageAndVersionResolver"/>
+	</extensions>
+	<extensions defaultExtensionNs="com.intellij">
+		<postStartupActivity implementation="software.xdev.pmd.startup.JavaCompilerAutoMakeStartupHint"/>
+	</extensions>
+</idea-plugin>
