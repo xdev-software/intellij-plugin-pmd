@@ -1,0 +1,50 @@
+package software.xdev.pmd.model.config.rulesetlocation.file;
+
+import org.jetbrains.annotations.NotNull;
+
+import com.intellij.openapi.components.PathMacroManager;
+import com.intellij.openapi.project.Project;
+
+import software.xdev.pmd.model.config.rulesetlocation.ConfigurationType;
+
+
+public class RelativeFileConfigurationLocation extends FileConfigurationLocation
+{
+	private static final String LEGACY_IDEA_PROJECT_DIR = "$PROJECT_DIR$";
+	
+	public RelativeFileConfigurationLocation(
+		@NotNull final Project project,
+		@NotNull final String id)
+	{
+		super(project, id, ConfigurationType.PROJECT_RELATIVE);
+	}
+	
+	@SuppressWarnings("checkstyle:FinalParameters")
+	@Override
+	public void setLocation(String location)
+	{
+		// Detect legacy $PROJECT_DIR$ that was resolved during importing
+		if(location.length() > 5
+			// linux e.g. /abc/...
+			&& (location.startsWith("/")
+			// windows e.g. c:/abc/...
+			|| location.charAt(1) == ':' && location.charAt(2) == '/'))
+		{
+			final String resolvedProjectDir = PathMacroManager.getInstance(this.getProject())
+				.expandPath(LEGACY_IDEA_PROJECT_DIR);
+			if(location.startsWith(resolvedProjectDir) && location.length() > resolvedProjectDir.length() + 1)
+			{
+				// Also cut away path separator
+				location = location.substring(resolvedProjectDir.length() + 1);
+			}
+		}
+		
+		super.setLocation(location);
+	}
+	
+	@Override
+	protected String getRealLocation()
+	{
+		return this.projectFilePaths().makeProjectRelativePathAbsolute(super.getRealLocation());
+	}
+}
