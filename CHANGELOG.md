@@ -1,3 +1,6 @@
+# 2.2.2
+* Updated PMD to 7.28.0
+
 # 2.2.1
 * Exclusion pattern matching now matches the entire path
 * Fixed exclusion pattern matching compatibility on IDEA 263+
