@@ -34,6 +34,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.ui.VerticalFlowLayout;
+import com.intellij.platform.ide.navigation.NavigationOptions;
+import com.intellij.platform.ide.navigation.NavigationService;
 import com.intellij.pom.Navigatable;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBPanel;
@@ -77,6 +79,8 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 	@NotNull
 	protected TreeNodeHierarchyBuilderFactory currentHierarchyBuilderFactory;
 	
+	protected final NavigationService navigationService;
+	
 	@SuppressWarnings("checkstyle:MagicNumber")
 	protected AnalysisPanel(
 		@NotNull final Project project,
@@ -86,6 +90,7 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 		
 		this.project = project;
 		this.currentHierarchyBuilderFactory = currentHierarchyBuilderFactory;
+		this.navigationService = project.getService(NavigationService.class);
 		
 		this.toolbarActionGroup = this.createActions();
 		this.setToolbar(this.createToolbar());
@@ -375,7 +380,9 @@ public abstract class AnalysisPanel extends SimpleToolWindowPanel implements Gro
 				if(forceNavigate && lp.getLastPathComponent() instanceof final Navigatable navigatable
 					&& navigatable.canNavigate())
 				{
-					navigatable.navigate(false);
+					this.navigationService.requestNavigate(
+						navigatable,
+						NavigationOptions.defaultOptions().requestFocus(false));
 				}
 			});
 	}
