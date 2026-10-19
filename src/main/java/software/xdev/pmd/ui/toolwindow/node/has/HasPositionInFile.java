@@ -3,6 +3,7 @@ package software.xdev.pmd.ui.toolwindow.node.has;
 import java.util.function.Supplier;
 
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.FileEditorOpenRequest;
 import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -24,14 +25,14 @@ public interface HasPositionInFile extends HasNavigatable
 		if(virtualFile != null)
 		{
 			final Project project = psiFile.getProject();
-			FileEditorManager.getInstance(project).openTextEditor(
+			FileEditorManager.getInstance(project).requestOpenTextEditor(
 				new OpenFileDescriptor(
 					project,
 					virtualFile,
 					filePosition.beginLineIndex(),
 					filePosition.beginColumnIndex()
 				),
-				requestFocus);
+				FileEditorOpenRequest.withFocus(requestFocus));
 		}
 	}
 	
