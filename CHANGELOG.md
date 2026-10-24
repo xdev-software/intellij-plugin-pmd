@@ -1,3 +1,6 @@
+# 2.3.0
+* Dropped support for IntelliJ IDEA < 263 to fix deprecations
+
 # 2.2.2
 * Updated PMD to 7.28.0
 
