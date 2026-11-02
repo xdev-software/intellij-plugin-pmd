@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<idea-plugin>
+	<extensions defaultExtensionNs="org.jetbrains.idea.maven">
+		<importing.afterImportConfigurator
+				implementation="software.xdev.pmd.maven.ideamaven.PMDMavenAfterImportConfigurator"/>
+	</extensions>
+	<extensions defaultExtensionNs="software.xdev.pmd">
+		<mavenMirrorUrlResolver implementation="software.xdev.pmd.maven.ideamaven.IDEAMavenMirrorUrlResolver"/>
+	</extensions>
+</idea-plugin>
