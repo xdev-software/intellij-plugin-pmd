@@ -1,3 +1,6 @@
+# 2.2.3
+* Updated PMD to 7.29.0
+
 # 2.2.2
 * Updated PMD to 7.28.0
 
